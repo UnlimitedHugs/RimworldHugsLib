@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+	<name>HugsLib</name>
+	<author>UnlimitedHugs</author>
+	<targetVersion>0.15.0</targetVersion>
+	<description>This is a shared library. It should NOT be installed manually, as it comes bundled with the mods that make use of it.</description>	
+</ModMetaData>

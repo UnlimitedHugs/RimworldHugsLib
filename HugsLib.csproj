@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A5D9BD45-533C-4CA0-9298-8950A3DA724C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HugsLib</RootNamespace>
+    <AssemblyName>%24HugsLib</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\CallbackScheduler.cs" />
+    <Compile Include="Source\DefReloadWatcher.cs" />
+    <Compile Include="Source\DetourProvider.cs" />
+    <Compile Include="Source\Dialog_UpdateFeatures.cs" />
+    <Compile Include="Source\DistributedTickScheduler.cs" />
+    <Compile Include="Source\HugsLibController.cs" />
+    <Compile Include="Source\HugsLibUtility.cs" />
+    <Compile Include="Source\LanguageStringInjector.cs" />
+    <Compile Include="Source\MapComponent_HugsProxy.cs" />
+    <Compile Include="Source\ModBase.cs" />
+    <Compile Include="Source\ModLogger.cs" />
+    <Compile Include="Source\PersistentDataManager.cs" />
+    <Compile Include="Source\Settings\Dialog_ModSettings.cs" />
+    <Compile Include="Source\Settings\Dialog_OptionsExtended.cs" />
+    <Compile Include="Source\Settings\Validators.cs" />
+    <Compile Include="Source\Settings\ModSettingsPack.cs" />
+    <Compile Include="Source\Settings\ModSettingsManager.cs" />
+    <Compile Include="Source\Settings\SettingHandle.cs" />
+    <Compile Include="Source\HugsTickProxy.cs" />
+    <Compile Include="Source\UnityProxyComponent.cs" />
+    <Compile Include="Source\UpdateFeatureDef.cs" />
+    <Compile Include="Source\UpdateFeatureManager.cs" />
+    <Compile Include="Source\VersionShort.cs" />
+    <Compile Include="Source\WindowReplacer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Languages\English.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

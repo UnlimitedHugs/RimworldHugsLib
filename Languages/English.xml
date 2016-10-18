@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+	
+	<HugsLib_settings_btn>Mod Settings</HugsLib_settings_btn>
+	<HugsLib_settings_windowTitle>Mod Settings</HugsLib_settings_windowTitle>
+	<HugsLib_settings_resetValue>Reset setting to default</HugsLib_settings_resetValue>
+	<HugsLib_settings_resetAll>Reset all</HugsLib_settings_resetAll>
+	<HugsLib_settings_resetAll_prompt>Reset all mod settings to their original values?</HugsLib_settings_resetAll_prompt>
+	<HugsLib_settings_noSettings>No mods with configurable settings are loaded.</HugsLib_settings_noSettings>
+	
+	<HugsLib_ownSettingsName>Other</HugsLib_ownSettingsName>
+	<HugsLib_setting_showNews_label>Show mod update news</HugsLib_setting_showNews_label>
+	<HugsLib_setting_showNews_desc>Allows newly installed mods to highlight their new features in a pop-up window when you start your game.</HugsLib_setting_showNews_desc>
+	<HugsLib_setting_allNews_label>All mod update news</HugsLib_setting_allNews_label>
+	<HugsLib_setting_allNews_desc>Shows all available mod update news, including those that have already been displayed.</HugsLib_setting_allNews_desc>
+	<HugsLib_setting_allNews_button>Show now</HugsLib_setting_allNews_button>
+	<HugsLib_setting_allNews_fail>None of the active mods have any update news to display.</HugsLib_setting_allNews_fail>
+	
+	<HugsLib_features_title>New Mod Features</HugsLib_features_title>
+	<HugsLib_features_description>The following mod updates were installed, and these are the new features and improvements that came with them.\nYou can disable this dialog in Options &gt; Mod Settings</HugsLib_features_description>
+	<HugsLib_features_update>{0} v{1}</HugsLib_features_update>
+	<HugsLib_features_link>Link</HugsLib_features_link>
+	<HugsLib_features_linkDesc>Opens your browser on a page where you can learn more about this update.\nAddress: {0}</HugsLib_features_linkDesc>
+	
+</LanguageData>
