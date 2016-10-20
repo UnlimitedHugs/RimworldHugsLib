@@ -77,6 +77,7 @@ namespace HugsLib {
 		}
 
 		// called after initalize and when defs have been reloaded. This is a good place to inject defs
+		// Get your settings handles here, so that the labels will properly update on language change
 		// If the mod is disabled after being loaded, this method will STILL execute
 		public virtual void DefsLoaded() {
 		}

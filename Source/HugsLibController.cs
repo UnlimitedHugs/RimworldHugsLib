@@ -93,15 +93,14 @@ namespace HugsLib {
 			if (Settings != null) return; // double initialization safeguard, shouldn't happen
 			try {
 				Settings = new ModSettingsManager(OnSettingsChanged, ManagersCanSavePersistenData);
-				RegisterOwnSettings();
 				UpdateFeatures = new UpdateFeatureManager();
 				CallbackScheduler = new CallbackScheduler();
 				DistributedTicker = new DistributedTickScheduler();
 				reloadWatcher = new DefReloadWatcher(OnDefReloadDetected, typeof(HugsLibController).Assembly.GetHashCode());
 				optionsReplacer = new WindowReplacer<Dialog_Options, Dialog_OptionsExtended>();
 				languageInjector = new LanguageStringInjector();
-				LoadReloadInitialize();
 				RegisterOwnSettings();
+				LoadReloadInitialize();
 			} catch (Exception e) {
 				Logger.ReportException("Initalize", e);
 			}
@@ -234,6 +233,7 @@ namespace HugsLib {
 		private void OnDefsLoaded() {
 			string modId = null;
 			try {
+				RegisterOwnSettings();
 				for (int i = 0; i < childMods.Count; i++) {
 					modId = childMods[i].ModIdentifier;
 					childMods[i].DefsLoaded();
