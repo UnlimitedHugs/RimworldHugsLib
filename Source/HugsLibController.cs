@@ -92,7 +92,7 @@ namespace HugsLib {
 		internal void Initalize() {
 			if (Settings != null) return; // double initialization safeguard, shouldn't happen
 			try {
-				Settings = new ModSettingsManager(OnSettingsChanged);
+				Settings = new ModSettingsManager(OnSettingsChanged, ManagersCanSavePersistenData);
 				RegisterOwnSettings();
 				UpdateFeatures = new UpdateFeatureManager();
 				CallbackScheduler = new CallbackScheduler();
@@ -266,7 +266,7 @@ namespace HugsLib {
 					initializationsThisRun.Add(modId);
 				}
 				if (initializationsThisRun.Count > 0) {
-					Logger.TraceFormat("v{0} initialized {1}", AssemblyVersion, initializationsThisRun.ListElements());
+					Logger.Message("v{0} initialized {1}", AssemblyVersion, initializationsThisRun.ListElements());
 				}
 				OnDefsLoaded();
 			} catch (Exception e) {
@@ -349,6 +349,10 @@ namespace HugsLib {
 				}
 				return false;
 			};
+		}
+
+		private bool ManagersCanSavePersistenData() {
+			return !VersionConflict || TopVersionInConflict;
 		}
 	}
 }

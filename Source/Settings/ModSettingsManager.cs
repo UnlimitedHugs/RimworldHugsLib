@@ -7,15 +7,19 @@ namespace HugsLib.Settings {
 	 * A central place for mods to store persistent settings. Individual settings are grouped by mod using ModSettingsPack
 	 */
 	public class ModSettingsManager : PersistentDataManager {
+		public delegate bool CanSaveSettingsPredicate();
+
 		protected override string FileName {
 			get { return "ModSettings.xml"; }
 		}
 
 		private readonly List<ModSettingsPack> packs = new List<ModSettingsPack>();
 		private readonly Action SettingsChangedCallback;
+		private readonly CanSaveSettingsPredicate canSaveSettings;
 
-		public ModSettingsManager(Action settingsChangedCallback) {
+		public ModSettingsManager(Action settingsChangedCallback, CanSaveSettingsPredicate canSaveSettings) {
 			SettingsChangedCallback = settingsChangedCallback;
+			this.canSaveSettings = canSaveSettings;
 			LoadData();
 		}
 
@@ -30,6 +34,7 @@ namespace HugsLib.Settings {
 		}
 
 		public void SaveChanges() {
+			if (canSaveSettings != null && !canSaveSettings()) return;
 			SaveData();
 			if (SettingsChangedCallback != null) SettingsChangedCallback();
 		}

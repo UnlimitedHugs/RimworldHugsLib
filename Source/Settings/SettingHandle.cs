@@ -33,6 +33,7 @@ namespace HugsLib.Settings {
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
 		public abstract void ResetToDefault();
+		public abstract bool HasDefaultValue();
 	}
 
 	public class SettingHandle<T> : SettingHandle {
@@ -78,6 +79,10 @@ namespace HugsLib.Settings {
 
 		public override void ResetToDefault() {
 			Value = DefaultValue;
+		}
+
+		public override bool HasDefaultValue() {
+			return Value.Equals(DefaultValue);
 		}
 
 		public override string ToString() {

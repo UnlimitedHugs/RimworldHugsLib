@@ -86,6 +86,16 @@ namespace HugsLib {
 			return false;
 		}
 
+		// Adds a hash to a manually instantiated def to avoid def collisions
+		public static void AddSHortHashToInjectedDef(Def newDef) {
+			var hashMethod = typeof(ShortHashGiver).GetMethod("GiveShortHash", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(Def) }, null);
+			if (hashMethod == null) {
+				HugsLibController.Logger.Warning("Failed to reflect ShortHashGiver.GiveShortHash");
+				return;
+			}
+			hashMethod.Invoke(null, new object[] { newDef });
+		}
+
 		internal static void BlameCallbackException(string schedulerName, Action callback, Exception e) {
 			string exceptionCause = null;
 			if (callback != null) {

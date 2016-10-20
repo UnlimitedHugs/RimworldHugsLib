@@ -40,11 +40,12 @@ namespace HugsLib {
 		}
 
 		private void InjectDef() {
-			if (DefDatabase<ThingDef>.GetNamedSilentFail(TokenDefName) != null) return; // may have already been added by another HugsLib version
+			if (DefDatabase<ThingDef>.GetNamedSilentFail(TokenDefName) != null) return;
 			var def = new ThingDef {
 				defName = TokenDefName,
 				label = "HugsLib reload detector"
 			};
+			HugsLibUtility.AddSHortHashToInjectedDef(def);
 			DefDatabase<ThingDef>.Add(def);
 		}
 	}
