@@ -43,7 +43,9 @@ namespace HugsLib {
 			if (DefDatabase<ThingDef>.GetNamedSilentFail(TokenDefName) != null) return;
 			var def = new ThingDef {
 				defName = TokenDefName,
-				label = "HugsLib reload detector"
+				label = "HugsLib reload detector",
+				thingClass = typeof(Thing),
+				menuHidden = true
 			};
 			HugsLibUtility.AddSHortHashToInjectedDef(def);
 			DefDatabase<ThingDef>.Add(def);
