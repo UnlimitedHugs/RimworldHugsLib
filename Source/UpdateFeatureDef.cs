@@ -30,23 +30,28 @@ namespace HugsLib {
 		public string linkUrl;
 
 		public VersionShort Version { get; set; }
-		
-		public override IEnumerable<string> ConfigErrors() {
+
+		public override void ResolveReferences() {
+			base.ResolveReferences();
 			if (defName == null) {
 				defName = modIdentifier + assemblyVersion;
 			}
-			if (modIdentifier == null) yield return "UpdateFeatureDef.modIdentifier must be set";
-			if (modNameReadable == null) yield return "UpdateFeatureDef.modNameReadable must be set";
+			if (modIdentifier == null) ReportError("UpdateFeatureDef.modIdentifier must be set");
+			if (modNameReadable == null) ReportError("UpdateFeatureDef.modNameReadable must be set");
 			Exception versionFailure = null;
 			try {
-				if (assemblyVersion == null) throw new Exception("assemblyVersion must be defined");
+				if (assemblyVersion == null) throw new Exception("UpdateFeatureDef.assemblyVersion must be defined");
 				Version = VersionShort.Parse(assemblyVersion);
 			} catch (Exception e) {
 				Version = new VersionShort();
 				versionFailure = e;
 			}
-			if (versionFailure != null) yield return "UpdateFeatureDef.version parsing failed: " + versionFailure;
-			if (content == null) yield return "UpdateFeatureDef.content must be set";
+			if (versionFailure != null) ReportError("UpdateFeatureDef.version parsing failed: " + versionFailure);
+			if (content == null) ReportError("UpdateFeatureDef.content must be set");
+		}
+
+		private void ReportError(string message) {
+			Log.Error(string.Format("UpdateFeatureDef (defName: {0}) contains invalid data: {1}", defName, message));
 		}
 	}
 }
