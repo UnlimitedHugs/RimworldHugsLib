@@ -31,11 +31,7 @@ namespace HugsLib {
 					entry.dueAtTick = currentTick + entry.interval;
 					ScheduleEntry(entry);
 				}
-				try {
-					entry.callback();
-				} catch (Exception e) {
-					HugsLibUtility.BlameCallbackException("CallbackScheduler", entry.callback, e);
-				}
+				DoCallback(entry.callback);
 			}
 		}
 
@@ -43,9 +39,13 @@ namespace HugsLib {
 		public void ScheduleCallback(Action callback, int dueInTicks, bool repeat = false) {
 			if (lastProcessedTick < 0) throw new Exception("Adding callback to not initialized CallbackScheduler");
 			if (callback == null) throw new NullReferenceException("callback cannot be null");
-			if (dueInTicks < 1) throw new Exception("invalid dueInTicks value: " + dueInTicks);
-			var entry = new SchedulerEntry(callback, dueInTicks, lastProcessedTick + dueInTicks, repeat);
-			ScheduleEntry(entry);
+			if (dueInTicks < 0) throw new Exception("invalid dueInTicks value: " + dueInTicks);
+			if (dueInTicks == 0) {
+				DoCallback(callback);
+			} else {
+				var entry = new SchedulerEntry(callback, dueInTicks, lastProcessedTick + dueInTicks, repeat);
+				ScheduleEntry(entry);
+			}
 		}
 
 		public void TryUnscheduleCallback(Action callback) {
@@ -56,6 +56,14 @@ namespace HugsLib {
 					return;
 				}
 				entry = entry.Next;
+			}
+		}
+
+		private void DoCallback(Action callback) {
+			try {
+				callback();
+			} catch (Exception e) {
+				HugsLibUtility.BlameCallbackException("CallbackScheduler", callback, e);
 			}
 		}
 

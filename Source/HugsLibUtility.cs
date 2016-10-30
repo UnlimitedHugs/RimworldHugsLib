@@ -104,7 +104,7 @@ namespace HugsLib {
 				var methodName = isAnonymous ? "An anonymous method" : method.DeclaringType + "." + method.Name;
 				exceptionCause = string.Format("{0} ({1})", methodName, e.Source);
 			}
-			HugsLibController.Logger.ReportException(string.Format("a {0} callback", schedulerName), e, exceptionCause, true);
+			HugsLibController.Logger.ReportException(e, exceptionCause, true, string.Format("a {0} callback", schedulerName));
 		}
 	}
 

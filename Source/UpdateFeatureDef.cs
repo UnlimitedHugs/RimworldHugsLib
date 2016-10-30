@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using Verse;
 
 namespace HugsLib {
 	/**
 	 * Describes a single update news item. A mod must have a class extending ModBase and keep its assembly version up to date to make use of this.
 	 */
+	// ReSharper disable UnassignedField.Global
 	public class UpdateFeatureDef : Def {
 		// The ModBase.ModIdentifier of the mod that this def belongs to
 		public string modIdentifier;

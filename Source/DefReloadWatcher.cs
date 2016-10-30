@@ -8,21 +8,14 @@ namespace HugsLib {
 	 */
 	public class DefReloadWatcher {
 		private const float CheckEverySeconds = .1f;
-		private const string TokenNameBase = "HugsLibDetectionToken";
+		private const string TokenDefName = "HugsLibDetectionToken";
 
 		private readonly Action reloadedCallback;
-		private readonly int uniqueHash;
 		private float nextCheckTime;
 		private bool waitingForLongEvent;
-
-		private string TokenDefName {
-			get { return TokenNameBase + Math.Abs(uniqueHash); }
-		}
-
-		// unique hash ensures that all active versions have their own token def
-		public DefReloadWatcher(Action reloadedCallback, int uniqueHash) {
+		
+		public DefReloadWatcher(Action reloadedCallback) {
 			this.reloadedCallback = reloadedCallback;
-			this.uniqueHash = uniqueHash;
 			InjectDef();
 		}
 

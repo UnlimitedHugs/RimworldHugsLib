@@ -89,7 +89,7 @@ namespace HugsLib.Settings {
 							try {
 								if(!handle.VisibilityPredicate()) continue;
 							} catch (Exception e) {
-								HugsLibController.Logger.ReportException("SettingsHandle.VisibilityPredicate", e, currentlyDrawnEntry, true);
+								HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.VisibilityPredicate");
 							}
 						}
 						bool skipDrawing = curY - scrollPosition.y + HandleEntryHeight < 0f || curY - scrollPosition.y > scrollViewVisible.height;
@@ -155,7 +155,7 @@ namespace HugsLib.Settings {
 					try {
 						valueChanged = handle.CustomDrawer(controlRect);
 					} catch (Exception e) {
-						HugsLibController.Logger.ReportException("SettingsHandle.CustomDrawer", e, currentlyDrawnEntry, true);
+						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.CustomDrawer");
 					}
 				}
 				if (valueChanged) settingsHaveChanged = true;
@@ -197,7 +197,7 @@ namespace HugsLib.Settings {
 						changed = true;
 					}
 				} catch (Exception e) {
-					HugsLibController.Logger.ReportException("SettingsHandle.Validator", e, currentlyDrawnEntry);
+					HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, false, "SettingsHandle.Validator");
 				}
 				info.validationScheduled = false;
 			}

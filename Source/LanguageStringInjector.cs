@@ -15,12 +15,12 @@ namespace HugsLib {
 		private Dictionary<string, string> availableLanguages;
 
 		public void InjectEmbeddedStrings() {
-			if(DetectionStringId.CanTranslate()) return; // a parallel running version already injected
+			if(DetectionStringId.CanTranslate()) return;
 			if (availableLanguages == null) {
 				availableLanguages = LoadEmbeddedData();
 			}
 			if(TryInjectLanguageXml(LanguageDatabase.activeLanguage, LanguageDatabase.activeLanguage.folderName)) return;
-			// inject english strings into the current language as fallback- no point showing corrupted strings
+			// inject english strings into the current language as fallback- no point showing corrupted strings in Dev mode
 			TryInjectLanguageXml(LanguageDatabase.activeLanguage, LanguageDatabase.defaultLanguage.folderName);
 		}
 

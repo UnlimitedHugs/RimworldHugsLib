@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using Verse;
 
@@ -44,7 +45,10 @@ namespace HugsLib {
 			Log.Message(FormatOutput(message, substitiutions));
 		}
 
-		public void ReportException(string location, Exception e, string modIdentifier = null, bool reportOnceOnly = false) {
+		public void ReportException(Exception e, string modIdentifier = null, bool reportOnceOnly = false, string location = null) {
+			if (location == null) {
+				location = new StackFrame(1, true).GetMethod().Name;
+			}
 			if(reportOnceOnly && lastExceptionLocation == location) return;
 			lastExceptionLocation = location;
 			string message;
