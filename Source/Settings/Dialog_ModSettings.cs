@@ -290,13 +290,18 @@ namespace HugsLib.Settings {
 		private void EnumerateSettings() {
 			listedMods.Clear();
 			totalContentHeight = 0;
-			foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
+			var packs = HugsLibController.Instance.Settings.ModSettingsPacks.ToList();
+			// sort by display priority, entry name
+			packs.Sort((p1, p2) => {
+				if (p1.DisplayPriority != p2.DisplayPriority) return p1.DisplayPriority.CompareTo(p2.DisplayPriority);
+				return String.Compare(p1.EntryName, p2.EntryName, StringComparison.Ordinal);
+			});
+			foreach (var pack in packs) {
 				var handles = pack.Handles.Where(h => !h.NeverVisible).ToList();
 				if(handles.Count == 0) continue;
 				totalContentHeight += ModEntryHeight + handles.Count * HandleEntryHeight;
 				listedMods.Add(new ModEntry(pack.EntryName, handles));
 			}
-			listedMods.Sort((m1, m2) => String.Compare(m1.ModName, m2.ModName, StringComparison.Ordinal));
 		}
 
 		private void PopulateControlInfo() {
