@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using HugsLib.Utils;
 
-namespace HugsLib {
+namespace HugsLib.Core {
 	/**
 	 * A tool to detour calls form one method to another. Will use Community Core Library detouring, if available, and its own equivalent otherwise.
 	 */

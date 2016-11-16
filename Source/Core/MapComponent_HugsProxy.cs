@@ -1,6 +1,6 @@
 ﻿using Verse;
 
-namespace HugsLib {
+namespace HugsLib.Core {
 	/**
 	 * A map component to hook into the map loading flow. Will not be saved in the map data.
 	 */

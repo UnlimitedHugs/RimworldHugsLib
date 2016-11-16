@@ -1,6 +1,6 @@
 ﻿using Verse;
 
-namespace HugsLib {
+namespace HugsLib.Core {
 	// Forwards ticks to the controller. Will not be saved and is never spawned.
 	public class HugsTickProxy : Thing {
 		// a precaution against ending up in a save. Shouldn't happen, as it is never spawned.

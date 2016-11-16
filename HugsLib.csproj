@@ -49,37 +49,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Source\CallbackScheduler.cs" />
-    <Compile Include="Source\DefReloadWatcher.cs" />
-    <Compile Include="Source\DetourProvider.cs" />
-    <Compile Include="Source\Dialog_UpdateFeatures.cs" />
-    <Compile Include="Source\DistributedTickScheduler.cs" />
+    <Compile Include="Source\Core\DefReloadWatcher.cs" />
+    <Compile Include="Source\Core\DetourProvider.cs" />
+    <Compile Include="Source\Core\HugsTickProxy.cs" />
+    <Compile Include="Source\Core\KeyBindingDefOf.cs" />
+    <Compile Include="Source\Core\MapComponent_HugsProxy.cs" />
+    <Compile Include="Source\Core\PersistentDataManager.cs" />
+    <Compile Include="Source\Core\UnityProxyComponent.cs" />
+    <Compile Include="Source\Core\VersionFile.cs" />
+    <Compile Include="Source\Core\VersionShort.cs" />
+    <Compile Include="Source\Core\WindowReplacer.cs" />
     <Compile Include="Source\HugsLibController.cs" />
-    <Compile Include="Source\HugsLibUtility.cs" />
-    <Compile Include="Source\LanguageStringInjector.cs" />
-    <Compile Include="Source\MapComponent_HugsProxy.cs" />
+    <Compile Include="Source\Logs\Dialog_PublishLogs.cs" />
+    <Compile Include="Source\Logs\EditWindow_LogExtended.cs" />
+    <Compile Include="Source\Logs\LogPublisher.cs" />
     <Compile Include="Source\ModBase.cs" />
-    <Compile Include="Source\ModLogger.cs" />
-    <Compile Include="Source\PersistentDataManager.cs" />
+    <Compile Include="Source\News\Dialog_UpdateFeatures.cs" />
+    <Compile Include="Source\News\UpdateFeatureDef.cs" />
+    <Compile Include="Source\News\UpdateFeatureManager.cs" />
     <Compile Include="Source\Settings\Dialog_ModSettings.cs" />
     <Compile Include="Source\Settings\Dialog_OptionsExtended.cs" />
     <Compile Include="Source\Settings\Validators.cs" />
     <Compile Include="Source\Settings\ModSettingsPack.cs" />
     <Compile Include="Source\Settings\ModSettingsManager.cs" />
     <Compile Include="Source\Settings\SettingHandle.cs" />
-    <Compile Include="Source\HugsTickProxy.cs" />
-    <Compile Include="Source\UnityProxyComponent.cs" />
-    <Compile Include="Source\UpdateFeatureDef.cs" />
-    <Compile Include="Source\UpdateFeatureManager.cs" />
-    <Compile Include="Source\VersionShort.cs" />
-    <Compile Include="Source\WindowReplacer.cs" />
+    <Compile Include="Source\Utils\CallbackScheduler.cs" />
+    <Compile Include="Source\Utils\DistributedTickScheduler.cs" />
+    <Compile Include="Source\Utils\HugsLibUtility.cs" />
+    <Compile Include="Source\Utils\ModLogger.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Languages\English.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Languages\Russian.xml" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,7 +1,8 @@
 ﻿using System;
+using HugsLib.Core;
 using Verse;
 
-namespace HugsLib {
+namespace HugsLib.News {
 	/**
 	 * Describes a single update news item. A mod must have a class extending ModBase and keep its assembly version up to date to make use of this.
 	 */

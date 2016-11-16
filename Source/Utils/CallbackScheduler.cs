@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HugsLib {
+namespace HugsLib.Utils {
 	/**
 	* A performance-friendly way to execute code at arbitrary tick intervals.
 	* Optimized for one-off timed callbacks with variable callback delay. 

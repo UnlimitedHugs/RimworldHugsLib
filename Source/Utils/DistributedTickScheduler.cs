@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HugsLib {
+namespace HugsLib.Utils {
 	/**
 	 * A ticking scheduler for things that require a tick only every so often.
 	 * Distributes tick calls uniformely over multiple frames to reduce the workload.

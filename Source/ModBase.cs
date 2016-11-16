@@ -1,5 +1,7 @@
 ﻿using System;
+using HugsLib.Core;
 using HugsLib.Settings;
+using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib {
@@ -76,9 +78,9 @@ namespace HugsLib {
 		public virtual void SettingsChanged() {
 		}
 
-		// called after initalize and when defs have been reloaded. This is a good place to inject defs
+		// called after Initalize and when defs have been reloaded. This is a good place to inject defs
 		// Get your settings handles here, so that the labels will properly update on language change
-		// If the mod is disabled after being loaded, this method will STILL execute
+		// If the mod is disabled after being loaded, this method will STILL execute. Use ModIsActive to check.
 		public virtual void DefsLoaded() {
 		}
 	}

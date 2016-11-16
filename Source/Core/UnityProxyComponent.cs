@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace HugsLib {
+namespace HugsLib.Core {
 	/**
 	 * This is added as a component to the GameObject on scene to forward events to the controller.
 	 */

@@ -4,7 +4,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Verse;
 
-namespace HugsLib {
+namespace HugsLib.Core {
 	/**
 	 * A base for managers that save data in xml format, to be stored in the save data folder
 	 */

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using HugsLib.Core;
 using Verse;
 
-namespace HugsLib {
+namespace HugsLib.News {
 	/**
 	 * Stores the last displayed update news item for all mods. Shows the news dialog window when there are not yet displayed news items available.
 	 */

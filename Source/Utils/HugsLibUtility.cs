@@ -5,11 +5,24 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using UnityEngine;
 using Verse;
 
-namespace HugsLib {
+namespace HugsLib.Utils {
 	// A catch-all place for all the useful things
 	public static class HugsLibUtility {
+		public static bool ShiftIsHeld {
+			get { return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift); }
+		}
+
+		public static bool AltIsHeld {
+			get { return Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt); }
+		}
+
+		public static bool ControlIsHeld {
+			get { return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand); }
+		} 
+
 		// Returns an enumerable as a comma-separated string.
 		public static string ListElements(this IEnumerable list) {
 			return list.Join(", ", true);
@@ -94,6 +107,59 @@ namespace HugsLib {
 				return;
 			}
 			hashMethod.Invoke(null, new object[] { newDef });
+		}
+
+		// sanitizes a string for valid inclusion in JSON
+		public static string CleanForJSON(string s) {
+			if (string.IsNullOrEmpty(s)) {
+				return "";
+			}
+			int i;
+			int len = s.Length;
+			var sb = new StringBuilder(len + 4);
+			for (i = 0; i < len; i += 1) {
+				var c = s[i];
+				switch (c) {
+					case '\\':
+					case '"':
+						sb.Append('\\');
+						sb.Append(c);
+						break;
+					case '/':
+						sb.Append('\\');
+						sb.Append(c);
+						break;
+					case '\b':
+						sb.Append("\\b");
+						break;
+					case '\t':
+						sb.Append("\\t");
+						break;
+					case '\n':
+						sb.Append("\\n");
+						break;
+					case '\f':
+						sb.Append("\\f");
+						break;
+					case '\r':
+						sb.Append("\\r");
+						break;
+					default:
+						if (c < ' ') {
+							var t = "000" + String.Format("X");
+							sb.Append("\\u" + t.Substring(t.Length - 4));
+						} else {
+							sb.Append(c);
+						}
+						break;
+				}
+			}
+			return sb.ToString();
+		}
+
+		public static void CopyToClipboard(string data) {
+			GUIUtility.systemCopyBuffer = data;
+			Messages.Message("HugsLib_copiedToClipboard".Translate(), MessageSound.Benefit);
 		}
 
 		internal static void BlameCallbackException(string schedulerName, Action callback, Exception e) {

@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 
-namespace HugsLib {
+namespace HugsLib.News {
 	/**
 	 * Displays a list to update feature defs with basic image and formatting support. See UpdateFeatureDef for proper syntax.
 	 */

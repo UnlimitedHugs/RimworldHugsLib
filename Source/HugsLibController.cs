@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using HugsLib.Core;
+using HugsLib.Logs;
+using HugsLib.News;
 using HugsLib.Settings;
+using HugsLib.Utils;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -23,12 +27,12 @@ namespace HugsLib {
 			get { return instance ?? (instance = new HugsLibController()); }
 		}
 
-		public static AssemblyName AssemblyName {
-			get { return typeof(HugsLibController).Assembly.GetName(); }
-		}
-
-		public static VersionShort AssemblyVersion {
-			get { return AssemblyName.Version; }
+		private static VersionFile libraryVersionFile;
+		public static VersionShort LibraryVersion {
+			get {
+				if (libraryVersionFile == null) ReadOwnVersionFile();
+				return libraryVersionFile!=null ? libraryVersionFile.OverrideVersion : new VersionShort();
+			}
 		}
 
 		public static ModSettingsManager SettingsManager {
@@ -52,13 +56,24 @@ namespace HugsLib {
 			GameObject.DontDestroyOnLoad(obj);
 			obj.AddComponent<UnityProxyComponent>();
 		}
-		
+
+		private static void ReadOwnVersionFile() {
+			var ownAssembly = typeof(HugsLibController).Assembly;
+			foreach (var modContentPack in LoadedModManager.RunningMods) {
+				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
+					if (!loadedAssembly.Equals(ownAssembly)) continue;
+					libraryVersionFile = VersionFile.TryParseVersionFile(modContentPack);
+					if (libraryVersionFile == null) Logger.Error("Missing Version.xml file");
+					return;
+				}
+			}
+		}
+
 		private readonly List<ModBase> childMods = new List<ModBase>();
 		private readonly List<ModBase> initializedMods = new List<ModBase>(); 
 		private Dictionary<Assembly, ModContentPack> assemblyContentPacks;
 		private DefReloadWatcher reloadWatcher;
-		private WindowReplacer<Dialog_Options, Dialog_OptionsExtended> optionsReplacer;
-		private LanguageStringInjector languageInjector;
+		private WindowReplacer windowReplacer;
 		private SettingHandle<bool> updateNewsSetting;
 		private bool mapLoadedPending = true;
 
@@ -66,6 +81,7 @@ namespace HugsLib {
 		public UpdateFeatureManager UpdateFeatures { get; private set; }
 		public CallbackScheduler CallbackScheduler { get; private set; } // initalized before MapLoaded
 		public DistributedTickScheduler DistributedTicker { get; private set; }  // initalized before MapLoaded
+		public LogPublisher LogUploader { get; private set; }
 		
 		private HugsLibController() {
 		}
@@ -77,10 +93,11 @@ namespace HugsLib {
 				UpdateFeatures = new UpdateFeatureManager();
 				CallbackScheduler = new CallbackScheduler();
 				DistributedTicker = new DistributedTickScheduler();
+				LogUploader = new LogPublisher();
 				reloadWatcher = new DefReloadWatcher(OnDefReloadDetected);
-				optionsReplacer = new WindowReplacer<Dialog_Options, Dialog_OptionsExtended>();
-				languageInjector = new LanguageStringInjector();
+				InitWindowReplacer();
 				RegisterOwnSettings();
+				ReadOwnVersionFile();
 				LoadReloadInitialize();
 			} catch (Exception e) {
 				Logger.ReportException(e);
@@ -140,7 +157,8 @@ namespace HugsLib {
 
 		internal void OnGUI() {
 			try {
-				optionsReplacer.OnGUI();
+				windowReplacer.OnGUI();
+				LogUploader.OnGUI();
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
 						childMods[i].OnGUI();
@@ -250,7 +268,6 @@ namespace HugsLib {
 			try {
 				EnumerateModAssemblies();
 				EnumerateChildMods();
-				languageInjector.InjectEmbeddedStrings();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
 					var childMod = childMods[i];
@@ -266,7 +283,7 @@ namespace HugsLib {
 					initializationsThisRun.Add(modId);
 				}
 				if (initializationsThisRun.Count > 0) {
-					Logger.Message("v{0} initialized {1}", AssemblyVersion, initializationsThisRun.ListElements());
+					Logger.Message("v{0} initialized {1}", LibraryVersion, initializationsThisRun.ListElements());
 				}
 				OnDefsLoaded();
 			} catch (Exception e) {
@@ -307,7 +324,13 @@ namespace HugsLib {
 				}
 			}
 		}
-		
+
+		private void InitWindowReplacer() {
+			windowReplacer = new WindowReplacer();
+			windowReplacer.RegisterReplacement<Dialog_Options, Dialog_OptionsExtended>();
+			windowReplacer.RegisterReplacement<EditWindow_Log, EditWindow_LogExtended>();
+		}
+
 		private void RegisterOwnSettings() {
 			var pack = Settings.GetModSettings(ModIdentifier);
 			pack.EntryName = "HugsLib_ownSettingsName".Translate();

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using Verse;
 
-namespace HugsLib {
+namespace HugsLib.Utils {
 	/**
 	 * A logger that prefixes all mesages with the identifier of the issuing mod
 	 * The Trace methods will only output when Dev mode is active

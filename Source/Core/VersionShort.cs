@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HugsLib {
+namespace HugsLib.Core {
 	/**
 	 * A shorter, invariable alternative to System.Version in the format of major.minor.patch
 	 * System.Version can be implicitly cast to this type.

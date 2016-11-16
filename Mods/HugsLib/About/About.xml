@@ -3,5 +3,7 @@
 	<name>HugsLib</name>
 	<author>UnlimitedHugs</author>
 	<targetVersion>0.15.0</targetVersion>
-	<description>This is a shared library. It should NOT be installed manually, as it comes bundled with the mods that make use of it.</description>	
+	<description>&lt;color=orange&gt;&lt;b&gt;Important: &lt;/b&gt; This mod should be one of the first to be loaded to work properly.&lt;/color&gt;\n
+HugsLib is a library that provides shared functionality to other mods.
+	</description>	
 </ModMetaData>

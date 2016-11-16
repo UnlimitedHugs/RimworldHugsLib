@@ -1,8 +1,9 @@
 ﻿using System;
+using HugsLib.Utils;
 using UnityEngine;
 using Verse;
 
-namespace HugsLib {
+namespace HugsLib.Core {
 	/**
 	 * Detects when the game reloads all defs. Uses polling and and an injected def.
 	 */
