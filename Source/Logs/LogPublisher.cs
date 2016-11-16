@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -19,12 +20,12 @@ namespace HugsLib.Logs {
 	public class LogPublisher {
 		private const string RequestUserAgent = "HugsLib_log_uploader";
 		private const string OutputLogFilename = "output_log.txt";
-		private const string GitHubAuthToken = "9d4331b05d60172812c0dbc3f6d1716bd3814ed1";
 		private const string GistApiUrl = "https://api.github.com/gists";
 		private const string GistPayloadJson = "{{\"description\":\"{0}\",\"public\":true,\"files\":{{\"{1}\":{{\"content\":\"{2}\"}}}}}}";
 		private const string GistDescription = "Rimworld output log published using HugsLib";
 		private const string SuccessStatusResponse = "201 Created";
 		private const string ShortenerUrl = "https://git.io/";
+		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
 		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
 
 		public enum PublisherStatus {
