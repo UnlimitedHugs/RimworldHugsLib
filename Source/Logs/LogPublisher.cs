@@ -84,7 +84,7 @@ namespace HugsLib.Logs {
 			Status = PublisherStatus.Uploading;
 			ErrorMessage = null;
 			userAborted = false;
-
+			
 			//MockUpload();
 			//return;
 
@@ -195,12 +195,52 @@ namespace HugsLib.Logs {
 		private string PrepareLogData() {
 			try {
 				var logSection = GetLogFileContents();
+				// redact logs for privacy
+				logSection = RedactRendererInformation(RedactRimworldPaths(logSection));
 				if (logSection == null) return null;
 				return String.Concat(MakeLogTimestamp(), ListActiveMods(), "\n", logSection);
 			} catch (Exception e) {
 				HugsLibController.Logger.ReportException(e);
 			}
 			return null;
+		}
+
+		private string RedactRimworldPaths(string log) {
+			const string pathReplacement = "[Rimworld_dir]";
+			var appPath = Path.GetFullPath(Application.dataPath);
+			var pathParts = appPath.Split(Path.DirectorySeparatorChar).ToList();
+			pathParts.RemoveAt(pathParts.Count-1);
+			appPath = pathParts.Join(Path.DirectorySeparatorChar.ToString());
+			log = log.Replace(appPath, pathReplacement);
+			if (Path.DirectorySeparatorChar != '/') {
+				// log will contain mixed windows and unix style paths
+				appPath = appPath.Replace(Path.DirectorySeparatorChar, '/');
+				log = log.Replace(appPath, pathReplacement);
+			}
+			return log;
+		}
+
+		/*private string RedactSteamUserName(string log) {
+			const string userReplacement = "[Steam_username]";
+			var playerName = SteamUtility.SteamPersonaName;
+			if (playerName.Length > 4) {
+				log = log.Replace(playerName, userReplacement);
+			}
+			return log;
+		}*/
+
+		private string RedactRendererInformation(string log) {
+			const string redactStart = "GfxDevice: ";
+			const string redactEnd = "\nBegin MonoManager";
+			var startIndex = log.IndexOf(redactStart, StringComparison.Ordinal);
+			var endIndex = log.IndexOf(redactEnd, StringComparison.Ordinal);
+			if (startIndex >= 0 && endIndex >= 0) {
+				var LogTail = log.Substring(endIndex);
+				log = log.Substring(0, startIndex + redactStart.Length);
+				log += "[Renderer information redacted]";
+				log += LogTail;
+			}
+			return log;
 		}
 
 		private string GetLogFileContents() {
