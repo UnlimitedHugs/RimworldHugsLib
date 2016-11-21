@@ -247,7 +247,6 @@ namespace HugsLib.Settings {
 
 		private bool DrawHandleInputEnum(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			if (info.enumNames == null) return false;
-			var changed = false;
 			var readableValue = (handle.EnumStringPrefix + info.inputValue).Translate();
 			if (Widgets.ButtonText(controlRect, readableValue)) {
 				var floatOptions = new List<FloatMenuOption>();
@@ -256,12 +255,16 @@ namespace HugsLib.Settings {
 					var readableOption = (handle.EnumStringPrefix + name).Translate();
 					floatOptions.Add(new FloatMenuOption(readableOption, () => {
 						handle.StringValue = info.inputValue = name;
-						changed = true;
+						info.validationScheduled = true;
 					}));
 				}
 				Find.WindowStack.Add(new FloatMenu(floatOptions));
 			}
-			return changed;
+			if (info.validationScheduled) {
+				info.validationScheduled = false;
+				return true;
+			}
+			return false;
 		}
 
 		private void DrawBadTextValueOutline(Rect rect) {
