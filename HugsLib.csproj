@@ -17,10 +17,11 @@
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;xTEST_MOD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -73,10 +74,17 @@
     <Compile Include="Source\Settings\ModSettingsPack.cs" />
     <Compile Include="Source\Settings\ModSettingsManager.cs" />
     <Compile Include="Source\Settings\SettingHandle.cs" />
+    <Compile Include="Source\Test\TestUWO2.cs" />
+    <Compile Include="Source\Test\TestMod.cs" />
+    <Compile Include="Source\Test\TestUWO1.cs" />
     <Compile Include="Source\Utils\CallbackScheduler.cs" />
+    <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />
     <Compile Include="Source\Utils\HugsLibUtility.cs" />
+    <Compile Include="Source\Utils\MapComponentUtility.cs" />
     <Compile Include="Source\Utils\ModLogger.cs" />
+    <Compile Include="Source\Utils\UtilityWorldObject.cs" />
+    <Compile Include="Source\Utils\UtilityWorldObjectManager.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

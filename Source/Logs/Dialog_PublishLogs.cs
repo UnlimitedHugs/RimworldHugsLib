@@ -12,6 +12,7 @@ namespace HugsLib.Logs {
 	[StaticConstructorOnStartup]
 	public class Dialog_PublishLogs : Window {
 		private const float StatusLabelHeight = 60f;
+		private const int MaxResultUrlLength = 32;
 		private static readonly Texture2D UrlBackgroudTex = SolidColorMaterials.NewSolidColorTexture(new Color(0.25f, 0.25f, 0.17f, 0.85f));
 		private readonly Vector2 CopyButtonSize = new Vector2(100f, 40f);
 		private readonly Vector2 ControlButtonSize = new Vector2(150f, 40f);
@@ -59,7 +60,12 @@ namespace HugsLib.Logs {
 				Text.Font = GameFont.Medium;
 				var prevAnchor = Text.Anchor;
 				Text.Anchor = TextAnchor.MiddleCenter;
-				Widgets.Label(urlLabelRect, publisher.ResultUrl);
+				var croppedResultUrl = publisher.ResultUrl;
+				if (croppedResultUrl.Length > MaxResultUrlLength) {
+					// crop the url in case shortening has failed and the original url is displayed
+					croppedResultUrl = croppedResultUrl.Substring(0, MaxResultUrlLength)+"...";
+				}
+				Widgets.Label(urlLabelRect, croppedResultUrl);
 				Text.Anchor = prevAnchor;
 				Text.Font = GameFont.Small;
 				var copyBtnRect = new Rect(inRect.width - CopyButtonSize.x, urlAreaRect.y, CopyButtonSize.x, CopyButtonSize.y);

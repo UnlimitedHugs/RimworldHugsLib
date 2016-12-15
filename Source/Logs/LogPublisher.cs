@@ -11,6 +11,7 @@ using HugsLib.Core;
 using HugsLib.Utils;
 using UnityEngine;
 using Verse;
+using Object = System.Object;
 
 namespace HugsLib.Logs {
 	/**
@@ -68,25 +69,16 @@ namespace HugsLib.Logs {
 			Status = PublisherStatus.Error;
 		}
 
-		/*private void MockUpload() {
-			workerThread = new Thread(() => {
-				Thread.Sleep(1500);
-				Status = PublisherStatus.Shortening;
-				Thread.Sleep(1500);
-				Status = PublisherStatus.Done;
-				ResultUrl = Rand.Int.ToString();
-			});
-			workerThread.Start();
-		}*/
-
 		public void BeginUpload() {
 			if(!PublisherIsReady()) return;
 			Status = PublisherStatus.Uploading;
 			ErrorMessage = null;
 			userAborted = false;
 			
-			//MockUpload();
-			//return;
+#if TEST_MOCK_UPLOAD
+			MockUpload();
+			return;
+#endif
 
 			var collatedData = PrepareLogData();
 			if (collatedData == null) {
@@ -102,7 +94,7 @@ namespace HugsLib.Logs {
 					using (var client = new WebClient()) {
 						client.Headers.Add("Authorization", "token " + GitHubAuthToken);
 						client.Headers.Add("User-Agent", RequestUserAgent);
-						collatedData = HugsLibUtility.CleanForJSON(collatedData);
+						collatedData = CleanForJSON(collatedData);
 						var payload = String.Format(GistPayloadJson, GistDescription, OutputLogFilename, collatedData);
 						var response = client.UploadString(GistApiUrl, payload);
 						var status = client.ResponseHeaders.Get("Status");
@@ -117,6 +109,18 @@ namespace HugsLib.Logs {
 					OnRequestError(e.Message);
 					HugsLibController.Logger.Warning("Exception during log publishing (gist creation): " + e);
 				}
+			});
+			workerThread.Start();
+		}
+
+		// this is for testing the uploader gui without making requests	
+		private void MockUpload() {
+			workerThread = new Thread(() => {
+				Thread.Sleep(1500);
+				Status = PublisherStatus.Shortening;
+				Thread.Sleep(1500);
+				Status = PublisherStatus.Done;
+				ResultUrl = Rand.Int.ToString();
 			});
 			workerThread.Start();
 		}
@@ -164,8 +168,9 @@ namespace HugsLib.Logs {
 						}
 					}
 				} catch (Exception e) {
+					// Git.io shortening has failed, just return the original url as fallback
 					if (userAborted) return;
-					OnRequestError(e.Message);
+					OnUrlShorteningComplete(ResultUrl);
 					HugsLibController.Logger.Warning("Exception during log publishing (url shortening): " + e);
 				}
 			});
@@ -183,7 +188,7 @@ namespace HugsLib.Logs {
 			return match.Groups[1].ToString();
 		}
 
-		private bool CertificateValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) {
+		private bool CertificateValidationCallback(Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) {
 			// we don't care about the certificate, assume all is well
 			return true;
 		}
@@ -196,7 +201,9 @@ namespace HugsLib.Logs {
 			try {
 				var logSection = GetLogFileContents();
 				// redact logs for privacy
-				logSection = RedactRendererInformation(RedactRimworldPaths(logSection));
+				logSection = RedactRimworldPaths(logSection);
+				logSection = RedactPlayerConnectInformation(logSection);
+				logSection = RedactRendererInformation(logSection);
 				if (logSection == null) return null;
 				return String.Concat(MakeLogTimestamp(), ListActiveMods(), "\n", logSection);
 			} catch (Exception e) {
@@ -220,27 +227,12 @@ namespace HugsLib.Logs {
 			return log;
 		}
 
-		/*private string RedactSteamUserName(string log) {
-			const string userReplacement = "[Steam_username]";
-			var playerName = SteamUtility.SteamPersonaName;
-			if (playerName.Length > 4) {
-				log = log.Replace(playerName, userReplacement);
-			}
-			return log;
-		}*/
-
 		private string RedactRendererInformation(string log) {
-			const string redactStart = "GfxDevice: ";
-			const string redactEnd = "\nBegin MonoManager";
-			var startIndex = log.IndexOf(redactStart, StringComparison.Ordinal);
-			var endIndex = log.IndexOf(redactEnd, StringComparison.Ordinal);
-			if (startIndex >= 0 && endIndex >= 0) {
-				var LogTail = log.Substring(endIndex);
-				log = log.Substring(0, startIndex + redactStart.Length);
-				log += "[Renderer information redacted]";
-				log += LogTail;
-			}
-			return log;
+			return RedactString(log, "GfxDevice: ", "\nBegin MonoManager", "[Renderer information redacted]");
+		}
+
+		private string RedactPlayerConnectInformation(string log) {
+			return RedactString(log, "PlayerConnection ", "\nInitialize engine", "[PlayerConnect information redacted]");
 		}
 
 		private string GetLogFileContents() {
@@ -257,6 +249,19 @@ namespace HugsLib.Logs {
 
 		private string MakeLogTimestamp() {
 			return String.Concat("Log uploaded on ", DateTime.Now.ToLongDateString(), ", ", DateTime.Now.ToLongTimeString(), "\n");
+		}
+
+		private string RedactString(string original, string redactStart, string redactEnd, string replacement) {
+			var startIndex = original.IndexOf(redactStart, StringComparison.Ordinal);
+			var endIndex = original.IndexOf(redactEnd, StringComparison.Ordinal);
+			string result = original;
+			if (startIndex >= 0 && endIndex >= 0) {
+				var LogTail = original.Substring(endIndex);
+				result = original.Substring(0, startIndex + redactStart.Length);
+				result += replacement;
+				result += LogTail;
+			}
+			return result;
 		}
 
 		private string ListActiveMods() {
@@ -287,6 +292,55 @@ namespace HugsLib.Logs {
 				builder.Append("\n");
 			}
 			return builder.ToString();
+		}
+
+		// sanitizes a string for valid inclusion in JSON
+
+		private static string CleanForJSON(string s) {
+			if (String.IsNullOrEmpty(s)) {
+				return "";
+			}
+			int i;
+			int len = s.Length;
+			var sb = new StringBuilder(len + 4);
+			for (i = 0; i < len; i += 1) {
+				var c = s[i];
+				switch (c) {
+					case '\\':
+					case '"':
+						sb.Append('\\');
+						sb.Append(c);
+						break;
+					case '/':
+						sb.Append('\\');
+						sb.Append(c);
+						break;
+					case '\b':
+						sb.Append("\\b");
+						break;
+					case '\t':
+						sb.Append("\\t");
+						break;
+					case '\n':
+						sb.Append("\\n");
+						break;
+					case '\f':
+						sb.Append("\\f");
+						break;
+					case '\r':
+						sb.Append("\\r");
+						break;
+					default:
+						if (c < ' ') {
+							var t = "000" + String.Format("X");
+							sb.Append("\\u" + t.Substring(t.Length - 4));
+						} else {
+							sb.Append(c);
+						}
+						break;
+				}
+			}
+			return sb.ToString();
 		}
 	}
 }

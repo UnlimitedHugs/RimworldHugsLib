@@ -151,6 +151,7 @@ namespace HugsLib.News {
 				var tex = ContentFinder<Texture2D>.Get(imageName, false);
 				if (tex == null) {
 					HugsLibController.Logger.Warning("No texture named {0} for use in update feature text", imageName);
+					tex = ContentFinder<Texture2D>.Get(BaseContent.BadTexPath);
 				}
 				resolvedImages[imageName] = tex;
 			}
@@ -185,8 +186,11 @@ namespace HugsLib.News {
 							continue;
 						}
 						segmentType = DescriptionSegment.SegmentType.Caption;
-						var parts = segmentString.Split(ArgumentSeparator);
-						text = parts[1];
+						if (segmentString.Length > CaptionSegmentTag.Length) {
+							text = segmentString.Substring(CaptionSegmentTag.Length);
+						} else {
+							text = "";
+						}
 					} else {
 						segmentType = DescriptionSegment.SegmentType.Text;
 						text = segmentString;

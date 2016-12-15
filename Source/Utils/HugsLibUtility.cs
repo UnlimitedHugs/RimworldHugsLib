@@ -9,8 +9,9 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Utils {
-	// A catch-all place for all the useful things
+	// A catch-all place for extension methods and other useful stuff
 	public static class HugsLibUtility {
+
 		public static bool ShiftIsHeld {
 			get { return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift); }
 		}
@@ -49,33 +50,20 @@ namespace HugsLib.Utils {
 			return String.Concat(version.Major, ".", version.Minor, ".", version.Build);
 		}
 
-		/**
-		 * Injects a map component into the current map if it does not already exist. 
-		 * Required for new MapComponents that were not active at map creation.
-		 * The injection is performed at ExecuteWhenFinished to allow calling this method in MapComponent constructors.
-		 */
-		public static void EnsureIsActive(this MapComponent mapComponent) {
-			if (mapComponent == null) throw new Exception("MapComponent is null");
-			LongEventHandler.ExecuteWhenFinished(() => {
-				if (Current.Game == null || Current.Game.Map == null || Current.Game.Map.components == null) throw new Exception("Can only inject in a loaded map.");
-				var components = Current.Game.Map.components;
-				if (components.Any(c => c == mapComponent)) return;
-				Find.Map.components.Add(mapComponent);
-			});
-		}
-
+		// Checks if a Thing has a designation of a given def
 		public static bool HasDesignation(this Thing thing, DesignationDef def) {
-			if (Current.Game == null || Current.Game.Map == null || Current.Game.Map.designationManager == null) return false;
-			return Find.DesignationManager.DesignationOn(thing, def) != null;
+			if (thing.Map == null || thing.Map.designationManager == null) return false;
+			return thing.Map.designationManager.DesignationOn(thing, def) != null;
 		}
 
+		// Adds or removes a designation of a given def on a Thing. Fails silently if designation is already in the desired state.
 		public static void ToggleDesignation(this Thing thing, DesignationDef def, bool enable) {
-			if (Current.Game == null || Current.Game.Map == null || Current.Game.Map.designationManager == null) return;
-			var des = Find.DesignationManager.DesignationOn(thing, def);
+			if (thing.Map == null || thing.Map.designationManager == null) throw new Exception("Thing must belong to a map to toggle designations on it");
+			var des = thing.Map.designationManager.DesignationOn(thing, def);
 			if (enable && des == null) {
-				Find.DesignationManager.AddDesignation(new Designation(thing, def));
+				thing.Map.designationManager.AddDesignation(new Designation(thing, def));
 			} else if(!enable && des != null) {
-				Find.DesignationManager.RemoveDesignation(des);
+				thing.Map.designationManager.RemoveDesignation(des);
 			}
 		}
 
@@ -107,54 +95,6 @@ namespace HugsLib.Utils {
 				return;
 			}
 			hashMethod.Invoke(null, new object[] { newDef });
-		}
-
-		// sanitizes a string for valid inclusion in JSON
-		public static string CleanForJSON(string s) {
-			if (string.IsNullOrEmpty(s)) {
-				return "";
-			}
-			int i;
-			int len = s.Length;
-			var sb = new StringBuilder(len + 4);
-			for (i = 0; i < len; i += 1) {
-				var c = s[i];
-				switch (c) {
-					case '\\':
-					case '"':
-						sb.Append('\\');
-						sb.Append(c);
-						break;
-					case '/':
-						sb.Append('\\');
-						sb.Append(c);
-						break;
-					case '\b':
-						sb.Append("\\b");
-						break;
-					case '\t':
-						sb.Append("\\t");
-						break;
-					case '\n':
-						sb.Append("\\n");
-						break;
-					case '\f':
-						sb.Append("\\f");
-						break;
-					case '\r':
-						sb.Append("\\r");
-						break;
-					default:
-						if (c < ' ') {
-							var t = "000" + String.Format("X");
-							sb.Append("\\u" + t.Substring(t.Length - 4));
-						} else {
-							sb.Append(c);
-						}
-						break;
-				}
-			}
-			return sb.ToString();
 		}
 
 		public static void CopyToClipboard(string data) {

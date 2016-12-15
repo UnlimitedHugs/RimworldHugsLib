@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
+using Verse;
 
 namespace HugsLib.Core {
 	/**
@@ -10,6 +12,14 @@ namespace HugsLib.Core {
 		public void Start() {
 			controllerInstance = HugsLibController.Instance;
 			if (controllerInstance != null) controllerInstance.Initalize();
+		}
+
+		public void OnEnable() {
+			SceneManager.sceneLoaded += OnSceneLoaded;
+		}
+
+		public void OnDisable() {
+			SceneManager.sceneLoaded -= OnSceneLoaded;
 		}
 
 		public void Update() {
@@ -24,8 +34,8 @@ namespace HugsLib.Core {
 			controllerInstance.OnGUI();
 		}
 
-		public void OnLevelWasLoaded(int level) {
-			controllerInstance.OnLevelLoaded(level);
+		public void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode) {
+			controllerInstance.OnSceneLoaded(scene);
 		}
 	}
 }

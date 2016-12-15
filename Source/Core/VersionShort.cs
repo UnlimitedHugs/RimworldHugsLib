@@ -73,6 +73,10 @@ namespace HugsLib.Core {
 			EnsureValuesAreValid();
 		}
 
+		public Version ToVersion() {
+			return new Version(major, minor, 0, patch);
+		}
+
 		public override string ToString() {
 			return string.Concat(major, Separator, minor, Separator, patch);
 		}
