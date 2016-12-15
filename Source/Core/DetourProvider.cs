@@ -18,7 +18,7 @@ namespace HugsLib.Core {
         * keep track of performed detours
         */
         private static Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
-
+        
         /**
 		 * Same as TryCompatibleDetour, but writes an error to the console on failure
 		 */

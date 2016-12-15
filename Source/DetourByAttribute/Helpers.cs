@@ -12,31 +12,28 @@ namespace HugsLib.DetourByAttribute
     {
         internal static BindingFlags AllBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
                                                        BindingFlags.NonPublic;
-
-        private static Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
-
-        internal static void DoDetours()
+        
+        internal static void DoDetoursFor(ModBase mod)
         {
-            // get all loaded types
-            var allTypes = Utils.HugsLibUtility.GetAllActiveAssemblies()
-                .SelectMany( a => a.GetTypes() );
+            // get all types for mod
+            var allTypes = mod.ModContentPack.assemblies.loadedAssemblies.SelectMany( a => a.GetTypes() );
 
             // loop over all methods with the detour attribute set
-            foreach ( MethodInfo source in allTypes
+            foreach ( MethodInfo destination in allTypes
                 .SelectMany( t => t.GetMethods( AllBindingFlags ) )
                 .Where( m => m.HasAttribute<DetourMethodAttribute>() ) )
             {
-                DetourMethodAttribute detourAttribute = source.GetCustomAttributes( typeof( DetourMethodAttribute ), false ).First() as DetourMethodAttribute;
-                HandleDetour( detourAttribute, source );
+                DetourMethodAttribute detourAttribute = destination.GetCustomAttributes( typeof( DetourMethodAttribute ), false ).First() as DetourMethodAttribute;
+                HandleDetour( detourAttribute, destination );
             }
             
             // loop over all properties with the detour attribute set
-            foreach ( PropertyInfo source in allTypes
+            foreach ( PropertyInfo destination in allTypes
                 .SelectMany( t => t.GetProperties( AllBindingFlags ) )
                 .Where( m => m.HasAttribute<DetourPropertyAttribute>() ) )
             {
-                DetourPropertyAttribute detourAttribute = source.GetCustomAttributes( typeof( DetourPropertyAttribute ), false ).First() as DetourPropertyAttribute;
-                HandleDetour( detourAttribute, source );
+                DetourPropertyAttribute detourAttribute = destination.GetCustomAttributes( typeof( DetourPropertyAttribute ), false ).First() as DetourPropertyAttribute;
+                HandleDetour( detourAttribute, destination );
             }
         }
 

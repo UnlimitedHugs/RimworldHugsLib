@@ -303,6 +303,7 @@ namespace HugsLib {
 					var childMod = childMods[i];
 					childMod.ModIsActive = assemblyContentPacks.ContainsKey(childMod.GetType().Assembly);
 					if(initializedMods.Contains(childMod)) continue; // no need to reinitialize already loaded mods
+				    DetourByAttribute.Helpers.DoDetoursFor( childMod ); // do detours for (newly) loaded mods
 					initializedMods.Add(childMod);
 					var modId = childMod.ModIdentifier;
 					try {
