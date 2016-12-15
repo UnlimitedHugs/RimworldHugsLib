@@ -12,14 +12,22 @@ namespace HugsLib.DetourByAttribute
     {
         internal static BindingFlags AllBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
                                                        BindingFlags.NonPublic;
-        
+
+        // keep track of scanned types
+        private static List<Type> scanned = new List<Type>();
+
         internal static void DoDetoursFor(ModBase mod)
         {
             // get all types for mod
-            var allTypes = mod.ModContentPack.assemblies.loadedAssemblies.SelectMany( a => a.GetTypes() );
+            var types = mod.ModContentPack.assemblies.loadedAssemblies
+                .SelectMany( a => a.GetTypes() )
+                .Except( scanned );
+
+            // mark scanned
+            scanned = scanned.Concat( types ).ToList();
 
             // loop over all methods with the detour attribute set
-            foreach ( MethodInfo destination in allTypes
+            foreach ( MethodInfo destination in types
                 .SelectMany( t => t.GetMethods( AllBindingFlags ) )
                 .Where( m => m.HasAttribute<DetourMethodAttribute>() ) )
             {
@@ -28,7 +36,7 @@ namespace HugsLib.DetourByAttribute
             }
             
             // loop over all properties with the detour attribute set
-            foreach ( PropertyInfo destination in allTypes
+            foreach ( PropertyInfo destination in types
                 .SelectMany( t => t.GetProperties( AllBindingFlags ) )
                 .Where( m => m.HasAttribute<DetourPropertyAttribute>() ) )
             {
