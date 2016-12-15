@@ -17,7 +17,7 @@
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;xTEST_MOD</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_MOCK_UPLOAD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

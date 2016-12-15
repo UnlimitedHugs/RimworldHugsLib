@@ -306,7 +306,7 @@ namespace HugsLib {
 					initializedMods.Add(childMod);
 					var modId = childMod.ModIdentifier;
 					try {
-						childMod.Initalize();
+						childMod.Initialize();
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}

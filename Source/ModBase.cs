@@ -47,7 +47,7 @@ namespace HugsLib {
 		}
 
 		// called when the scene object is intialized. Is not called again on def reload
-		public virtual void Initalize() {
+		public virtual void Initialize() {
 		}
 
 		// called on each tick when in Play scene
@@ -86,7 +86,7 @@ namespace HugsLib {
 		public virtual void SettingsChanged() {
 		}
 
-		// called after Initalize and when defs have been reloaded. This is a good place to inject defs
+		// called after Initialize and when defs have been reloaded. This is a good place to inject defs
 		// Get your settings handles here, so that the labels will properly update on language change
 		// If the mod is disabled after being loaded, this method will STILL execute. Use ModIsActive to check.
 		public virtual void DefsLoaded() {

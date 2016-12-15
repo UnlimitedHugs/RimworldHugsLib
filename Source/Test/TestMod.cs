@@ -29,7 +29,7 @@ namespace HugsLib.Test {
 			get { return "TestMod"; }
 		}
 
-		public override void Initalize() {
+		public override void Initialize() {
 			Logger.Message("Initialized");
 		}
 
