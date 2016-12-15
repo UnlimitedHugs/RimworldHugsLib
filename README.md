@@ -1,6 +1,5 @@
-![HugsLib logo](http://i.imgur.com/W8wAiTm.png)
+![HugsLib logo](http://i.imgur.com/1d35OiC.png)
 
-# HugsLib
 A lightweight shared mod library for Rimworld. Provides a foundation for mods and delivers shared functionality.
 
 **Notice:** HugsLib has changed and must now be installed as a separate mod by the players. The library itself is no longer to be included with your mods. You can, however, include the checker assembly to ensure that the player will be notified if they are missing the necessary version of the library ([RimworldHugsLibChecker](https://github.com/UnlimitedHugs/RimworldHugsLibChecker)).
@@ -18,4 +17,5 @@ A lightweight shared mod library for Rimworld. Provides a foundation for mods an
 ## Compatibility
 The library does no detour any methods on its own. The only potential points of contention are the replaced Dialog_Options and EditWindow_Log- they are replaced when they appear on the WindowStack.
 
+## Usage
 This is a public library similar to CCL, designed to be easily updateable between Rimworld versions. Feel free to use it for your own projects.
