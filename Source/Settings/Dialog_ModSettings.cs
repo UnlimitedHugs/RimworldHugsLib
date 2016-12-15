@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HugsLib.Utils;
 using UnityEngine;
 using Verse;
 
@@ -44,6 +45,7 @@ namespace HugsLib.Settings {
 			absorbInputAroundWindow = true;
 			resizeable = false;
 			defaultHandleDrawer = DrawHandleInputText;
+			// these pairs specify which type of input field will be drawn for handles of this type. defaults to the string input
 			handleDrawers = new Dictionary<Type, SettingsHandleDrawer> {
 				{typeof (int), DrawHandleInputSpinner},
 				{typeof (bool), DrawHandleInputCheckbox},
@@ -89,7 +91,7 @@ namespace HugsLib.Settings {
 							try {
 								if(!handle.VisibilityPredicate()) continue;
 							} catch (Exception e) {
-								HugsLibController.Logger.ReportException("SettingsHandle.VisibilityPredicate", e, currentlyDrawnEntry, true);
+								HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.VisibilityPredicate");
 							}
 						}
 						bool skipDrawing = curY - scrollPosition.y + HandleEntryHeight < 0f || curY - scrollPosition.y > scrollViewVisible.height;
@@ -118,6 +120,7 @@ namespace HugsLib.Settings {
 			}
 		}
 
+		// draws the header with the name of the mod
 		private void DrawModEntryHeader(ModEntry entry, float width, ref float curY) {
 			if(entry.ModName.NullOrEmpty()) return;
 			var labelRect = new Rect(0f, curY, width, ModEntryLabelHeight).ContractedBy(ModEntryLabelPadding);
@@ -132,6 +135,7 @@ namespace HugsLib.Settings {
 			curY += ModEntryLabelPadding;
 		}
 
+		// draws the label and appropriate input for a single setting
 		private void DrawHandleEntry(SettingHandle handle, Rect parentRect, ref float curY, bool skipDrawing) {
 			if (!skipDrawing) {
 				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, HandleEntryHeight).ContractedBy(HandleEntryPadding);
@@ -155,7 +159,7 @@ namespace HugsLib.Settings {
 					try {
 						valueChanged = handle.CustomDrawer(controlRect);
 					} catch (Exception e) {
-						HugsLibController.Logger.ReportException("SettingsHandle.CustomDrawer", e, currentlyDrawnEntry, true);
+						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.CustomDrawer");
 					}
 				}
 				if (valueChanged) settingsHaveChanged = true;
@@ -175,6 +179,7 @@ namespace HugsLib.Settings {
 			curY += HandleEntryHeight;
 		}
 
+		// draws the input control for string settings
 		private bool DrawHandleInputText(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			var evt = Event.current;
 			GUI.SetNextControlName(info.controlName);
@@ -197,7 +202,7 @@ namespace HugsLib.Settings {
 						changed = true;
 					}
 				} catch (Exception e) {
-					HugsLibController.Logger.ReportException("SettingsHandle.Validator", e, currentlyDrawnEntry);
+					HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, false, "SettingsHandle.Validator");
 				}
 				info.validationScheduled = false;
 			}
@@ -206,6 +211,8 @@ namespace HugsLib.Settings {
 			}
 			return changed;
 		}
+
+		// draws the input control for integer settings
 		private bool DrawHandleInputSpinner(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			var buttonSize = controlRect.height;
 			var leftButtonRect = new Rect(controlRect.x, controlRect.y, buttonSize, buttonSize);
@@ -214,7 +221,7 @@ namespace HugsLib.Settings {
 			if (Widgets.ButtonText(leftButtonRect, "-")) {
 				int parsed;
 				if (int.TryParse(info.inputValue, out parsed)) {
-					info.inputValue = (parsed - 1).ToString();
+					info.inputValue = (parsed - handle.SpinnerIncrement).ToString();
 				}
 				info.validationScheduled = true;
 				changed = true;
@@ -222,7 +229,7 @@ namespace HugsLib.Settings {
 			if (Widgets.ButtonText(rightButtonRect, "+")) {
 				int parsed;
 				if (int.TryParse(info.inputValue, out parsed)) {
-					info.inputValue = (parsed + 1).ToString();
+					info.inputValue = (parsed + handle.SpinnerIncrement).ToString();
 				}
 				info.validationScheduled = true;
 				changed = true;
@@ -234,6 +241,7 @@ namespace HugsLib.Settings {
 			return changed;
 		}
 
+		// draws the input control for boolean settings
 		private bool DrawHandleInputCheckbox(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			const float defaultCheckboxHeight = 24f;
 			var checkOn = bool.Parse(info.inputValue);
@@ -245,9 +253,9 @@ namespace HugsLib.Settings {
 			return false;
 		}
 
+		// draws the input control for Enum settings
 		private bool DrawHandleInputEnum(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			if (info.enumNames == null) return false;
-			var changed = false;
 			var readableValue = (handle.EnumStringPrefix + info.inputValue).Translate();
 			if (Widgets.ButtonText(controlRect, readableValue)) {
 				var floatOptions = new List<FloatMenuOption>();
@@ -256,12 +264,16 @@ namespace HugsLib.Settings {
 					var readableOption = (handle.EnumStringPrefix + name).Translate();
 					floatOptions.Add(new FloatMenuOption(readableOption, () => {
 						handle.StringValue = info.inputValue = name;
-						changed = true;
+						info.validationScheduled = true;
 					}));
 				}
 				Find.WindowStack.Add(new FloatMenu(floatOptions));
 			}
-			return changed;
+			if (info.validationScheduled) {
+				info.validationScheduled = false;
+				return true;
+			}
+			return false;
 		}
 
 		private void DrawBadTextValueOutline(Rect rect) {

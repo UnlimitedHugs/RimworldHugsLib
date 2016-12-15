@@ -1,18 +1,21 @@
-# HugsLib
-A lightweight shared mod library for Rimworld.
-You do **not** need to install this as a separate mod- all mods that require it already include it.
+![HugsLib logo](http://i.imgur.com/1d35OiC.png)
 
-Provides a foundation for mods and delivers shared functionality. Designed to be updated safely, and is able to function independently for every mod that uses it. This means that mods based on older versions of the library will still work as expected.
+A lightweight shared mod library for Rimworld. Provides a foundation for mods and delivers shared functionality.
+
+**Notice:** HugsLib has changed and must now be installed as a separate mod by the players. The library itself is no longer to be included with your mods. You can, however, include the checker assembly to ensure that the player will be notified if they are missing the necessary version of the library ([RimworldHugsLibChecker](https://github.com/UnlimitedHugs/RimworldHugsLibChecker)).
 
 ## Current features
-- Mod foundation: Base class to build mods on. Extending classes have access to custom logging, settings, and receive the following events from the library controller: Initialize, Tick, Update, FixedUpdate, OnGUI, MapLoading, MapComponentsInitializing, MapLoaded, SettingsChanged, DefsReloaded.
-- Persistent in-game settings: Implementing mods can create custom settings of various types that can be changed by the player in a custom settings menu. Settings are stored in a file in the user folder.
-- Mod update news: Mods can provide a message for each version they release, highlighting new features. These message will be shown once to the player the next time he starts the game. This is a good way to ensure that non-obvious mod features do not go unnoticed by the majority of players. This is especially true on Steam, where the player may not have even read the description before subscribing. Messages include support for images and basic formatting.
-- Version independence: Mods that implement the library bundle their own version of the assembly. Multiple versions of the library can run in parallel without interfering with each other. Only mods implementing the latest running version have the ability to display update news and to have their settings changed in the Mod Settings menu. However, older versions will still have access to existing settings.
+- Mod foundation: Base class to build mods on. Extending classes have access to custom logging, settings, and receive the following events from the library controller: Initialize, Tick, Update, FixedUpdate, OnGUI, WorldLoaded, MapComponentsInitializing, MapLoaded, SceneLoaded, SettingsChanged, DefsLoaded.
+- Persistent in-game settings: Implementing mods can create custom settings of various types that can be changed by the player in the new Mod Settings menu. Settings are stored in a file in the user folder.
+- Mod update news: Mods can provide a message for each version they release, highlighting new features. These message will be shown once to the player the next time he starts the game. This is a good way to ensure that new mod features do not go unnoticed by the majority of players. This is especially true on Steam, where the player may not have even read the description before subscribing. Messages include support for images and basic formatting.
+- Log publisher: Adds a keyboard shortcut (**Ctrl+F12**) to publish the logs from within the game. Returns a URL that you can share with others or send to a mod author. The published logs also include the list of running mods and their versions. This is a great way for a mod author to get the logs from a player who is experiencing an issue with his mod.
+- Checker assembly: A small dll designed to be included with your mod, that ensures the player is running at least the version of the library you specify. A dialog is displayed if a problem is detected, helping the player to resolve the issue. This is how the library stays up to date. See [RimworldHugsLibChecker](https://github.com/UnlimitedHugs/RimworldHugsLibChecker) for more info.
+- UtilityWorldObjects: A convenient way to store your data in a save file. Since A16 MapComponents are no longer a reliable way to store your data, and UWO's are designed to be a drop-in replacement.
 - Custom tick scheduling: Includes tools for executing callbacks with a specified tick delay, and registering recurring ticks with non-standard intervals. Recurring ticks are distributed uniformly across the time spectrum, to minimize the performance impact of the ticking entity.
 - Detouring: Forwards detouring requests to the Community Core Library when it is available, or uses own equivalent otherwise.
 
 ## Compatibility
-The library does no detour any methods on its own. The only potential point of contention is Dialog_Options, which is replaced by Dialog_OptionsExtended when it appears on the WindowStack. A dynamic assembly and a type is created at runtime- something to watch out for if you iterate over all loaded types.
+The library does no detour any methods on its own. The only potential points of contention are the replaced Dialog_Options and EditWindow_Log- they are replaced when they appear on the WindowStack.
 
-This library was made for use in my own mods, but I don't mind if someone else uses it. Just give me a heads-up first.
+## Usage
+This is a public library similar to CCL, designed to be easily updateable between Rimworld versions. Feel free to use it for your own projects.

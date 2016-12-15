@@ -29,11 +29,17 @@ namespace HugsLib.Settings {
 		public bool NeverVisible { get; set; }
 		// when true, will not save this setting to the xml file. Useful in conjunction with CustomDrawer for placing buttons in the settings menu.
 		public bool Unsaved { get; set; }
+		// specifies by how much the + and - buttons should change a numeric setting.
+		public int SpinnerIncrement { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
 		public abstract void ResetToDefault();
 		public abstract bool HasDefaultValue();
+
+		protected SettingHandle() {
+			SpinnerIncrement = 1;
+		}
 	}
 
 	public class SettingHandle<T> : SettingHandle {

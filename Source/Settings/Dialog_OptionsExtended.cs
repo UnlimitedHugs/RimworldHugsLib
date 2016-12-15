@@ -7,19 +7,20 @@ namespace HugsLib.Settings {
 	 * Extends the Options dialog with a "Mod Settings" button
 	 */
 	public class Dialog_OptionsExtended : Dialog_Options {
-		private const int HorizontalColumnSpacing = 14;
-		private const int NumColumnsBeforeButton = 2;
-		private const int ButtonVerticalOffset = 220;
-		private Vector2 ButtonSize = new Vector2(277, 30);
+		private const float ButtonBottomOffset = 90f;
+		private readonly Vector2 ButtonSize = new Vector2(277f, 40f);
+		private readonly Color ButtonColor = new Color(.55f, 1f, .55f);
 
 		public override void DoWindowContents(Rect inRect) {
 			base.DoWindowContents(inRect);
-			var optionsColumnWidth = (windowRect.width - 34f) / 3f;
-			var btnRect = new Rect(optionsColumnWidth * NumColumnsBeforeButton + HorizontalColumnSpacing * NumColumnsBeforeButton - Margin, ButtonVerticalOffset - Margin, ButtonSize.x, ButtonSize.y);
+			var btnRect = new Rect(inRect.x, inRect.height - ButtonBottomOffset - ButtonSize.y, ButtonSize.x, ButtonSize.y);
+			var prevColor = GUI.color;
+			GUI.color = ButtonColor;
 			if (Widgets.ButtonText(btnRect, "HugsLib_settings_btn".Translate())) {
 				Find.WindowStack.TryRemove(this);
 				Find.WindowStack.Add(new Dialog_ModSettings());
 			}
+			GUI.color = prevColor;
 		}
 	}
 }

@@ -1,46 +1,42 @@
 ﻿using System;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Threading;
+using HugsLib.Core;
+using HugsLib.Logs;
+using HugsLib.News;
 using HugsLib.Settings;
+using HugsLib.Utils;
 using RimWorld;
-using UnityEngine;
 using Verse;
 
 namespace HugsLib {
 	[StaticConstructorOnStartup]
 	/**
-	 * The hub of the library. Instantiates classes that extend ModBase and forwards some of the most useful events to them.
-	 * The library is designed to be updated safely, so that you can have multiple versions of it running at the same time.
-	 * When a mod implements functionality from this library, it is locked to that version and must bundle the dll with its own assembly.
-	 * Ideally, all mods using the library will be using the same version, but should that not be the case, a warning will be issued
-	 * and all present versions will be able to continue running in parallel.
-	 * However, only mods implementing the latest version will be able to have their settings changed in the Mod Settings screen.
-	 * Note: The $ in the assembly name is necessary for proper assembly load order
+	 * The hub of the library. Instantiates classes that extend ModBase and forwards some of the more useful events to them.
+	 * The minor version of the assembly should reflect the current major Rimworld version, just like CCL.
+	 * This gives us the ability to release updates to the library without breaking compatibility with the mods that implement it.
 	 */
 	public class HugsLibController {
-		private const string SceneObjectNameBase = "HugsLibProxy";
+		private const string SceneObjectName = "HugsLibProxy";
 		private const string ModIdentifier = "HugsLib";
-		private const int MapLevelIndex = 1;
 
 		private static HugsLibController instance;
 		public static HugsLibController Instance {
 			get { return instance ?? (instance = new HugsLibController()); }
 		}
 
-		public static AssemblyName AssemblyName {
-			get { return typeof(HugsLibController).Assembly.GetName(); }
-		}
-
-		public static VersionShort AssemblyVersion {
-			get { return AssemblyName.Version; }
-		}
-
-		public static string SceneObjectName {
+		private static VersionFile libraryVersionFile;
+		public static VersionShort LibraryVersion {
 			get {
-				return string.Concat(SceneObjectNameBase, "-", AssemblyVersion);
+				if (libraryVersionFile == null) libraryVersionFile = ReadOwnVersionFile();
+				return libraryVersionFile!=null ? libraryVersionFile.OverrideVersion : new VersionShort();
 			}
+		}
+
+		public static ModSettingsManager SettingsManager {
+			get { return Instance.Settings; }
 		}
 
 		// entry point
@@ -49,197 +45,247 @@ namespace HugsLib {
 			CreateSceneObject();
 		}
 
-		private static bool VersionConflict;
-		private static bool TopVersionInConflict;
-
 		internal static ModLogger Logger { get; private set; }
 
 		private static void CreateSceneObject() {
+			if (GameObject.Find(SceneObjectName) != null) {
+				Logger.Error("Another version of the library is already loaded. The HugsLib assembly should be loaded as a standalone mod.");
+				return;
+			}
 			var obj = new GameObject(SceneObjectName);
 			GameObject.DontDestroyOnLoad(obj);
-			// black magic, stand clear. See UnityProxyComponent docs for details
-			try {
-				var assemblyName = new AssemblyName {Name = "HugsLibAdHocAssembly"};
-				var assemblyBuilder = Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-				var module = assemblyBuilder.DefineDynamicModule("adHocModule");
-				var typeBuilder = module.DefineType("ProxyComponent" + Math.Abs(AssemblyName.GetHashCode()), TypeAttributes.Public | TypeAttributes.Class, typeof (UnityProxyComponent));
-				var generatedType = typeBuilder.CreateType();
-				obj.AddComponent(generatedType);
-			} catch (Exception e) {
-				Logger.Warning("Failed to create dynamic type for component, using fallback instead. Exception was: "+e);
-				obj.AddComponent(typeof (UnityProxyComponent));
-			}
-			// end of black magic
+			obj.AddComponent<UnityProxyComponent>();
 		}
-		
+
+		private static VersionFile ReadOwnVersionFile() {
+			VersionFile file = null;
+			var ownAssembly = typeof(HugsLibController).Assembly;
+			foreach (var modContentPack in LoadedModManager.RunningMods) {
+				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
+					if (!loadedAssembly.Equals(ownAssembly)) continue;
+					file = VersionFile.TryParseVersionFile(modContentPack);
+					if (file == null) Logger.Error("Missing Version.xml file");
+				}
+			}
+			return file;
+		}
+
 		private readonly List<ModBase> childMods = new List<ModBase>();
-		private readonly List<ModBase> initializedMods = new List<ModBase>(); 
+		private readonly List<ModBase> initializedMods = new List<ModBase>();
+		private readonly List<Map> pendingMapsLoaded = new List<Map>();
 		private Dictionary<Assembly, ModContentPack> assemblyContentPacks;
 		private DefReloadWatcher reloadWatcher;
-		private WindowReplacer<Dialog_Options, Dialog_OptionsExtended> optionsReplacer;
-		private LanguageStringInjector languageInjector;
-		private SettingHandle<bool> updateNewsHandle;
-		private bool mapLoadedPending = true;
+		private WindowReplacer windowReplacer;
+		private SettingHandle<bool> updateNewsSetting;
+		private bool pendingWorldLoaded;
 
 		public ModSettingsManager Settings { get; private set; }
 		public UpdateFeatureManager UpdateFeatures { get; private set; }
-		public CallbackScheduler CallbackScheduler { get; private set; } // initalized before MapLoaded
-		public DistributedTickScheduler DistributedTicker { get; private set; }  // initalized before MapLoaded
+		public CallbackScheduler CallbackScheduler { get; private set; }
+		public DistributedTickScheduler DistributedTicker { get; private set; }
+		public LogPublisher LogUploader { get; private set; }
 		
 		private HugsLibController() {
 		}
 
 		internal void Initalize() {
-			if (Settings != null) return; // double initialization safeguard, shouldn't happen
+			if (Settings != null) { // double initialization safeguard by scene object, shouldn't happen
+				Logger.Error("Repeat initialization detected");
+				return;
+			}
 			try {
-				Settings = new ModSettingsManager(OnSettingsChanged, ManagersCanSavePersistenData);
+				Settings = new ModSettingsManager(OnSettingsChanged);
 				UpdateFeatures = new UpdateFeatureManager();
 				CallbackScheduler = new CallbackScheduler();
 				DistributedTicker = new DistributedTickScheduler();
-				reloadWatcher = new DefReloadWatcher(OnDefReloadDetected, typeof(HugsLibController).Assembly.GetHashCode());
-				optionsReplacer = new WindowReplacer<Dialog_Options, Dialog_OptionsExtended>();
-				languageInjector = new LanguageStringInjector();
+				LogUploader = new LogPublisher();
+				reloadWatcher = new DefReloadWatcher(OnDefReloadDetected);
+				InitWindowReplacer();
 				RegisterOwnSettings();
+				ReadOwnVersionFile();
 				LoadReloadInitialize();
 			} catch (Exception e) {
-				Logger.ReportException("Initalize", e);
+				Logger.ReportException(e);
 			}
 		}
 
 		internal void OnUpdate() {
-			string modId = null;
 			try {
 				reloadWatcher.Update();
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].Update();
+					try {
+						childMods[i].Update();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier, true);
+					}
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnUpdate", e, modId, true);
+				Logger.ReportException(e, null, true);
 			}
 		}
 
 		public void OnTick() {
-			string modId = null;
 			try {
 				var currentTick = Find.TickManager.TicksGame;
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].Tick(currentTick);
+					try {
+						childMods[i].Tick(currentTick);
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier, true);
+					}
 				}
-				modId = null;
 				CallbackScheduler.Tick(currentTick);
 				DistributedTicker.Tick(currentTick);
 			} catch (Exception e) {
-				Logger.ReportException("OnTick", e, modId, true);
+				Logger.ReportException(e, null, true);
 			}
 		}
 
 		internal void OnFixedUpdate() {
-			if (mapLoadedPending && Current.ProgramState == ProgramState.MapPlaying) {
-				mapLoadedPending = false;
-				// Make sure we execute after MapDrawer.RegenerateEverythingNow
-				LongEventHandler.ExecuteWhenFinished(OnMapLoaded);
-			}
-			string modId = null;
 			try {
+				if (Scribe.mode == LoadSaveMode.Inactive) {
+					if (pendingWorldLoaded && Current.Game != null && Current.Game.World != null && Current.Game.World.worldObjects != null) {
+						pendingWorldLoaded = false;
+						OnWorldLoaded();
+					}
+					if (pendingMapsLoaded.Count>0) {
+						List<Map> processedPendingMaps = null;
+						foreach (var map in pendingMapsLoaded) {
+							if (!map.regionAndRoomUpdater.Enabled) continue;
+							var loadedMap = map;
+							// Make sure we execute OnMapLoaded after MapDrawer.RegenerateEverythingNow
+							LongEventHandler.QueueLongEvent(() => OnMapLoaded(loadedMap), null, false, null);
+							if (processedPendingMaps == null) processedPendingMaps = new List<Map>();
+							processedPendingMaps.Add(loadedMap);
+						}
+						if (processedPendingMaps != null) {
+							pendingMapsLoaded.RemoveAll(m => processedPendingMaps.Contains(m));
+						}
+					}
+				}
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].FixedUpdate();
+					try {
+						childMods[i].FixedUpdate();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier, true);
+					}
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnFixedUpdate", e, modId, true);
+				Logger.ReportException(e, null, true);
 			}
 		}
 
 		internal void OnGUI() {
-			string modId = null;
 			try {
-				if (!VersionConflict || TopVersionInConflict) {
-					optionsReplacer.OnGUI();
-				}
+				windowReplacer.OnGUI();
+				LogUploader.OnGUI();
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].OnGUI();
+					try {
+						childMods[i].OnGUI();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier, true);
+					}
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnGUI", e, modId, true);
+				Logger.ReportException(e, null, true);
 			}
 		}
 
-		internal void OnLevelLoaded(int level) {
-			string modId = null;
+		internal void OnSceneLoaded(Scene scene) {
 			try {
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].LevelLoaded(level);
+					try {
+						childMods[i].SceneLoaded(scene);
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier);
+					}
 				}
-				if (level != MapLevelIndex) return;
-				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].MapLoading();
+				if (GenScene.InPlayScene) {
+					pendingWorldLoaded = true;
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnLevelLoaded", e, modId);
+				Logger.ReportException(e);
 			}
 		}
 
-		internal void OnMapComponentsIntializing() {
-			mapLoadedPending = true;
-			string modId = ModIdentifier;
+		private void OnWorldLoaded() {
 			try {
 				var currentTick = Find.TickManager.TicksGame;
 				CallbackScheduler.Initialize(currentTick);
 				DistributedTicker.Initialize(currentTick);
-				Current.Game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy{CreatedByController = true});
+				Current.Game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy { CreatedByController = true });
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].MapComponentsInitializing();
+					try {
+						childMods[i].WorldLoaded();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier);
+					}
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnMapComponentsIntializing", e, modId);
+				Logger.ReportException(e);
 			}
 		}
 
-		private void OnMapLoaded(){
-			string modId = ModIdentifier;
+		internal void OnMapComponentsIntializing(Map map) {
+			try {
+				pendingMapsLoaded.Add(map);
+				for (int i = 0; i < childMods.Count; i++) {
+					try {
+						childMods[i].MapComponentsInitializing(map);
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier);
+					}
+				}
+			} catch (Exception e) {
+				Logger.ReportException(e);
+			}
+		}
+
+		private void OnMapLoaded(Map map){
 			try {
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].MapLoaded();
+					try {
+						childMods[i].MapLoaded(map);
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier);
+					}
 				}
-				modId = null;
 				// show update news dialog
-				if ((!VersionConflict || TopVersionInConflict) && updateNewsHandle.Value) {
+				if (updateNewsSetting.Value) {
 					UpdateFeatures.TryShowDialog();
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnMapLoaded", e, modId);
+				Logger.ReportException(e);
 			}
 		}
 
 		private void OnSettingsChanged() {
-			string modId = null;
 			try {
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].SettingsChanged();
+					try {
+						childMods[i].SettingsChanged();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier);
+					}
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnSettingsChanged", e, modId);
+				Logger.ReportException(e);
 			}
 		}
 
 		private void OnDefsLoaded() {
-			string modId = null;
 			try {
 				RegisterOwnSettings();
+				UtilityWorldObjectManager.OnDefsLoaded();
 				for (int i = 0; i < childMods.Count; i++) {
-					modId = childMods[i].ModIdentifier;
-					childMods[i].DefsLoaded();
+					try {
+						childMods[i].DefsLoaded();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier);
+					}
 				}
 			} catch (Exception e) {
-				Logger.ReportException("OnDefsLoaded", e, modId);
+				Logger.ReportException(e);
 			}
 		}
 
@@ -249,28 +295,29 @@ namespace HugsLib {
 		
 		// executed both at startup and after a def reload
 		private void LoadReloadInitialize() {
-			string modId = null;
 			try {
-				DetectVersionConflict();
 				EnumerateModAssemblies();
 				EnumerateChildMods();
-				languageInjector.InjectEmbeddedStrings();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
 					var childMod = childMods[i];
 					childMod.ModIsActive = assemblyContentPacks.ContainsKey(childMod.GetType().Assembly);
 					if(initializedMods.Contains(childMod)) continue; // no need to reinitialize already loaded mods
 					initializedMods.Add(childMod);
-					modId = childMod.ModIdentifier;
-					childMod.Initalize();
+					var modId = childMod.ModIdentifier;
+					try {
+						childMod.Initialize();
+					} catch (Exception e) {
+						Logger.ReportException(e, modId);
+					}
 					initializationsThisRun.Add(modId);
 				}
 				if (initializationsThisRun.Count > 0) {
-					Logger.Message("v{0} initialized {1}", AssemblyVersion, initializationsThisRun.ListElements());
+					Logger.Message("v{0} initialized {1}", LibraryVersion, initializationsThisRun.ListElements());
 				}
 				OnDefsLoaded();
 			} catch (Exception e) {
-				Logger.ReportException("LoadReloadInitialize", e, modId);
+				Logger.ReportException(e);
 			}
 		}
 		
@@ -291,9 +338,9 @@ namespace HugsLib {
 					}
 					childMods.Add(modbase);
 				} catch (Exception e) {
-					Logger.ReportException("child mod instantiation", e, subclass.ToString());
+					Logger.ReportException(e, subclass.ToString(), false, "child mod instantiation");
 				}
-				if (modbase != null) UpdateFeatures.InspectActiveMod(modbase.ModIdentifier, subclass.Assembly.GetName().Version);
+				if (modbase != null) UpdateFeatures.InspectActiveMod(modbase.ModIdentifier, modbase.GetVersion());
 			}
 			// sort by load order
 			childMods.Sort((cm1, cm2) => cm1.ModContentPack.loadOrder.CompareTo(cm2.ModContentPack.loadOrder));
@@ -308,51 +355,27 @@ namespace HugsLib {
 			}
 		}
 
-		// check if library is included in other mods, warn on different versions used
-		private void DetectVersionConflict() {
-			var ownName = AssemblyName.Name;
-			var ownVersion = AssemblyName.Version;
-			TopVersionInConflict = true;
-			List<string> conflictingMods = null;
-			// check assemblies in all mods
-			foreach (var modContentPack in LoadedModManager.RunningMods) {
-				if(!modContentPack.LoadedAnyAssembly) continue;
-				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
-					var otherAssemblyName = loadedAssembly.GetName();
-					if(otherAssemblyName.Name != ownName) continue;
-					if(otherAssemblyName.Version == ownVersion) continue;
-					VersionConflict = true;
-					if (otherAssemblyName.Version > ownVersion) {
-						TopVersionInConflict = false;
-					}
-					if(conflictingMods == null) conflictingMods = new List<string>();
-					conflictingMods.Add(modContentPack.Name);
-					break;
-				}
-			}
-			if(conflictingMods == null || !TopVersionInConflict) return;
-			Logger.Warning("Multiple versions of a shared library are in use. Please update the following mods: "+conflictingMods.ListElements());
+		private void InitWindowReplacer() {
+			windowReplacer = new WindowReplacer();
+			windowReplacer.RegisterReplacement<Dialog_Options, Dialog_OptionsExtended>();
+			windowReplacer.RegisterReplacement<EditWindow_Log, EditWindow_LogExtended>();
 		}
 
 		private void RegisterOwnSettings() {
 			var pack = Settings.GetModSettings(ModIdentifier);
 			pack.EntryName = "HugsLib_ownSettingsName".Translate();
 			pack.DisplayPriority = ModSettingsPack.ListPriority.Lower;
-			updateNewsHandle = pack.GetHandle("modUpdateNews", "HugsLib_setting_showNews_label".Translate(), "HugsLib_setting_showNews_desc".Translate(), true);
+			updateNewsSetting = pack.GetHandle("modUpdateNews", "HugsLib_setting_showNews_label".Translate(), "HugsLib_setting_showNews_desc".Translate(), true);
 			var allNewsHandle = pack.GetHandle("showAllNews", "HugsLib_setting_allNews_label".Translate(), "HugsLib_setting_allNews_desc".Translate(), false);
 			allNewsHandle.Unsaved = true;
 			allNewsHandle.CustomDrawer = rect => {
 				if (Widgets.ButtonText(rect, "HugsLib_setting_allNews_button".Translate())) {
 					if (!UpdateFeatures.TryShowDialog(true)) {
-						Find.WindowStack.Add(new Dialog_Message("HugsLib_setting_allNews_fail".Translate()));
+						Find.WindowStack.Add(new Dialog_MessageBox("HugsLib_setting_allNews_fail".Translate()));
 					}
 				}
 				return false;
 			};
-		}
-
-		private bool ManagersCanSavePersistenData() {
-			return !VersionConflict || TopVersionInConflict;
 		}
 	}
 }

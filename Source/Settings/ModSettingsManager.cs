@@ -1,25 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using HugsLib.Core;
 
 namespace HugsLib.Settings {
 	/**
 	 * A central place for mods to store persistent settings. Individual settings are grouped by mod using ModSettingsPack
 	 */
 	public class ModSettingsManager : PersistentDataManager {
-		public delegate bool CanSaveSettingsPredicate();
-
 		protected override string FileName {
 			get { return "ModSettings.xml"; }
 		}
 
 		private readonly List<ModSettingsPack> packs = new List<ModSettingsPack>();
 		private readonly Action SettingsChangedCallback;
-		private readonly CanSaveSettingsPredicate canSaveSettings;
-
-		public ModSettingsManager(Action settingsChangedCallback, CanSaveSettingsPredicate canSaveSettings) {
+		
+		public ModSettingsManager(Action settingsChangedCallback) {
 			SettingsChangedCallback = settingsChangedCallback;
-			this.canSaveSettings = canSaveSettings;
 			LoadData();
 		}
 
@@ -34,7 +31,6 @@ namespace HugsLib.Settings {
 		}
 
 		public void SaveChanges() {
-			if (canSaveSettings != null && !canSaveSettings()) return;
 			SaveData();
 			if (SettingsChangedCallback != null) SettingsChangedCallback();
 		}
