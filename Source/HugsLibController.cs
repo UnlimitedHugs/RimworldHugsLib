@@ -7,6 +7,7 @@ using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
 using HugsLib.Settings;
+using HugsLib.Source.Detour;
 using HugsLib.Utils;
 using RimWorld;
 using Verse;
@@ -297,7 +298,7 @@ namespace HugsLib {
 		private void LoadReloadInitialize() {
 			try {
 				EnumerateModAssemblies();
-                DetourByAttribute.Helpers.DoDetours(); // do detours for (newly) loaded mods
+                Helpers.DoDetours(); // do detours for (newly) loaded mods
                 EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {

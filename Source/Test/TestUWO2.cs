@@ -1,8 +1,8 @@
-﻿using HugsLib.Utils;
+﻿#if TEST_MOD
+using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Test {
-#if TEST_MOD
 	public class TestUWO2 : UtilityWorldObject {
 		private string testString = "";
 		
@@ -16,5 +16,5 @@ namespace HugsLib.Test {
 			TestMod.Instance.Logger.Message(GetType().Name + " testString:" + testString);
 		}
 	}
-#endif
 }
+#endif

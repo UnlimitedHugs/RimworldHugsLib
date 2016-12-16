@@ -4,6 +4,7 @@ using HugsLib.Settings;
 using HugsLib.Utils;
 using UnityEngine.SceneManagement;
 using Verse;
+// ReSharper disable UnusedParameter.Global,UnusedAutoPropertyAccessor.Global
 
 namespace HugsLib {
 	/**

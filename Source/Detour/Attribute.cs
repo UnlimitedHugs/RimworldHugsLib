@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace HugsLib.DetourByAttribute {
+namespace HugsLib.Source.Detour {
     [Flags]
     public enum DetourProperty {
         None = 0,
@@ -12,10 +12,10 @@ namespace HugsLib.DetourByAttribute {
 
     [AttributeUsage( AttributeTargets.Method, AllowMultiple = true, Inherited = false )]
     public class DetourMethodAttribute : Attribute {
-        public MethodInfo sourceMethodInfo;
-        public string sourceMethodName;
+        public readonly MethodInfo sourceMethodInfo;
+        public readonly string sourceMethodName;
         // store references needed for detours
-        public Type sourceType;
+        public readonly Type sourceType;
 
         // disable default constructor
         private DetourMethodAttribute() { }
@@ -41,9 +41,9 @@ namespace HugsLib.DetourByAttribute {
 
     [AttributeUsage( AttributeTargets.Property, AllowMultiple = true, Inherited = false )]
     public class DetourPropertyAttribute : Attribute {
-        public DetourProperty detourProperty;
+        public readonly DetourProperty detourProperty;
         // store references needed for detours
-        public PropertyInfo sourcePropertyInfo;
+        public readonly PropertyInfo sourcePropertyInfo;
 
         // disable default constructor
         private DetourPropertyAttribute() { }

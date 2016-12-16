@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HugsLib.DetourByAttribute;
 using HugsLib.Utils;
-using Verse;
 
-namespace HugsLib.Core {
+namespace HugsLib.Source.Detour {
 	/**
 	 * A tool to detour calls form one method to another. Will use Community Core Library detouring, if available, and its own equivalent otherwise.
 	 */
@@ -17,12 +15,12 @@ namespace HugsLib.Core {
         /**
         * keep track of performed detours
         */
-        private static Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
+        private static readonly Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
         
         /**
 		 * Same as TryCompatibleDetour, but writes an error to the console on failure
 		 */
-        public static void CompatibleDetour(MethodInfo source, MethodInfo destination, string modName) {
+		public static void CompatibleDetour(MethodInfo source, MethodInfo destination, string modName) {
 			var result = TryCompatibleDetour(source, destination);
 			if(!result) HugsLibController.Logger.Error("{0} failed to detour method {1} to method {2}", modName, source ?? (object)"(null)", destination ?? (object)"(null)");
 		}

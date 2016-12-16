@@ -1,11 +1,11 @@
-﻿using System;
-using HugsLib.DetourByAttribute;
+﻿#if TEST_DETOUR
+using System;
+using HugsLib.Source.Detour;
 using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Test
 {
-#if TEST_MOD
     public class DetourByAttribute : ModBase
     {
         public override string ModIdentifier
@@ -203,5 +203,5 @@ namespace HugsLib.Test
             }
         }
     }
-#endif
 }
+#endif
