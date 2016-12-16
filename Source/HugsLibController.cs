@@ -297,13 +297,13 @@ namespace HugsLib {
 		private void LoadReloadInitialize() {
 			try {
 				EnumerateModAssemblies();
-				EnumerateChildMods();
+                DetourByAttribute.Helpers.DoDetours(); // do detours for (newly) loaded mods
+                EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
 					var childMod = childMods[i];
 					childMod.ModIsActive = assemblyContentPacks.ContainsKey(childMod.GetType().Assembly);
 					if(initializedMods.Contains(childMod)) continue; // no need to reinitialize already loaded mods
-				    DetourByAttribute.Helpers.DoDetoursFor( childMod ); // do detours for (newly) loaded mods
 					initializedMods.Add(childMod);
 					var modId = childMod.ModIdentifier;
 					try {

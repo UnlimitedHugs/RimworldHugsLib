@@ -13,9 +13,9 @@ namespace HugsLib.DetourByAttribute {
         // keep track of scanned types
         private static List<Type> scanned = new List<Type>();
 
-        internal static void DoDetoursFor( ModBase mod ) {
+        internal static void DoDetours() {
             // get all types for mod
-            IEnumerable<Type> types = mod.ModContentPack.assemblies.loadedAssemblies
+            IEnumerable<Type> types = Utils.HugsLibUtility.GetAllActiveAssemblies()
                                          .SelectMany( a => a.GetTypes() )
                                          .Except( scanned );
 
