@@ -85,6 +85,8 @@
     <Compile Include="Source\Utils\ModLogger.cs" />
     <Compile Include="Source\Utils\UtilityWorldObject.cs" />
     <Compile Include="Source\Utils\UtilityWorldObjectManager.cs" />
+    <Compile Include="Source\DetourByAttribute\Attribute.cs" />
+    <Compile Include="Source\DetourByAttribute\Helpers.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
