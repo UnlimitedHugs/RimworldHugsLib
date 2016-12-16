@@ -2,6 +2,7 @@
 *.suo
 *.user
 _ReSharper.*/
+*.DotSettings
 *.sdf
 bin/
 obj/
@@ -15,5 +16,4 @@ TestResult.xml
 Version.cs
 Version.h
 Version.cpp
-**/*.csproj
 *.sln
