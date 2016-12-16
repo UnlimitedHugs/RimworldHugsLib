@@ -297,7 +297,8 @@ namespace HugsLib {
 		private void LoadReloadInitialize() {
 			try {
 				EnumerateModAssemblies();
-				EnumerateChildMods();
+                DetourByAttribute.Helpers.DoDetours(); // do detours for (newly) loaded mods
+                EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
 					var childMod = childMods[i];

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using HugsLib.DetourByAttribute;
 using HugsLib.Utils;
+using Verse;
 
 namespace HugsLib.Core {
 	/**
@@ -11,10 +14,15 @@ namespace HugsLib.Core {
 		private const string CCLDetoursClassName = "Detours";
 		private const string CCLDetourMethodName = "TryDetourFromTo";
 
-		/**
+        /**
+        * keep track of performed detours
+        */
+        private static Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
+        
+        /**
 		 * Same as TryCompatibleDetour, but writes an error to the console on failure
 		 */
-		public static void CompatibleDetour(MethodInfo source, MethodInfo destination, string modName) {
+        public static void CompatibleDetour(MethodInfo source, MethodInfo destination, string modName) {
 			var result = TryCompatibleDetour(source, destination);
 			if(!result) HugsLibController.Logger.Error("{0} failed to detour method {1} to method {2}", modName, source ?? (object)"(null)", destination ?? (object)"(null)");
 		}
@@ -41,7 +49,17 @@ namespace HugsLib.Core {
 		 * Performs the actual detour. Code borrowed from the CCL.
 		 **/
 		public static unsafe bool TryIndepentDetour(MethodInfo source, MethodInfo destination) {
-			if (IntPtr.Size == sizeof(Int64)) {
+            // check if already detoured, if so - error out.
+            if ( detours.ContainsKey( source ) )
+            {
+                HugsLibController.Logger.Error( "{0} was already detoured to {1}.", source.FullName(), destination.FullName() );
+                return false;
+            }
+
+            // do the detour, and add it to the list 
+            detours.Add( source, destination );
+
+            if (IntPtr.Size == sizeof(Int64)) {
 				// 64-bit systems use 64-bit absolute address and jumps
 				// 12 byte destructive
 

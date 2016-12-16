@@ -77,6 +77,7 @@
     <Compile Include="Source\Test\TestUWO2.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
     <Compile Include="Source\Test\TestUWO1.cs" />
+    <Compile Include="Source\Test\DetourByAttribute.cs" />
     <Compile Include="Source\Utils\CallbackScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />
@@ -85,6 +86,8 @@
     <Compile Include="Source\Utils\ModLogger.cs" />
     <Compile Include="Source\Utils\UtilityWorldObject.cs" />
     <Compile Include="Source\Utils\UtilityWorldObjectManager.cs" />
+    <Compile Include="Source\DetourByAttribute\Attribute.cs" />
+    <Compile Include="Source\DetourByAttribute\Helpers.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
