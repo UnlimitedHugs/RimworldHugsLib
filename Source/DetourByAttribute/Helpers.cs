@@ -57,7 +57,7 @@ namespace HugsLib.DetourByAttribute
             if ( sourceInfo == null )
                 throw new NullReferenceException( "sourceMethodInfo could not be found based on attribute" );
             if ( targetInfo == null )
-                throw new ArgumentNullException( nameof( targetInfo ) );
+                throw new ArgumentNullException( "targetInfo" );
 
             // call the actual detour
             DetourProvider.TryCompatibleDetour( sourceInfo, targetInfo );

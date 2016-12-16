@@ -25,7 +25,10 @@ namespace HugsLib.DetourByAttribute
         public MethodInfo sourceMethodInfo;
 
         // check how this attribute was created
-        public bool WasSetByMethodInfo => sourceMethodInfo != null;
+        public bool WasSetByMethodInfo
+        {
+            get { return sourceMethodInfo != null; }
+        } 
 
         // disable default constructor
         private DetourMethodAttribute() { }
