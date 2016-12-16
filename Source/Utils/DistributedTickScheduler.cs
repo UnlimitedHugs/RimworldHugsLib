@@ -30,7 +30,7 @@ namespace HugsLib.Utils {
 		public void RegisterTickability(Action callback, int tickInterval) {
 			if (lastProcessedTick < 0) throw new Exception("Adding callback to not initialized DistributedTickScheduler");
 			if (tickInterval < 1) throw new Exception("Invalid tick interval: " + tickInterval);
-			GetTicker(tickInterval).Register(callback, lastProcessedTick);
+			GetTicker(tickInterval).Register(callback);
 		}
 
 		public void UnregisterTickability(Action callback, int tickInterval) {
@@ -75,7 +75,7 @@ namespace HugsLib.Utils {
 
 			}
 
-			public void Register(Action callback, int currentTick) {
+			public void Register(Action callback) {
 				tickList.Add(callback);
 			}
 

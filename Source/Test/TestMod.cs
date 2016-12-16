@@ -1,12 +1,14 @@
+#if TEST_MOD
 using System.Linq;
 using HugsLib.Settings;
+using HugsLib.Source.Detour;
 using HugsLib.Utils;
 using RimWorld;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Verse;
 
 namespace HugsLib.Test {
-#if TEST_MOD
 	// This mod is for testing the various facilities of the library
 	public class TestMod2 : ModBase {
 		public override string ModIdentifier {
@@ -91,5 +93,5 @@ namespace HugsLib.Test {
 		}
 	 
 	}
-#endif
 }
+#endif

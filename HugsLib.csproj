@@ -17,7 +17,7 @@
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_MOCK_UPLOAD</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_DETOUR,xTEST_MOCK_UPLOAD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -51,7 +51,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\Core\DefReloadWatcher.cs" />
-    <Compile Include="Source\Core\DetourProvider.cs" />
     <Compile Include="Source\Core\HugsTickProxy.cs" />
     <Compile Include="Source\Core\KeyBindingDefOf.cs" />
     <Compile Include="Source\Core\MapComponent_HugsProxy.cs" />
@@ -60,6 +59,9 @@
     <Compile Include="Source\Core\VersionFile.cs" />
     <Compile Include="Source\Core\VersionShort.cs" />
     <Compile Include="Source\Core\WindowReplacer.cs" />
+    <Compile Include="Source\Detour\Attribute.cs" />
+    <Compile Include="Source\Detour\DetourProvider.cs" />
+    <Compile Include="Source\Detour\Helpers.cs" />
     <Compile Include="Source\HugsLibController.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogs.cs" />
     <Compile Include="Source\Logs\EditWindow_LogExtended.cs" />
@@ -77,6 +79,7 @@
     <Compile Include="Source\Test\TestUWO2.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
     <Compile Include="Source\Test\TestUWO1.cs" />
+    <Compile Include="Source\Test\DetourByAttribute.cs" />
     <Compile Include="Source\Utils\CallbackScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />

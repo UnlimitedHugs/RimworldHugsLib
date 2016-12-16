@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using HugsLib.Utils;
 
-namespace HugsLib.Core {
+namespace HugsLib.Source.Detour {
 	/**
 	 * A tool to detour calls form one method to another. Will use Community Core Library detouring, if available, and its own equivalent otherwise.
 	 */
@@ -11,7 +12,12 @@ namespace HugsLib.Core {
 		private const string CCLDetoursClassName = "Detours";
 		private const string CCLDetourMethodName = "TryDetourFromTo";
 
-		/**
+        /**
+        * keep track of performed detours
+        */
+        private static readonly Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
+        
+        /**
 		 * Same as TryCompatibleDetour, but writes an error to the console on failure
 		 */
 		public static void CompatibleDetour(MethodInfo source, MethodInfo destination, string modName) {
@@ -41,7 +47,17 @@ namespace HugsLib.Core {
 		 * Performs the actual detour. Code borrowed from the CCL.
 		 **/
 		public static unsafe bool TryIndepentDetour(MethodInfo source, MethodInfo destination) {
-			if (IntPtr.Size == sizeof(Int64)) {
+            // check if already detoured, if so - error out.
+            if ( detours.ContainsKey( source ) )
+            {
+                HugsLibController.Logger.Error( "{0} was already detoured to {1}.", source.FullName(), destination.FullName() );
+                return false;
+            }
+
+            // do the detour, and add it to the list 
+            detours.Add( source, destination );
+
+            if (IntPtr.Size == sizeof(Int64)) {
 				// 64-bit systems use 64-bit absolute address and jumps
 				// 12 byte destructive
 

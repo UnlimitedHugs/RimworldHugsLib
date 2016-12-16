@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using Verse;
 
 namespace HugsLib.Core {
 	/**
