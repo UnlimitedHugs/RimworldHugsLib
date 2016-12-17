@@ -84,6 +84,7 @@
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />
     <Compile Include="Source\Utils\HugsLibUtility.cs" />
+    <Compile Include="Source\Utils\InjectedDefHasher.cs" />
     <Compile Include="Source\Utils\MapComponentUtility.cs" />
     <Compile Include="Source\Utils\ModLogger.cs" />
     <Compile Include="Source\Utils\UtilityWorldObject.cs" />

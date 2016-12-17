@@ -7,7 +7,7 @@ using Verse;
 
 namespace HugsLib.Source.Detour {
 	public static class Helpers {
-		internal const BindingFlags AllBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+		public const BindingFlags AllBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
 		// keep track of scanned types
 		private static List<Type> scanned = new List<Type>();
@@ -28,7 +28,11 @@ namespace HugsLib.Source.Detour {
 				var detourAttribute =
 					destination.GetCustomAttributes(typeof (DetourMethodAttribute), false).First() as
 						DetourMethodAttribute;
-				HandleDetour(detourAttribute, destination);
+				try {
+					HandleDetour(detourAttribute, destination);
+				} catch (Exception e) {
+					HugsLibController.Logger.ReportException(e);
+				}
 			}
 
 			// loop over all properties with the detour attribute set
@@ -38,25 +42,34 @@ namespace HugsLib.Source.Detour {
 				var detourAttribute =
 					destination.GetCustomAttributes(typeof (DetourPropertyAttribute), false).First() as
 						DetourPropertyAttribute;
-				HandleDetour(detourAttribute, destination);
+				try {
+					HandleDetour(detourAttribute, destination);
+				} catch (Exception e) {
+					HugsLibController.Logger.ReportException(e);
+				}
 			}
 		}
 
 		private static void HandleDetour(DetourMethodAttribute sourceAttribute, MethodInfo targetInfo) {
-			// we need to get the method info of the source (usually, vanilla) method. 
-			// if it was specified in the attribute, this is easy. Otherwise, we'll have to do some digging.
-			MethodInfo sourceInfo = sourceAttribute.WasSetByMethodInfo
-				? sourceAttribute.sourceMethodInfo
-				: GetMatchingMethodInfo(sourceAttribute, targetInfo);
+			MethodInfo sourceInfo = null;
+			try {
+				// we need to get the method info of the source (usually, vanilla) method. 
+				// if it was specified in the attribute, this is easy. Otherwise, we'll have to do some digging.
+				sourceInfo = sourceAttribute.WasSetByMethodInfo
+					? sourceAttribute.sourceMethodInfo
+					: GetMatchingMethodInfo(sourceAttribute, targetInfo);
 
-			// make sure we've got what we wanted.
-			if (sourceInfo == null)
-				throw new NullReferenceException("sourceMethodInfo could not be found based on attribute");
-			if (targetInfo == null)
-				throw new ArgumentNullException("targetInfo");
+				// make sure we've got what we wanted.
+				if (sourceInfo == null)
+					throw new NullReferenceException("sourceMethodInfo could not be found based on attribute");
+				if (targetInfo == null)
+					throw new ArgumentNullException("targetInfo");
 
-			// call the actual detour
-			DetourProvider.TryCompatibleDetour(sourceInfo, targetInfo);
+				// call the actual detour
+				DetourProvider.CompatibleDetourWithPreCheck(sourceInfo, targetInfo);
+			} catch (Exception e) {
+				DetourProvider.ThrowClearerDetourException(e, sourceInfo, targetInfo, "method");
+			}
 		}
 
 		private static MethodInfo GetMatchingMethodInfo(DetourMethodAttribute sourceAttribute, MethodInfo targetInfo) {
@@ -95,17 +108,22 @@ namespace HugsLib.Source.Detour {
 		}
 
 		private static void HandleDetour(DetourPropertyAttribute sourceAttribute, PropertyInfo targetInfo) {
-			// first, lets get the source propertyInfo - there's no ambiguity here.
-			PropertyInfo sourceInfo = sourceAttribute.sourcePropertyInfo;
+			PropertyInfo sourceInfo = null;
+			try {
+				// first, lets get the source propertyInfo - there's no ambiguity here.
+				sourceInfo = sourceAttribute.sourcePropertyInfo;
+				
+				// do our detours
+				// if getter was flagged (so Getter | Both )
+				if ((sourceAttribute.detourProperty & DetourProperty.Getter) == DetourProperty.Getter)
+					DetourProvider.CompatibleDetourWithPreCheck(sourceInfo.GetGetMethod(true), targetInfo.GetGetMethod(true));
 
-			// do our detours
-			// if getter was flagged (so Getter | Both )
-			if ((sourceAttribute.detourProperty & DetourProperty.Getter) == DetourProperty.Getter)
-				DetourProvider.TryCompatibleDetour(sourceInfo.GetGetMethod(true), targetInfo.GetGetMethod(true));
-
-			// if setter was flagged
-			if ((sourceAttribute.detourProperty & DetourProperty.Setter) == DetourProperty.Setter)
-				DetourProvider.TryCompatibleDetour(sourceInfo.GetSetMethod(true), targetInfo.GetSetMethod(true));
+				// if setter was flagged
+				if ((sourceAttribute.detourProperty & DetourProperty.Setter) == DetourProperty.Setter)
+					DetourProvider.CompatibleDetourWithPreCheck(sourceInfo.GetSetMethod(true), targetInfo.GetSetMethod(true));
+			} catch (Exception e) {
+				DetourProvider.ThrowClearerDetourException(e, sourceInfo, targetInfo, "property");
+			}
 		}
 
 		internal static string FullName(this MethodInfo methodInfo) {
@@ -113,5 +131,6 @@ namespace HugsLib.Source.Detour {
 			if (methodInfo.DeclaringType == null) return methodInfo.Name;
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
 		}
+
 	}
 }

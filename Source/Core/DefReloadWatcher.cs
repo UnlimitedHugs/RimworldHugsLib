@@ -41,7 +41,8 @@ namespace HugsLib.Core {
 				thingClass = typeof(Thing),
 				menuHidden = true
 			};
-			HugsLibUtility.AddSHortHashToInjectedDef(def);
+
+			InjectedDefHasher.GiveShortHasToDef(def);
 			DefDatabase<ThingDef>.Add(def);
 		}
 	}

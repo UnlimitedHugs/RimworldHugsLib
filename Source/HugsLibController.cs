@@ -95,6 +95,7 @@ namespace HugsLib {
 				return;
 			}
 			try {
+				PrepareReflection();
 				Settings = new ModSettingsManager(OnSettingsChanged);
 				UpdateFeatures = new UpdateFeatureManager();
 				CallbackScheduler = new CallbackScheduler();
@@ -298,7 +299,7 @@ namespace HugsLib {
 		private void LoadReloadInitialize() {
 			try {
 				EnumerateModAssemblies();
-                Helpers.DoDetours(); // do detours for (newly) loaded mods
+                ApplyNewDetours(); // do detours for (newly) loaded mods
                 EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
@@ -354,6 +355,18 @@ namespace HugsLib {
 				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
 					assemblyContentPacks[loadedAssembly] = modContentPack;
 				}
+			}
+		}
+
+		private void PrepareReflection() {
+			InjectedDefHasher.PrepareReflection();
+		}
+
+		private void ApplyNewDetours() {
+			try {
+				Helpers.DoDetours();
+			} catch (Exception e) {
+				Logger.ReportException(e);
 			}
 		}
 

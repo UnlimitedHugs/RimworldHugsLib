@@ -52,7 +52,7 @@ namespace HugsLib.Utils {
 				useDynamicDrawer = true
 			};
 			
-			HugsLibUtility.AddSHortHashToInjectedDef(def);
+			InjectedDefHasher.GiveShortHasToDef(def);
 			DefDatabase<WorldObjectDef>.Add(def);
 		}
 	}

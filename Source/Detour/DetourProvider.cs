@@ -7,22 +7,34 @@ namespace HugsLib.Source.Detour {
 	/**
 	 * A tool to detour calls form one method to another. Will use Community Core Library detouring, if available, and its own equivalent otherwise.
 	 */
+
 	public class DetourProvider {
 		private const string CCLNamespace = "CommunityCoreLibrary";
 		private const string CCLDetoursClassName = "Detours";
 		private const string CCLDetourMethodName = "TryDetourFromTo";
 
-        /**
+		private static bool cclCkeckPerformed;
+		private static MethodInfo cclDetourMethod;
+
+		/**
         * keep track of performed detours
         */
-        private static readonly Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
-        
-        /**
+		private static readonly Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
+
+		/**
 		 * Same as TryCompatibleDetour, but writes an error to the console on failure
 		 */
-		public static void CompatibleDetour(MethodInfo source, MethodInfo destination, string modName) {
-			var result = TryCompatibleDetour(source, destination);
-			if(!result) HugsLibController.Logger.Error("{0} failed to detour method {1} to method {2}", modName, source ?? (object)"(null)", destination ?? (object)"(null)");
+		public static void CompatibleDetour(MethodInfo source, MethodInfo destination) {
+			bool result = false;
+			Exception failureException = null;
+			try {
+				result = CompatibleDetourWithPreCheck(source, destination);
+			} catch (Exception e) {
+				result = false;
+				failureException = e;
+			} finally {
+				if (!result) ThrowClearerDetourException(failureException, source, destination, "method");
+			}
 		}
 
 		/**
@@ -30,34 +42,35 @@ namespace HugsLib.Source.Detour {
 		 */
 		public static bool TryCompatibleDetour(MethodInfo source, MethodInfo destination) {
 			if (source == null || destination == null) return false;
-			var cclMethod = TryGetCCLDetourMethod();
-			if (cclMethod != null) {
+			if (!cclCkeckPerformed) {
+				cclCkeckPerformed = true;
+				cclDetourMethod = TryGetCCLDetourMethod();
+			}
+			if (cclDetourMethod != null) {
 				try {
-					return (bool) cclMethod.Invoke(null, new object[] {source, destination});
+					return (bool) cclDetourMethod.Invoke(null, new object[] {source, destination});
 				} catch (Exception e) {
-					HugsLibController.Logger.Error("Exception while performing detour using CCL: "+e, e);
+					HugsLibController.Logger.Error("Exception while performing detour using CCL: " + e, e);
 					return false;
 				}
 			} else {
 				return TryIndepentDetour(source, destination);
 			}
 		}
-		
+
 		/**
 		 * Performs the actual detour. Code borrowed from the CCL.
 		 **/
 		public static unsafe bool TryIndepentDetour(MethodInfo source, MethodInfo destination) {
-            // check if already detoured, if so - error out.
-            if ( detours.ContainsKey( source ) )
-            {
-                HugsLibController.Logger.Error( "{0} was already detoured to {1}.", source.FullName(), destination.FullName() );
-                return false;
-            }
+			// check if already detoured, if so - error out.
+			if (detours.ContainsKey(source)) {
+				return false;
+			}
 
-            // do the detour, and add it to the list 
-            detours.Add( source, destination );
+			// do the detour, and add it to the list 
+			detours.Add(source, destination);
 
-            if (IntPtr.Size == sizeof(Int64)) {
+			if (IntPtr.Size == sizeof (Int64)) {
 				// 64-bit systems use 64-bit absolute address and jumps
 				// 12 byte destructive
 
@@ -66,10 +79,10 @@ namespace HugsLib.Source.Detour {
 				long Destination_Base = destination.MethodHandle.GetFunctionPointer().ToInt64();
 
 				// Native source address
-				byte* Pointer_Raw_Source = (byte*)Source_Base;
+				byte* Pointer_Raw_Source = (byte*) Source_Base;
 
 				// Pointer to insert jump address into native code
-				long* Pointer_Raw_Address = (long*)(Pointer_Raw_Source + 0x02);
+				long* Pointer_Raw_Address = (long*) (Pointer_Raw_Source + 0x02);
 
 				// Insert 64-bit absolute jump into native code (address in rax)
 				// mov rax, immediate64
@@ -88,10 +101,10 @@ namespace HugsLib.Source.Detour {
 				int Destination_Base = destination.MethodHandle.GetFunctionPointer().ToInt32();
 
 				// Native source address
-				byte* Pointer_Raw_Source = (byte*)Source_Base;
+				byte* Pointer_Raw_Source = (byte*) Source_Base;
 
 				// Pointer to insert jump address into native code
-				int* Pointer_Raw_Address = (int*)(Pointer_Raw_Source + 1);
+				int* Pointer_Raw_Address = (int*) (Pointer_Raw_Source + 1);
 
 				// Jump offset (less instruction size)
 				int offset = (Destination_Base - Source_Base) - 5;
@@ -105,13 +118,34 @@ namespace HugsLib.Source.Detour {
 			return true;
 		}
 
+		internal static bool CompatibleDetourWithPreCheck(MethodInfo source, MethodInfo destination) {
+			if (detours.ContainsKey(source)) {
+				throw new Exception(String.Format("{0} was already detoured to {1}.", source.FullName(), destination.FullName()));
+			}
+			return TryCompatibleDetour(source, destination);
+		}
+
+		internal static void ThrowClearerDetourException(Exception e, MemberInfo sourceInfo, MemberInfo targetInfo, string detourMode) {
+			// do a proper breakdown of the cause of the exception, including source, target, and target assembly
+			const string nullRefLabel = "[not found]";
+			var sourceDeclaringType = sourceInfo != null && sourceInfo.DeclaringType != null ? sourceInfo.DeclaringType.Name : "null";
+			var targetDeclaringType = targetInfo != null && targetInfo.DeclaringType != null ? targetInfo.DeclaringType.Name : "null";
+			var message = string.Format("Failed to detour {0} {1} to {2}", detourMode,
+				sourceInfo != null ? sourceDeclaringType + "." + sourceInfo.Name : nullRefLabel,
+				targetInfo != null ? targetDeclaringType + "." + targetInfo.Name : nullRefLabel);
+			if (targetInfo != null && targetInfo.DeclaringType != null) {
+				message += string.Format(" (assembly: {0})", targetInfo.DeclaringType.Assembly.GetName().Name);
+			}
+			throw new Exception(message, e);
+		}
+
 		private static MethodInfo TryGetCCLDetourMethod() {
 			var typeName = CCLNamespace + '.' + CCLDetoursClassName;
 			foreach (var assembly in HugsLibUtility.GetAllActiveAssemblies()) {
 				var type = assembly.GetType(typeName, false, false);
-				if(type == null) continue;
-				var method = type.GetMethod(CCLDetourMethodName, BindingFlags.Static | BindingFlags.Public, null, new[]{typeof(MethodInfo), typeof(MethodInfo)}, null);
-				if (method == null || method.ReturnType != typeof(bool)) continue;
+				if (type == null) continue;
+				var method = type.GetMethod(CCLDetourMethodName, BindingFlags.Static | BindingFlags.Public, null, new[] {typeof (MethodInfo), typeof (MethodInfo)}, null);
+				if (method == null || method.ReturnType != typeof (bool)) continue;
 				return method;
 			}
 			return null;
