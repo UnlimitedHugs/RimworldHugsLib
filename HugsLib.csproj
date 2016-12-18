@@ -72,6 +72,7 @@
     <Compile Include="Source\News\UpdateFeatureManager.cs" />
     <Compile Include="Source\Settings\Dialog_ModSettings.cs" />
     <Compile Include="Source\Settings\Dialog_OptionsExtended.cs" />
+    <Compile Include="Source\Settings\SettingHandleConvertible.cs" />
     <Compile Include="Source\Settings\Validators.cs" />
     <Compile Include="Source\Settings\ModSettingsPack.cs" />
     <Compile Include="Source\Settings\ModSettingsManager.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace HugsLib.Settings {
@@ -22,7 +23,7 @@ namespace HugsLib.Settings {
 		public ValueIsValid Validator { get; set; }
 		// the string identifier prefix used to display enum values in the settings menu (e.g. "prefix_" for "prefix_EnumValue")
 		public string EnumStringPrefix { get; set; }
-		// return true to make this setting visible in the menu. Optional. Still occupies scroll space when invisible.
+		// return true to make this setting visible in the menu. Optional.
 		public ShouldDisplay VisibilityPredicate { get; set; }
 		// draw a custom control for the settings menu entry. Entry name is already drawn when this is called. Optional. Return value indicates if the control changed the setting.
 		public DrawCustomControl CustomDrawer { get; set; }
@@ -54,7 +55,17 @@ namespace HugsLib.Settings {
 
 		public override string StringValue {
 			get {
-				return Value != null ? Value.ToString() : "";
+				try {
+					return Value != null ? Value.ToString() : "";
+				} catch(Exception e) {
+					HugsLibController.Logger.Error("Failed to serialize setting \"{0}\" of type {1}. Setting value was reset. Exception was: {2}", Name, typeof(T).FullName, e);
+					try {
+						Value = DefaultValue;
+						return DefaultValue != null ? DefaultValue.ToString() : "";
+					} catch {
+						return "";
+					}
+				}
 			}
 			set {
 				if (Validator != null && !Validator(value)) {
@@ -65,6 +76,8 @@ namespace HugsLib.Settings {
 				try {
 					if (Value is Enum) {
 						Value = (T) Enum.Parse(typeof (T), value);
+					} else if (typeof(SettingHandleConvertible).IsAssignableFrom(typeof(T))) {
+						Value = CustomValueFromString(value);
 					} else {
 						Value = (T) Convert.ChangeType(value, typeof (T));
 					}
@@ -72,7 +85,6 @@ namespace HugsLib.Settings {
 					// fallback to default value on bad data
 					Value = DefaultValue;
 				}
-
 			}
 		}
 
@@ -94,6 +106,18 @@ namespace HugsLib.Settings {
 
 		public override string ToString() {
 			return StringValue;
+		}
+
+		private T CustomValueFromString(string stringValue) {
+			try {
+				var val = (T) Activator.CreateInstance(typeof (T), true);
+				var convertible = val as SettingHandleConvertible;
+				if (convertible != null) convertible.FromString(stringValue);
+				return val;
+			} catch (Exception e) {
+				HugsLibController.Logger.Error("Failed to parse setting \"{0}\" as custom type {1}. Setting value was reset. Value was: \"{2}\". Exception was: {3}", Name, typeof(T).FullName, stringValue, e);
+				throw;
+			}
 		}
 	}
 

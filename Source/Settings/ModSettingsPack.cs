@@ -45,7 +45,7 @@ namespace HugsLib.Settings {
 			handle.Description = description;
 			handle.Validator = validator;
 			handle.EnumStringPrefix = enumPrefix;
-			if (typeof(T).IsEnum && (enumPrefix == null || !(enumPrefix + Enum.GetName(typeof(T), default(T))).CanTranslate())) {
+			if (typeof(T).IsEnum && (enumPrefix == null || !(enumPrefix + Enum.GetName(typeof(T), defaultValue)).CanTranslate())) {
 				HugsLibController.Logger.Warning("Missing enum setting labels for enum "+typeof(T));
 			}
 			if (loadedValues.ContainsKey(settingName)) {

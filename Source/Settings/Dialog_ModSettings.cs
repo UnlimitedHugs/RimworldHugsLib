@@ -100,6 +100,7 @@ namespace HugsLib.Settings {
 					currentlyDrawnEntry = null;
 				}
 				Widgets.EndScrollView();
+				totalContentHeight = curY;
 			} else {
 				Widgets.Label(new Rect(0, titleRect.height, contentRect.width, titleRect.height), "HugsLib_settings_noSettings".Translate());
 			}
