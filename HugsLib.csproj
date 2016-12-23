@@ -55,12 +55,14 @@
     <Compile Include="Source\Core\KeyBindingDefOf.cs" />
     <Compile Include="Source\Core\MapComponent_HugsProxy.cs" />
     <Compile Include="Source\Core\PersistentDataManager.cs" />
+    <Compile Include="Source\Core\ShortHashCollisionResolver.cs" />
     <Compile Include="Source\Core\UnityProxyComponent.cs" />
     <Compile Include="Source\Core\VersionFile.cs" />
     <Compile Include="Source\Core\VersionShort.cs" />
     <Compile Include="Source\Core\WindowReplacer.cs" />
     <Compile Include="Source\Detour\Attribute.cs" />
     <Compile Include="Source\Detour\DetourProvider.cs" />
+    <Compile Include="Source\Detour\DetourValidator.cs" />
     <Compile Include="Source\Detour\Helpers.cs" />
     <Compile Include="Source\HugsLibController.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogs.cs" />

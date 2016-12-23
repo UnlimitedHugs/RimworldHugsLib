@@ -66,7 +66,7 @@ namespace HugsLib.Source.Detour {
 					throw new ArgumentNullException("targetInfo");
 
 				// call the actual detour
-				DetourProvider.CompatibleDetourWithPreCheck(sourceInfo, targetInfo);
+				DetourProvider.CompatibleDetourWithExceptions(sourceInfo, targetInfo);
 			} catch (Exception e) {
 				DetourProvider.ThrowClearerDetourException(e, sourceInfo, targetInfo, "method");
 			}
@@ -116,11 +116,11 @@ namespace HugsLib.Source.Detour {
 				// do our detours
 				// if getter was flagged (so Getter | Both )
 				if ((sourceAttribute.detourProperty & DetourProperty.Getter) == DetourProperty.Getter)
-					DetourProvider.CompatibleDetourWithPreCheck(sourceInfo.GetGetMethod(true), targetInfo.GetGetMethod(true));
+					DetourProvider.CompatibleDetourWithExceptions(sourceInfo.GetGetMethod(true), targetInfo.GetGetMethod(true));
 
 				// if setter was flagged
 				if ((sourceAttribute.detourProperty & DetourProperty.Setter) == DetourProperty.Setter)
-					DetourProvider.CompatibleDetourWithPreCheck(sourceInfo.GetSetMethod(true), targetInfo.GetSetMethod(true));
+					DetourProvider.CompatibleDetourWithExceptions(sourceInfo.GetSetMethod(true), targetInfo.GetSetMethod(true));
 			} catch (Exception e) {
 				DetourProvider.ThrowClearerDetourException(e, sourceInfo, targetInfo, "property");
 			}

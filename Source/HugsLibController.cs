@@ -277,6 +277,7 @@ namespace HugsLib {
 
 		private void OnDefsLoaded() {
 			try {
+				ShortHashCollisionResolver.ResolveCollisions();
 				RegisterOwnSettings();
 				UtilityWorldObjectManager.OnDefsLoaded();
 				for (int i = 0; i < childMods.Count; i++) {

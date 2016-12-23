@@ -7,7 +7,6 @@ namespace HugsLib.Source.Detour {
 	/**
 	 * A tool to detour calls form one method to another. Will use Community Core Library detouring, if available, and its own equivalent otherwise.
 	 */
-
 	public class DetourProvider {
 		private const string CCLNamespace = "CommunityCoreLibrary";
 		private const string CCLDetoursClassName = "Detours";
@@ -28,7 +27,7 @@ namespace HugsLib.Source.Detour {
 			bool result = false;
 			Exception failureException = null;
 			try {
-				result = CompatibleDetourWithPreCheck(source, destination);
+				result = CompatibleDetourWithExceptions(source, destination);
 			} catch (Exception e) {
 				result = false;
 				failureException = e;
@@ -65,6 +64,15 @@ namespace HugsLib.Source.Detour {
 			// check if already detoured, if so - error out.
 			if (detours.ContainsKey(source)) {
 				return false;
+			}
+
+			// check for destination type fields, return type and argument compatibility
+			if (!DetourValidator.IsValidDetourPair(source, destination)) {
+				return false;
+			}
+			var warning = DetourValidator.GetLastWarning();
+			if (warning != null) {
+				HugsLibController.Logger.Warning(warning);
 			}
 
 			// do the detour, and add it to the list 
@@ -118,25 +126,36 @@ namespace HugsLib.Source.Detour {
 			return true;
 		}
 
-		internal static bool CompatibleDetourWithPreCheck(MethodInfo source, MethodInfo destination) {
+		internal static bool CompatibleDetourWithExceptions(MethodInfo source, MethodInfo destination) {
 			if (detours.ContainsKey(source)) {
 				throw new Exception(String.Format("{0} was already detoured to {1}.", source.FullName(), destination.FullName()));
 			}
-			return TryCompatibleDetour(source, destination);
+			var result = TryCompatibleDetour(source, destination);
+			if (!result) {
+				var validatorError = DetourValidator.GetLastError();
+				if(validatorError!=null) throw new Exception(validatorError);
+			}
+			return result;
 		}
 
 		internal static void ThrowClearerDetourException(Exception e, MemberInfo sourceInfo, MemberInfo targetInfo, string detourMode) {
 			// do a proper breakdown of the cause of the exception, including source, target, and target assembly
+			var message = string.Format("Failed to detour {0} {1}", detourMode, DetourPairToString(sourceInfo, targetInfo));
+			
+			throw new Exception(message, e);
+		}
+
+		internal static string DetourPairToString(MemberInfo sourceInfo, MemberInfo targetInfo) {
 			const string nullRefLabel = "[not found]";
 			var sourceDeclaringType = sourceInfo != null && sourceInfo.DeclaringType != null ? sourceInfo.DeclaringType.Name : "null";
 			var targetDeclaringType = targetInfo != null && targetInfo.DeclaringType != null ? targetInfo.DeclaringType.Name : "null";
-			var message = string.Format("Failed to detour {0} {1} to {2}", detourMode,
+			var result = string.Format("{0} to {1}",
 				sourceInfo != null ? sourceDeclaringType + "." + sourceInfo.Name : nullRefLabel,
 				targetInfo != null ? targetDeclaringType + "." + targetInfo.Name : nullRefLabel);
 			if (targetInfo != null && targetInfo.DeclaringType != null) {
-				message += string.Format(" (assembly: {0})", targetInfo.DeclaringType.Assembly.GetName().Name);
+				result += string.Format(" (assembly: {0})", targetInfo.DeclaringType.Assembly.GetName().Name);
 			}
-			throw new Exception(message, e);
+			return result;
 		}
 
 		private static MethodInfo TryGetCCLDetourMethod() {
