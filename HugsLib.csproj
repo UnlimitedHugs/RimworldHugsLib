@@ -82,7 +82,7 @@
     <Compile Include="Source\Test\TestUWO2.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
     <Compile Include="Source\Test\TestUWO1.cs" />
-    <Compile Include="Source\Test\DetourByAttribute.cs" />
+    <Compile Include="Source\Test\DetourTests.cs" />
     <Compile Include="Source\Utils\CallbackScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />

@@ -19,7 +19,6 @@ namespace HugsLib.Logs {
 		private readonly Dictionary<LogPublisher.PublisherStatus, StatusLabelEntry> statusMessages = new Dictionary<LogPublisher.PublisherStatus, StatusLabelEntry> {
 			{LogPublisher.PublisherStatus.Ready, new StatusLabelEntry("", false)},
 			{LogPublisher.PublisherStatus.Uploading, new StatusLabelEntry("HugsLib_logs_uploading", true)},
-			{LogPublisher.PublisherStatus.Shortening, new StatusLabelEntry("HugsLib_logs_shortening", true)},
 			{LogPublisher.PublisherStatus.Done, new StatusLabelEntry("HugsLib_logs_uploaded", false)},
 			{LogPublisher.PublisherStatus.Error, new StatusLabelEntry("HugsLib_logs_uploadError", false)}
 		};
@@ -84,7 +83,7 @@ namespace HugsLib.Logs {
 				}
 			}
 			var bottomRightBtnRect = new Rect(inRect.width - ControlButtonSize.x, inRect.height - ControlButtonSize.y, ControlButtonSize.x, ControlButtonSize.y);
-			if (publisher.Status == LogPublisher.PublisherStatus.Uploading || publisher.Status == LogPublisher.PublisherStatus.Shortening) {
+			if (publisher.Status == LogPublisher.PublisherStatus.Uploading) {
 				if (Widgets.ButtonText(bottomRightBtnRect, "HugsLib_logs_abortBtn".Translate())) {
 					publisher.AbortUpload();
 				}

@@ -6,18 +6,18 @@ using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Test {
-	public class DetourByAttribute : ModBase {
+	public class DetourTests : ModBase {
 		public override string ModIdentifier {
-			get { return "DetourByAttribute"; }
+			get { return "DetourTests"; }
 		}
 
 		public new ModLogger Logger {
 			get { return base.Logger; }
 		}
 
-		public static DetourByAttribute Instance { get; private set; }
+		public static DetourTests Instance { get; private set; }
 
-		public DetourByAttribute() {
+		public DetourTests() {
 			Instance = this;
 		}
 
@@ -121,25 +121,25 @@ namespace HugsLib.Test {
 			sources.Both = "asd";
 
 			// source-destinaton compatibility
+			// these cover only some of the possible cases and should be refactored into a proper test suite
 			var sourceMethod = typeof (DetourTestSources).GetMethod("CompatTest", Helpers.AllBindingFlags);
-			if (DetourProvider.TryIndepentDetour(sourceMethod, typeof(DetourTestDestinations).GetMethod("CompatTestReturn", Helpers.AllBindingFlags))) {
+			if (DetourValidator.IsValidDetourPair(sourceMethod, typeof(DetourTestDestinations).GetMethod("CompatTestReturn", Helpers.AllBindingFlags))) {
 				Logger.Error("non-matching return types passed");	
 			}
-			if (DetourProvider.TryIndepentDetour(sourceMethod, typeof(DetourTestDestinations).GetMethod("CompatTestParamsTypes", Helpers.AllBindingFlags))) {
+			if (DetourValidator.IsValidDetourPair(sourceMethod, typeof(DetourTestDestinations).GetMethod("CompatTestParamsTypes", Helpers.AllBindingFlags))) {
 				Logger.Error("non-matching param types passed");
 			}
-			if (DetourProvider.TryIndepentDetour(sourceMethod, typeof(DetourTestDestinations).GetMethod("CompatTestParamsCount", Helpers.AllBindingFlags))) {
+			if (DetourValidator.IsValidDetourPair(sourceMethod, typeof(DetourTestDestinations).GetMethod("CompatTestParamsCount", Helpers.AllBindingFlags))) {
 				Logger.Error("non-matching param count passed");
 			}
-			// this will generate a warning, this is expected
-			if (!DetourProvider.TryIndepentDetour(sourceMethod, typeof(DetourTestContainerWithField).GetMethod("CompatTest", Helpers.AllBindingFlags))) {
-				Logger.Error("type with field failed");
+			if (DetourValidator.IsValidDetourPair(sourceMethod, typeof(DetourTestContainerWithField).GetMethod("CompatTest", Helpers.AllBindingFlags))) {
+				Logger.Error("type with field passed");
 			}
 			sourceMethod = typeof(DetourTestSources).GetMethod("CompatTestTwo", Helpers.AllBindingFlags);
-			if (DetourProvider.TryIndepentDetour(sourceMethod, typeof(DetourTestContainerStatic).GetMethod("CompatTestExtensionInvalid", Helpers.AllBindingFlags))) {
+			if (DetourValidator.IsValidDetourPair(sourceMethod, typeof(DetourTestContainerStatic).GetMethod("CompatTestExtensionInvalid", Helpers.AllBindingFlags))) {
 				Logger.Error("invalid extension method passed");
 			}
-			if (!DetourProvider.TryIndepentDetour(sourceMethod, typeof(DetourTestContainerStatic).GetMethod("CompatTestExtensionValid", Helpers.AllBindingFlags))) {
+			if (!DetourValidator.IsValidDetourPair(sourceMethod, typeof(DetourTestContainerStatic).GetMethod("CompatTestExtensionValid", Helpers.AllBindingFlags))) {
 				Logger.Error("valid extension method failed");
 			}
 
@@ -150,28 +150,28 @@ namespace HugsLib.Test {
 	public class DetourTestSources {
 		// simple methods
 		public void PublicInstanceMethod() {
-			DetourByAttribute.Instance.Logger.Error("public instance method");
+			DetourTests.Instance.Logger.Error("public instance method");
 		}
 
 		private void PrivateInstanceMethod() {
-			DetourByAttribute.Instance.Logger.Error("private instance method");
+			DetourTests.Instance.Logger.Error("private instance method");
 		}
 
 		public static void PublicStaticMethod() {
-			DetourByAttribute.Instance.Logger.Error("public static method");
+			DetourTests.Instance.Logger.Error("public static method");
 		}
 
 		private static void PrivateStaticMethod() {
-			DetourByAttribute.Instance.Logger.Error("private static method");
+			DetourTests.Instance.Logger.Error("private static method");
 		}
 
 		// parameter overloads
 		public void Overload(string asd, string qwe) {
-			DetourByAttribute.Instance.Logger.Error("public overload string");
+			DetourTests.Instance.Logger.Error("public overload string");
 		}
 
 		public void Overload(int asd, int qwe) {
-			DetourByAttribute.Instance.Logger.Error("public overload int");
+			DetourTests.Instance.Logger.Error("public overload int");
 		}
 		
 		// Source-destination compatibility
@@ -186,26 +186,26 @@ namespace HugsLib.Test {
 		// properties
 		public string GetterOnly {
 			get {
-				DetourByAttribute.Instance.Logger.Error("public getterOnly getter");
+				DetourTests.Instance.Logger.Error("public getterOnly getter");
 				return "asd";
 			}
-			set { DetourByAttribute.Instance.Logger.Message("public getterOnly setter"); }
+			set { DetourTests.Instance.Logger.Message("public getterOnly setter"); }
 		}
 
 		public string SetterOnly {
 			get {
-				DetourByAttribute.Instance.Logger.Message("public setterOnly getter");
+				DetourTests.Instance.Logger.Message("public setterOnly getter");
 				return "asd";
 			}
-			set { DetourByAttribute.Instance.Logger.Error("public setterOnly setter"); }
+			set { DetourTests.Instance.Logger.Error("public setterOnly setter"); }
 		}
 
 		public string Both {
 			get {
-				DetourByAttribute.Instance.Logger.Error("public both getter");
+				DetourTests.Instance.Logger.Error("public both getter");
 				return "asd";
 			}
-			set { DetourByAttribute.Instance.Logger.Error("public both setter"); }
+			set { DetourTests.Instance.Logger.Error("public both setter"); }
 		}
 	}
 

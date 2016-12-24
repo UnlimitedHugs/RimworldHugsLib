@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Verse;
@@ -23,29 +24,27 @@ namespace HugsLib.Source.Detour {
 			Static
 		}
 		
-		private static string generatedWarning;
 		private static string failReason;
 
 		public static bool IsValidDetourPair(MethodInfo sourceMethod, MethodInfo destinationMethod) {
-			failReason = generatedWarning = null;
+			failReason = null;
 			if (sourceMethod == null) {
-				failReason = "Source MethodInfo is null";
+				ExplainFailure("Source MethodInfo is null", null, destinationMethod);
 				return false;
 			}
 			if (destinationMethod == null) {
-				failReason = "Destination MethodInfo is null";
+				ExplainFailure("Destination MethodInfo is null", sourceMethod, null);
 				return false;
 			}
 			// check for instance fields in the destination declaring type
 			if (destinationMethod.DeclaringType != null && !DetourContainerClassIsFieldSafe(destinationMethod.DeclaringType)) {
-				// TODO: Turn warning into error on next Rimworld release. Leaving it as a warning for now in the interest of not breaking already ported mods.
-				generatedWarning = string.Format("Warning for detour {0}: destination type contains non-static fields. This can have unpredictable and game-breaking side effects.",
-					DetourProvider.DetourPairToString(sourceMethod, destinationMethod));
+				ExplainFailure("Destination type contains non-static fields. This can have unpredictable and game-breaking side effects.", sourceMethod, destinationMethod);
+				return false;
 			}
 			// check for matching parameters and return type in source and destination
 			string reason;
 			if (!MethodsAreCallCompatible(GetMethodTargetClass(sourceMethod), sourceMethod, GetMethodTargetClass(destinationMethod), destinationMethod, out reason)) {
-				failReason = string.Format("Methods are not call compatible: {0}", reason);
+				ExplainFailure(string.Format("Methods are not call compatible: {0}", reason), sourceMethod, destinationMethod);
 				return false;
 			}
 			return true;
@@ -53,10 +52,6 @@ namespace HugsLib.Source.Detour {
 
 		public static string GetLastError() {
 			return failReason;
-		}
-
-		public static string GetLastWarning() {
-			return generatedWarning;
 		}
 
 		/// <summary>
@@ -70,15 +65,17 @@ namespace HugsLib.Source.Detour {
 				// No fields, no worries
 				return true;
 			}
-
-			// Check that each field is static
-			foreach (var field in fields) {
-				if (!field.IsStatic) {
-					return false;
-				}
+			
+			string[] baseFields;
+			if (detourContainerClass.BaseType != null) {
+				// select non-private field names in base type
+				baseFields = detourContainerClass.BaseType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f => !f.IsPrivate).Select(finfo => finfo.Name).ToArray();
+			} else {
+				baseFields = new string[0];
 			}
-
-			return true;
+			
+            //Make sure all instance fields were inherited from the parent class
+            return fields.All(f => baseFields.Contains(f.Name));
 		}
 
 		/// <summary>
@@ -260,6 +257,11 @@ namespace HugsLib.Source.Detour {
 		/// <param name="type">Type to get the full name of</param>
 		private static string FullNameOfType(Type type) {
 			return type == null ? "null" : type.FullName;
+		}
+
+		private static void ExplainFailure(string errorMessage, MethodInfo sourceMethod, MethodInfo destinationMethod) {
+			failReason = string.Format("Dangerous detour detected! {0}. Reason: {1}",
+				DetourProvider.DetourPairToString(sourceMethod, destinationMethod), errorMessage);
 		}
 	}
 }

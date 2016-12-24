@@ -16,7 +16,6 @@ using Object = System.Object;
 namespace HugsLib.Logs {
 	/**
 	 * Collects the game logs and loaded mods and posts the information on GitHub as a gist.
-	 * The url is then shortened using Git.io for convenience.
 	 */
 	public class LogPublisher {
 		private const string RequestUserAgent = "HugsLib_log_uploader";
@@ -25,14 +24,12 @@ namespace HugsLib.Logs {
 		private const string GistPayloadJson = "{{\"description\":\"{0}\",\"public\":true,\"files\":{{\"{1}\":{{\"content\":\"{2}\"}}}}}}";
 		private const string GistDescription = "Rimworld output log published using HugsLib";
 		private const string SuccessStatusResponse = "201 Created";
-		private const string ShortenerUrl = "https://git.io/";
 		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
 		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
 
 		public enum PublisherStatus {
 			Ready,
 			Uploading,
-			Shortening,
 			Done,
 			Error
 		}
@@ -60,7 +57,7 @@ namespace HugsLib.Logs {
 		}
 
 		public void AbortUpload() {
-			if(Status != PublisherStatus.Uploading && Status != PublisherStatus.Shortening) return;
+			if(Status != PublisherStatus.Uploading) return;
 			userAborted = true;
 			if (workerThread != null && workerThread.IsAlive) {
 				workerThread.Interrupt();
@@ -117,8 +114,6 @@ namespace HugsLib.Logs {
 		private void MockUpload() {
 			workerThread = new Thread(() => {
 				Thread.Sleep(1500);
-				Status = PublisherStatus.Shortening;
-				Thread.Sleep(1500);
 				Status = PublisherStatus.Done;
 				ResultUrl = Rand.Int.ToString();
 			});
@@ -146,39 +141,6 @@ namespace HugsLib.Logs {
 				return;
 			}
 			ResultUrl = matchedUrl;
-			LongEventHandler.ExecuteWhenFinished(BeginUrlShortening);
-		}
-
-		private void BeginUrlShortening() {
-			Status = PublisherStatus.Shortening;
-
-			workerThread = new Thread(() => {
-				try {
-					using (var client = new WebClient()) {
-						client.Headers.Add("User-Agent", RequestUserAgent);
-						client.Headers.Add("Content-Type", "multipart/form-data");
-						var payload = "url=" + ResultUrl;
-						client.UploadString(ShortenerUrl, payload);
-						var status = client.ResponseHeaders.Get("Status");
-						var location = client.ResponseHeaders.Get("Location");
-						if (status == SuccessStatusResponse) {
-							OnUrlShorteningComplete(location);
-						} else {
-							OnRequestError(status);
-						}
-					}
-				} catch (Exception e) {
-					// Git.io shortening has failed, just return the original url as fallback
-					if (userAborted) return;
-					OnUrlShorteningComplete(ResultUrl);
-					HugsLibController.Logger.Warning("Exception during log publishing (url shortening): " + e);
-				}
-			});
-			workerThread.Start();
-		}
-
-		private void OnUrlShorteningComplete(string shortUrl) {
-			ResultUrl = shortUrl;
 			Status = PublisherStatus.Done;
 		}
 

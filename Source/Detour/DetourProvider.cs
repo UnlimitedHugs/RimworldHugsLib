@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HugsLib.Utils;
 
 namespace HugsLib.Source.Detour {
 	/**
 	 * A tool to detour calls form one method to another. Will use Community Core Library detouring, if available, and its own equivalent otherwise.
 	 */
 	public class DetourProvider {
-		private const string CCLNamespace = "CommunityCoreLibrary";
-		private const string CCLDetoursClassName = "Detours";
-		private const string CCLDetourMethodName = "TryDetourFromTo";
-
-		private static bool cclCkeckPerformed;
-		private static MethodInfo cclDetourMethod;
-
 		/**
         * keep track of performed detours
         */
@@ -41,20 +33,7 @@ namespace HugsLib.Source.Detour {
 		 */
 		public static bool TryCompatibleDetour(MethodInfo source, MethodInfo destination) {
 			if (source == null || destination == null) return false;
-			if (!cclCkeckPerformed) {
-				cclCkeckPerformed = true;
-				cclDetourMethod = TryGetCCLDetourMethod();
-			}
-			if (cclDetourMethod != null) {
-				try {
-					return (bool) cclDetourMethod.Invoke(null, new object[] {source, destination});
-				} catch (Exception e) {
-					HugsLibController.Logger.Error("Exception while performing detour using CCL: " + e, e);
-					return false;
-				}
-			} else {
-				return TryIndepentDetour(source, destination);
-			}
+			return TryIndepentDetour(source, destination);
 		}
 
 		/**
@@ -67,10 +46,10 @@ namespace HugsLib.Source.Detour {
 			}
 
 			// check for destination type fields, return type and argument compatibility
-			if (!DetourValidator.IsValidDetourPair(source, destination)) {
-				return false;
-			}
-			var warning = DetourValidator.GetLastWarning();
+			DetourValidator.IsValidDetourPair(source, destination);
+			// show detouring errors as warnings in the interest of compatibility
+			// TODO: convert warnings to errors on next Rimworld release
+			var warning = DetourValidator.GetLastError();
 			if (warning != null) {
 				HugsLibController.Logger.Warning(warning);
 			}
@@ -130,12 +109,7 @@ namespace HugsLib.Source.Detour {
 			if (detours.ContainsKey(source)) {
 				throw new Exception(String.Format("{0} was already detoured to {1}.", source.FullName(), destination.FullName()));
 			}
-			var result = TryCompatibleDetour(source, destination);
-			if (!result) {
-				var validatorError = DetourValidator.GetLastError();
-				if(validatorError!=null) throw new Exception(validatorError);
-			}
-			return result;
+			return TryCompatibleDetour(source, destination);
 		}
 
 		internal static void ThrowClearerDetourException(Exception e, MemberInfo sourceInfo, MemberInfo targetInfo, string detourMode) {
@@ -156,18 +130,6 @@ namespace HugsLib.Source.Detour {
 				result += string.Format(" (assembly: {0})", targetInfo.DeclaringType.Assembly.GetName().Name);
 			}
 			return result;
-		}
-
-		private static MethodInfo TryGetCCLDetourMethod() {
-			var typeName = CCLNamespace + '.' + CCLDetoursClassName;
-			foreach (var assembly in HugsLibUtility.GetAllActiveAssemblies()) {
-				var type = assembly.GetType(typeName, false, false);
-				if (type == null) continue;
-				var method = type.GetMethod(CCLDetourMethodName, BindingFlags.Static | BindingFlags.Public, null, new[] {typeof (MethodInfo), typeof (MethodInfo)}, null);
-				if (method == null || method.ReturnType != typeof (bool)) continue;
-				return method;
-			}
-			return null;
 		}
 	}
 }
