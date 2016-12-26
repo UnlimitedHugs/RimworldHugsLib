@@ -12,7 +12,7 @@ A lightweight shared mod library for Rimworld. Provides a foundation for mods an
 - Checker assembly: A small dll designed to be included with your mod, that ensures the player is running at least the version of the library you specify. A dialog is displayed if a problem is detected, helping the player to resolve the issue. This is how the library stays up to date. See [RimworldHugsLibChecker](https://github.com/UnlimitedHugs/RimworldHugsLibChecker) for more info.
 - UtilityWorldObjects: A convenient way to store your data in a save file. Since A16 MapComponents are no longer a reliable way to store your data, and UWO's are designed to be a drop-in replacement.
 - Custom tick scheduling: Includes tools for executing callbacks with a specified tick delay, and registering recurring ticks with non-standard intervals. Recurring ticks are distributed uniformly across the time spectrum, to minimize the performance impact of the ticking entity.
-- Detouring: provides special attributes for more convenient detouring. If the Community Core Library is available, detouring requests will be forwarded, otherwise the local equivalent will be used.
+- Detouring: provides special attributes for more convenient detouring. Repeated detours of the same method are not allowed and will generate an error. Detours are safety-checked to prevent improper use.
 
 ## Compatibility
 The library does no detour any methods on its own. The only potential points of contention are the replaced Dialog_Options and EditWindow_Log- they are replaced when they appear on the WindowStack.
