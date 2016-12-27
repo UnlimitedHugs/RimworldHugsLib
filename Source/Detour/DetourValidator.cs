@@ -75,7 +75,7 @@ namespace HugsLib.Source.Detour {
 			}
 			
             //Make sure all instance fields were inherited from the parent class
-            return fields.All(f => baseFields.Contains(f.Name));
+            return fields.All(f => f.IsStatic || baseFields.Contains(f.Name));
 		}
 
 		/// <summary>

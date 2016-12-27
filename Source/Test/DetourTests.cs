@@ -210,6 +210,7 @@ namespace HugsLib.Test {
 	}
 
 	public static class DetourTestContainerStatic {
+		private static int field;
 		private static string CompatTestExtensionInvalid(this DetourTestContainerWithField self, int param1, string param2) {
 			return null;
 		}
