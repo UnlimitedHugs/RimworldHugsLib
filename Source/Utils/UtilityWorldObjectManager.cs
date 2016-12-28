@@ -37,6 +37,22 @@ namespace HugsLib.Utils {
 			InjectUtilityObjectDef();
 		}
 
+		internal static void OnWorldLoaded() {
+			CheckForWorldObjectsWithoutDef();
+		}
+
+		// a safeguard against UWO's without a def breaking saved games
+		private static void CheckForWorldObjectsWithoutDef() {
+			var allObjects = GetHolder().AllWorldObjects;
+			for (int i = allObjects.Count-1; i >= 0; i--) {
+				var obj = allObjects[i];
+				if (obj.def == null && obj is UtilityWorldObject) {
+					HugsLibController.Logger.Error(obj.GetType().FullName + ".def is null on load. Forgot to call base.ExposeData()?");		
+					allObjects.RemoveAt(i); // kill it with fire
+				}
+			}
+		}
+
 		private static WorldObjectsHolder GetHolder() {
 			if (Current.Game == null || Current.Game.World == null) throw new Exception("A world must be loaded to get a WorldObject");
 			return Current.Game.World.worldObjects;

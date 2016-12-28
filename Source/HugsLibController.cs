@@ -215,6 +215,7 @@ namespace HugsLib {
 				var currentTick = Find.TickManager.TicksGame;
 				CallbackScheduler.Initialize(currentTick);
 				DistributedTicker.Initialize(currentTick);
+				UtilityWorldObjectManager.OnWorldLoaded();
 				Current.Game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy { CreatedByController = true });
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
