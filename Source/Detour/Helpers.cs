@@ -16,26 +16,32 @@ namespace HugsLib.Source.Detour {
 
 		// log errors for improperly declared fallback handlers
 		internal static void CheckFallbackHandlers() {
-			if(!Prefs.DevMode) return; // skip unnecessary overhead
-			foreach (var type in GenTypes.AllTypes) {
-				var members = type.GetMembers(AllBindingFlags);
-				for (int i = 0; i < members.Length; i++) {
-					var handler = members[i] as MethodInfo;
-					if(handler == null || !handler.HasAttribute<DetourFallbackAttribute>()) continue;
-					// check is static
-					if(!handler.IsStatic) HugsLibController.Logger.Error("Detour fallback handlers must be static ({0})", handler.FullName());
-					// check signature
-					if (!handler.MethodMatchesSignature(typeof(void), typeof(MemberInfo), typeof(MethodInfo), typeof(Exception))) {
-						HugsLibController.Logger.Error("Improper Detour fallback handlers signature ({0}). Expected signature: void (MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e)", handler.FullName());
-					}
-					// check for referenced methods
-					var attribute = (DetourFallbackAttribute)handler.GetCustomAttributes(typeof(DetourFallbackAttribute), false).FirstOrDefault();
-					if(attribute == null) continue;
-					foreach (var memberName in attribute.targetMemberNames) {
-						if (members.All(m => m.Name != memberName)) {
-							HugsLibController.Logger.Error("Detour fallback handler references at least one missing member ({0})", handler.FullName());
+			if (!Prefs.DevMode) return; // skip unnecessary overhead
+			var allTypes = HugsLibUtility.GetAllActiveAssemblies().SelectMany(a => a.GetTypes()).Except(scanned);
+			foreach (var type in allTypes) {
+				try {
+					var members = type.GetMembers(AllBindingFlags);
+					for (int i = 0; i < members.Length; i++) {
+						var handler = members[i] as MethodInfo;
+						var attribute = handler != null ? TryGetAttribute<DetourFallbackAttribute>(handler) : null;
+						if (handler == null || attribute == null) continue;
+						// check is static
+						if (!handler.IsStatic) HugsLibController.Logger.Error("Detour fallback handlers must be static ({0})", handler.FullName());
+						// check signature
+						if (!handler.MethodMatchesSignature(typeof (void), typeof (MemberInfo), typeof (MethodInfo), typeof (Exception))) {
+							HugsLibController.Logger.Error(
+								"Improper Detour fallback handlers signature ({0}). Expected signature: void (MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e)",
+								handler.FullName());
+						}
+						// check for referenced methods
+						foreach (var memberName in attribute.targetMemberNames) {
+							if (members.All(m => m.Name != memberName)) {
+								HugsLibController.Logger.Error("Detour fallback handler references at least one missing member ({0})", handler.FullName());
+							}
 						}
 					}
+				} catch {
+					// types from other mods could cause an unforseen exception, better be safe
 				}
 			}
 		}
@@ -53,9 +59,7 @@ namespace HugsLib.Source.Detour {
 			foreach (MethodInfo destination in types
 				.SelectMany(t => t.GetMethods(AllBindingFlags))
 				.Where(m => m.HasAttribute<DetourMethodAttribute>())) {
-				var detourAttribute =
-					destination.GetCustomAttributes(typeof (DetourMethodAttribute), false).First() as
-						DetourMethodAttribute;
+				var detourAttribute = TryGetAttribute<DetourMethodAttribute>(destination);
 				try {
 					lastAttemptedDetourSource = null;
 					HandleMethodDetour(detourAttribute, destination);
@@ -70,9 +74,7 @@ namespace HugsLib.Source.Detour {
 			foreach (PropertyInfo destination in types
 				.SelectMany(t => t.GetProperties(AllBindingFlags))
 				.Where(m => m.HasAttribute<DetourPropertyAttribute>())) {
-				var detourAttribute =
-					destination.GetCustomAttributes(typeof (DetourPropertyAttribute), false).First() as
-						DetourPropertyAttribute;
+				var detourAttribute = TryGetAttribute<DetourPropertyAttribute>(destination);
 				try {
 					lastAttemptedDetourSource = null;
 					HandlePropertyDetour(detourAttribute, destination);
@@ -91,15 +93,15 @@ namespace HugsLib.Source.Detour {
 			var handlers = attemptedDestination.DeclaringType.GetMethods(AllBindingFlags).Where(m => m.HasAttribute<DetourFallbackAttribute>());
 			MethodInfo matchingHandler = null;
 			foreach (var handler in handlers) {
-				var attribute = (DetourFallbackAttribute)handler.GetCustomAttributes(typeof(DetourFallbackAttribute), false).FirstOrDefault();
-				if(attribute == null || (attribute.targetMemberNames.Length>0 && !attribute.targetMemberNames.Contains(attemptedDestination.Name))) continue;
+				var attribute = TryGetAttribute<DetourFallbackAttribute>(handler);
+				if (attribute == null || (attribute.targetMemberNames.Length > 0 && !attribute.targetMemberNames.Contains(attemptedDestination.Name))) continue;
 				matchingHandler = handler;
 				break;
 			}
 			if (matchingHandler == null) return false;
 			// try get the method the detour was already routed to
 			MethodInfo existingDestination = null;
-			if (attemptedSource!=null) {
+			if (attemptedSource != null) {
 				var sourceAsMethod = attemptedSource as MethodInfo;
 				var sourceAsProperty = attemptedSource as PropertyInfo;
 				if (sourceAsMethod != null) {
@@ -210,6 +212,14 @@ namespace HugsLib.Source.Detour {
 			if (methodInfo == null) return "[null reference]";
 			if (methodInfo.DeclaringType == null) return methodInfo.Name;
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
+		}
+
+		private static T TryGetAttribute<T>(MemberInfo field) where T : Attribute {
+			try {
+				return (T) field.GetCustomAttributes(typeof (T), false).FirstOrDefault();
+			} catch {
+				return null;
+			}
 		}
 	}
 }
