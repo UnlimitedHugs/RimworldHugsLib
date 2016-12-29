@@ -366,6 +366,7 @@ namespace HugsLib {
 
 		private void ApplyNewDetours() {
 			try {
+				Helpers.CheckFallbackHandlers();
 				Helpers.DoDetours();
 			} catch (Exception e) {
 				Logger.ReportException(e);

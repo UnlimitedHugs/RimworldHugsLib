@@ -67,6 +67,20 @@ namespace HugsLib.Utils {
 			}
 		}
 
+		public static bool MethodMatchesSignature(this MethodInfo method, Type expectedReturnType, params Type[] expectedParameters) {
+			if (method.ReturnType != expectedReturnType) return false;
+			var methodParams = method.GetParameters();
+			if (expectedParameters != null) {
+				if (methodParams.Length != expectedParameters.Length) return false;
+				for (int i = 0; i < methodParams.Length; i++) {
+					if (methodParams[i].ParameterType != expectedParameters[i]) return false;
+				}
+			} else {
+				if (methodParams.Length != 0) return false;
+			}
+			return true;
+		}
+
 		public static IEnumerable<Assembly> GetAllActiveAssemblies() {
 			var listed = new HashSet<Assembly>();
 			foreach (var modContentPack in LoadedModManager.RunningMods) {

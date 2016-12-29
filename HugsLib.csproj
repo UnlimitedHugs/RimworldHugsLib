@@ -61,6 +61,7 @@
     <Compile Include="Source\Core\VersionShort.cs" />
     <Compile Include="Source\Core\WindowReplacer.cs" />
     <Compile Include="Source\Detour\Attribute.cs" />
+    <Compile Include="Source\Detour\DetourFallbackAttribute.cs" />
     <Compile Include="Source\Detour\DetourProvider.cs" />
     <Compile Include="Source\Detour\DetourValidator.cs" />
     <Compile Include="Source\Detour\Helpers.cs" />

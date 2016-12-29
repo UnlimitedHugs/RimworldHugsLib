@@ -10,12 +10,15 @@ namespace HugsLib.Test {
 		public override string ModIdentifier {
 			get { return "DetourTests"; }
 		}
-
-		public new ModLogger Logger {
-			get { return base.Logger; }
+		
+		private static readonly ModLogger logger = new ModLogger("DetourTests");
+		public static new ModLogger Logger {
+			get { return logger; }
 		}
 
 		public static DetourTests Instance { get; private set; }
+
+		public static int ExpectedFallbackMode;
 
 		public DetourTests() {
 			Instance = this;
@@ -25,61 +28,61 @@ namespace HugsLib.Test {
 			// simple methods
 			[DetourMethod(typeof (DetourTestSources), "PublicInstanceMethod")]
 			public void PublicInstanceMethod() {
-				Instance.Logger.Message("public instance method");
+				Logger.Message("public instance method");
 			}
 
 			[DetourMethod(typeof (DetourTestSources), "PrivateInstanceMethod")]
 			private void PrivateInstanceMethod() {
-				Instance.Logger.Message("private instance method");
+				Logger.Message("private instance method");
 			}
 
 			[DetourMethod(typeof (DetourTestSources), "PublicStaticMethod")]
 			public static void PublicStaticMethod() {
-				Instance.Logger.Message("public static method");
+				Logger.Message("public static method");
 			}
 
 			[DetourMethod(typeof (DetourTestSources), "PrivateStaticMethod")]
 			private static void PrivateStaticMethod() {
-				Instance.Logger.Message("private static method");
+				Logger.Message("private static method");
 			}
 
 			// parameter overloads
 			[DetourMethod(typeof (DetourTestSources), "Overload")]
 			public void Overload(string asd, string qwe) {
-				Instance.Logger.Message("overload string");
+				Logger.Message("overload string");
 			}
 
 			[DetourMethod(typeof (DetourTestSources), "Overload")]
 			public void Overload(int asd, int qwe) {
-				Instance.Logger.Message("overload int");
+				Logger.Message("overload int");
 			}
 
 			// properties
 			[DetourProperty(typeof (DetourTestSources), "GetterOnly", DetourProperty.Getter)]
 			public string GetterOnly {
 				get {
-					Instance.Logger.Message("public getterOnly getter");
+					Logger.Message("public getterOnly getter");
 					return "asd";
 				}
-				set { Instance.Logger.Error("public getterOnly setter"); }
+				set { Logger.Error("public getterOnly setter"); }
 			}
 
 			[DetourProperty(typeof (DetourTestSources), "SetterOnly", DetourProperty.Setter)]
 			public string SetterOnly {
 				get {
-					Instance.Logger.Error("public setterOnly getter");
+					Logger.Error("public setterOnly getter");
 					return "asd";
 				}
-				set { Instance.Logger.Message("public setterOnly setter"); }
+				set { Logger.Message("public setterOnly setter"); }
 			}
 
 			[DetourProperty(typeof (DetourTestSources), "Both")]
 			public string Both {
 				get {
-					Instance.Logger.Message("public both getter");
+					Logger.Message("public both getter");
 					return "asd";
 				}
-				set { Instance.Logger.Message("public both setter"); }
+				set { Logger.Message("public both setter"); }
 			}
 
 			private int CompatTestReturn(int param1, string param2) {
@@ -92,6 +95,62 @@ namespace HugsLib.Test {
 
 			private string CompatTestParamsCount(int param1, int param2, int param3) {
 				return null;
+			}
+
+			[DetourMethod(typeof(DetourTestSources), "FallbackHandlerTest")]
+			public void FallbackHandlerTestOne(int param1, string param2) {
+			}
+
+			[DetourMethod(typeof(DetourTestSources), "FallbackHandlerTest")]
+			public void FallbackHandlerTestTwo(int param1, string param2) {
+			}
+
+			[DetourFallback("FallbackHandlerTestOne")]
+			public static void WrongFallbackHandler(MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e) {
+				Log.Error("Wrong fallback handler");
+			}
+
+			[DetourFallback("FallbackHandlerTestTwo")]
+			public static void MethodFallbackHandler(MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e) {
+				if (attemptedDestination.Name == "FallbackHandlerTestTwo" && 
+					existingDestination.Name == "FallbackHandlerTestOne" && 
+					e.InnerException.Message.Contains("already detoured")) {
+					Logger.Message("Fallback handler 1");
+				} else {
+					Logger.Error("Fallback handler 1");
+				}
+			}
+
+			[DetourMethod(typeof(DetourTestSources), "SomeInexistingMethod")]
+			public void InexistingMethodDetour() {
+			}
+
+			[DetourFallback("InexistingMethodDetour")]
+			public static void MissingSourceFallbackHandler(MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e) {
+				if (attemptedDestination.Name == "InexistingMethodDetour" &&
+					existingDestination == null &&
+					e.InnerException.Message.Contains("could not be found")) {
+					Logger.Message("Fallback handler 2");
+				} else {
+					Logger.Error("Fallback handler 2");
+				}
+			}
+
+			[DetourProperty(typeof(DetourTestSources), "Both")]
+			public string BothRepeat {
+				get { return null; }
+				set { }
+			}
+
+			[DetourFallback("BothRepeat")]
+			public static void PropertyFallbackHandler(MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e) {
+				if (attemptedDestination.Name == "BothRepeat" &&
+					existingDestination.Name == "get_Both" &&
+					e.InnerException.Message.Contains("already detoured")) {
+					Logger.Message("Fallback handler 3");
+				} else {
+					Logger.Error("Fallback handler 3");
+				}
 			}
 		}
 
@@ -150,28 +209,28 @@ namespace HugsLib.Test {
 	public class DetourTestSources {
 		// simple methods
 		public void PublicInstanceMethod() {
-			DetourTests.Instance.Logger.Error("public instance method");
+			DetourTests.Logger.Error("public instance method");
 		}
 
 		private void PrivateInstanceMethod() {
-			DetourTests.Instance.Logger.Error("private instance method");
+			DetourTests.Logger.Error("private instance method");
 		}
 
 		public static void PublicStaticMethod() {
-			DetourTests.Instance.Logger.Error("public static method");
+			DetourTests.Logger.Error("public static method");
 		}
 
 		private static void PrivateStaticMethod() {
-			DetourTests.Instance.Logger.Error("private static method");
+			DetourTests.Logger.Error("private static method");
 		}
 
 		// parameter overloads
 		public void Overload(string asd, string qwe) {
-			DetourTests.Instance.Logger.Error("public overload string");
+			DetourTests.Logger.Error("public overload string");
 		}
 
 		public void Overload(int asd, int qwe) {
-			DetourTests.Instance.Logger.Error("public overload int");
+			DetourTests.Logger.Error("public overload int");
 		}
 		
 		// Source-destination compatibility
@@ -183,29 +242,33 @@ namespace HugsLib.Test {
 			return null;
 		}
 
+		// fallback handler test
+		public void FallbackHandlerTest(int param1, string param2) {
+		}
+
 		// properties
 		public string GetterOnly {
 			get {
-				DetourTests.Instance.Logger.Error("public getterOnly getter");
+				DetourTests.Logger.Error("public getterOnly getter");
 				return "asd";
 			}
-			set { DetourTests.Instance.Logger.Message("public getterOnly setter"); }
+			set { DetourTests.Logger.Message("public getterOnly setter"); }
 		}
 
 		public string SetterOnly {
 			get {
-				DetourTests.Instance.Logger.Message("public setterOnly getter");
+				DetourTests.Logger.Message("public setterOnly getter");
 				return "asd";
 			}
-			set { DetourTests.Instance.Logger.Error("public setterOnly setter"); }
+			set { DetourTests.Logger.Error("public setterOnly setter"); }
 		}
 
 		public string Both {
 			get {
-				DetourTests.Instance.Logger.Error("public both getter");
+				DetourTests.Logger.Error("public both getter");
 				return "asd";
 			}
-			set { DetourTests.Instance.Logger.Error("public both setter"); }
+			set { DetourTests.Logger.Error("public both setter"); }
 		}
 	}
 

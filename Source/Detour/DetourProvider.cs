@@ -105,6 +105,13 @@ namespace HugsLib.Source.Detour {
 			return true;
 		}
 
+		public static MethodInfo TryGetExistingDetourDestination(MethodInfo source) {
+			if(source == null) throw new Exception("Detour source must not be null");
+			MethodInfo existing;
+			detours.TryGetValue(source, out existing);
+			return existing;
+		}
+
 		internal static bool CompatibleDetourWithExceptions(MethodInfo source, MethodInfo destination) {
 			if (detours.ContainsKey(source)) {
 				throw new Exception(String.Format("{0} was already detoured to {1}.", source.FullName(), destination.FullName()));
