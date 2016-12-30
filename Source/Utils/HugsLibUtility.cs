@@ -81,6 +81,23 @@ namespace HugsLib.Utils {
 			return true;
 		}
 
+		public static T TryGetAttributeSafely<T>(this MemberInfo member) where T : Attribute {
+			try {
+				return (T)member.GetCustomAttributes(typeof(T), false).FirstOrDefault();
+			} catch {
+				//mods could include attributes from libraries that are not loaded, which would throw an exception
+				return null;
+			}
+		}
+
+		public static T TryGetAttributeSafely<T>(this Type type) where T : Attribute {
+			try {
+				return (T)type.GetCustomAttributes(typeof(T), false).FirstOrDefault();
+			} catch {
+				return null;
+			}
+		}
+
 		public static IEnumerable<Assembly> GetAllActiveAssemblies() {
 			var listed = new HashSet<Assembly>();
 			foreach (var modContentPack in LoadedModManager.RunningMods) {
@@ -112,9 +129,9 @@ namespace HugsLib.Utils {
 				var method = callback.Method;
 				var isAnonymous = method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
 				var methodName = isAnonymous ? "An anonymous method" : method.DeclaringType + "." + method.Name;
-				exceptionCause = string.Format("{0} ({1})", methodName, e.Source);
+				exceptionCause = String.Format("{0} ({1})", methodName, e.Source);
 			}
-			HugsLibController.Logger.ReportException(e, exceptionCause, true, string.Format("a {0} callback", schedulerName));
+			HugsLibController.Logger.ReportException(e, exceptionCause, true, String.Format("a {0} callback", schedulerName));
 		}
 	}
 
