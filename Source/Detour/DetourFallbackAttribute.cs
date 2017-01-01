@@ -1,4 +1,5 @@
 ﻿using System;
+using HugsLib.Source.Attrib;
 
 namespace HugsLib.Source.Detour {
 	/**
@@ -9,7 +10,9 @@ namespace HugsLib.Source.Detour {
 	 * Only the fist matching handler will be called.
 	 */
 	[AttributeUsage(AttributeTargets.Method, Inherited = false)]
-	public class DetourFallbackAttribute : Attribute {
+	public class DetourFallbackAttribute : Attribute, IDetectableAttribute {
+		public const string ExpectedSignature = "void (MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e)";
+		
 		public readonly string[] targetMemberNames;
 
 		// disable default constructor

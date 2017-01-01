@@ -1,15 +1,15 @@
 ﻿using System;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Reflection;
 using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
 using HugsLib.Settings;
-using HugsLib.Source.Detour;
+using HugsLib.Source.Attrib;
 using HugsLib.Utils;
 using RimWorld;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 using Verse;
 
 namespace HugsLib {
@@ -301,7 +301,7 @@ namespace HugsLib {
 		private void LoadReloadInitialize() {
 			try {
 				EnumerateModAssemblies();
-                ApplyNewDetours(); // do detours for (newly) loaded mods
+				AttributeDetector.ProcessNewTypes(); // do detours and other attribute work for (newly) loaded mods
                 EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
@@ -362,15 +362,6 @@ namespace HugsLib {
 
 		private void PrepareReflection() {
 			InjectedDefHasher.PrepareReflection();
-		}
-
-		private void ApplyNewDetours() {
-			try {
-				Helpers.CheckFallbackHandlers();
-				Helpers.DoDetours();
-			} catch (Exception e) {
-				Logger.ReportException(e);
-			}
 		}
 
 		private void InitWindowReplacer() {
