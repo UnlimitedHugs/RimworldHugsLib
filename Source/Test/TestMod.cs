@@ -91,14 +91,14 @@ namespace HugsLib.Test {
 			var enumHandle = Settings.GetHandle("enumThing", "Enum setting", "", HandleEnum.DefaultValue, null, "test_enumSetting_");
 			var toggle = Settings.GetHandle("toggle", "Toggle setting", "Toggle setting", false);
 			var custom = Settings.GetHandle("custom", "custom setting", "custom setting desc", false);
-			custom.CustomDrawerHeight = 120f;
+			custom.CustomDrawerHeight = 30f;
 			custom.CustomDrawer = rect => {
 				if (Widgets.ButtonText(new Rect(rect.x, rect.y, rect.width, custom.CustomDrawerHeight), "I Iz Button")) {
-					custom.CustomDrawerHeight = custom.CustomDrawerHeight>30?30f:120f;
+					custom.CustomDrawerHeight = custom.CustomDrawerHeight>30?30f:400f;
 				}
 				return false;
 			};
-			TestCustomTypeSetting();
+			//TestCustomTypeSetting();
 			//TestConditionalVisibilitySettings();	
 		}
 

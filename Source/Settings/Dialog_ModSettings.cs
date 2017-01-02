@@ -94,8 +94,7 @@ namespace HugsLib.Settings {
 								HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.VisibilityPredicate");
 							}
 						}
-						bool skipDrawing = curY - scrollPosition.y + HandleEntryHeight < 0f || curY - scrollPosition.y > scrollViewVisible.height;
-						DrawHandleEntry(handle, scrollViewTotal, ref curY, skipDrawing);
+						DrawHandleEntry(handle, scrollViewTotal, ref curY, scrollViewVisible.height);
 					}
 					currentlyDrawnEntry = null;
 				}
@@ -137,12 +136,13 @@ namespace HugsLib.Settings {
 		}
 
 		// draws the label and appropriate input for a single setting
-		private void DrawHandleEntry(SettingHandle handle, Rect parentRect, ref float curY, bool skipDrawing) {
+		private void DrawHandleEntry(SettingHandle handle, Rect parentRect, ref float curY, float scrollViewHeight) {
 			var entryHeight = HandleEntryHeight;
+			if (handle.CustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
+				entryHeight = handle.CustomDrawerHeight + HandleEntryPadding * 2;
+			}
+			var skipDrawing = curY - scrollPosition.y + entryHeight < 0f || curY - scrollPosition.y > scrollViewHeight;
 			if (!skipDrawing) {
-				if (handle.CustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
-					entryHeight = handle.CustomDrawerHeight + HandleEntryPadding*2;
-				}
 				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight).ContractedBy(HandleEntryPadding);
 				var mouseOver = Mouse.IsOver(entryRect);
 				if (mouseOver) Widgets.DrawHighlight(entryRect);
