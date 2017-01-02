@@ -138,8 +138,12 @@ namespace HugsLib.Settings {
 
 		// draws the label and appropriate input for a single setting
 		private void DrawHandleEntry(SettingHandle handle, Rect parentRect, ref float curY, bool skipDrawing) {
+			var entryHeight = HandleEntryHeight;
 			if (!skipDrawing) {
-				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, HandleEntryHeight).ContractedBy(HandleEntryPadding);
+				if (handle.CustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
+					entryHeight = handle.CustomDrawerHeight + HandleEntryPadding*2;
+				}
+				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight).ContractedBy(HandleEntryPadding);
 				var mouseOver = Mouse.IsOver(entryRect);
 				if (mouseOver) Widgets.DrawHighlight(entryRect);
 				var controlRect = new Rect(entryRect.x + entryRect.width / 2f, entryRect.y, entryRect.width / 2f, entryRect.height);
@@ -177,7 +181,7 @@ namespace HugsLib.Settings {
 					}
 				}
 			}
-			curY += HandleEntryHeight;
+			curY += entryHeight;
 		}
 
 		// draws the input control for string settings

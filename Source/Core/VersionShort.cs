@@ -55,7 +55,7 @@ namespace HugsLib.Core {
 		public static int[] StringToParts(string version) {
 			if (string.IsNullOrEmpty(version)) throw new FormatException("Parameter is empty");
 			var parts = version.Split(Separator);
-			if (parts.Length < 2 || parts.Length > 3) throw new FormatException("Version string requires at least 2 and at most 4 parts");
+			if (parts.Length < 2 || parts.Length > 3) throw new FormatException("Version string requires at least 2 and at most 3 parts");
 			var result = new int[3];
 			for (int i = 0; i < parts.Length; i++) {
 				int parsed;

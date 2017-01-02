@@ -33,6 +33,8 @@ namespace HugsLib.Settings {
 		public bool Unsaved { get; set; }
 		// specifies by how much the + and - buttons should change a numeric setting.
 		public int SpinnerIncrement { get; set; }
+		// when CustomDrawer is used, specifies the height of the row for the handle. Leave at 0 for default height.
+		public float CustomDrawerHeight { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
@@ -45,12 +47,32 @@ namespace HugsLib.Settings {
 	}
 
 	public class SettingHandle<T> : SettingHandle {
+		public delegate void ValueChanged(T newValue);
+
 		// implicitly cast settings to its value type
 		public static implicit operator T(SettingHandle<T> handle) {
 			return handle.Value;
 		}
 
-		public T Value { get; set; }
+		// called when the value of the handle changes. Optional.
+		public ValueChanged OnValueChanged { get; set; }
+
+		private T _value;
+		public T Value {
+			get { return _value; }
+			set {
+				var prevValue = _value;
+				_value = value;
+				if (OnValueChanged != null && !SafeEquals(prevValue, _value)) {
+					try {
+						OnValueChanged(_value);
+					} catch (Exception e) {
+						HugsLibController.Logger.Error("Exception while calling SettingHandle.OnValueChanged. Handle name was: \"{0}\" Value was: \"{1}\". Exception was: {2}", Name, StringValue, e);
+						throw;
+					}
+				}
+			}
+		}
 		public T DefaultValue { get; set; }
 
 		public override string StringValue {
@@ -101,7 +123,7 @@ namespace HugsLib.Settings {
 		}
 
 		public override bool HasDefaultValue() {
-			return Value.Equals(DefaultValue);
+			return SafeEquals(Value, DefaultValue);
 		}
 
 		public override string ToString() {
@@ -118,6 +140,12 @@ namespace HugsLib.Settings {
 				HugsLibController.Logger.Error("Failed to parse setting \"{0}\" as custom type {1}. Setting value was reset. Value was: \"{2}\". Exception was: {3}", Name, typeof(T).FullName, stringValue, e);
 				throw;
 			}
+		}
+
+		// Equals comparison with null support
+		private bool SafeEquals(T valueOne, T valueTwo) {
+			if (valueOne != null) return valueOne.Equals(valueTwo);
+			return valueTwo == null;
 		}
 	}
 
