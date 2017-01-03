@@ -5,6 +5,11 @@ using Verse;
 
 namespace HugsLib.GuiInject {
 	public static class WindowInjectionManager {
+		/**
+		 * Allows to inject a delegate into any Window in the game.
+		 * This is a good way to add GUI elements to existing window without making the commitment of a detour.
+		 * Added injections can be safely removed is they are no longer required.
+		 */
 		public delegate void DrawInjectedContents(Window window, Rect inRect);
 
 		public enum InjectMode {
@@ -16,7 +21,7 @@ namespace HugsLib.GuiInject {
 		// If a callback causes an exception it is removed for the sake of performance. You can set this to false in Dev mode for debugging.
 		public static bool RemoveErroringCallbacks = true;
 
-		private static readonly Dictionary<string, WindowInjection> windowInjections = new Dictionary<string, WindowInjection>();
+		private static readonly Dictionary<string, ActiveWindowInjection> windowInjections = new Dictionary<string, ActiveWindowInjection>();
 		private static readonly Dictionary<Type, WindowInjectionSet> injectionSets = new Dictionary<Type, WindowInjectionSet>(); 
 
 		public static bool AddInjection(Type windowType, DrawInjectedContents callback, string injectionId, InjectMode mode = InjectMode.AfterContents, bool errorOnFail = true) {
@@ -36,14 +41,14 @@ namespace HugsLib.GuiInject {
 				if(errorOnFail) throw new Exception(string.Format("Cannot add window injection with id {0}, injection with his id already exists", injectionId));
 				return false;
 			}
-			var injection = new WindowInjection(injectionId, windowType, mode, callback);
+			var injection = new ActiveWindowInjection(injectionId, windowType, mode, callback);
 			windowInjections.Add(injectionId, injection);
 			ActivateInjection(injection);
 			return true;
 		}
 
 		public static void RemoveInjection(string injectionId) {
-			WindowInjection injection;
+			ActiveWindowInjection injection;
 			windowInjections.TryGetValue(injectionId, out injection);
 			if(injection == null) throw new Exception(string.Format("Could not remove injection with id {0} as it does not exist", injectionId));
 			windowInjections.Remove(injectionId);
@@ -55,7 +60,7 @@ namespace HugsLib.GuiInject {
 		}
 
 		// Returns all active injections. This is mostly for debugging purposes.
-		public static IEnumerable<WindowInjection> AllActiveInjections {
+		public static IEnumerable<ActiveWindowInjection> AllActiveInjections {
 			get { return windowInjections.Values; }
 		}
 
@@ -67,7 +72,7 @@ namespace HugsLib.GuiInject {
 		}
 
 		// adds the injection to one of the sets, allowing it to be called
-		private static void ActivateInjection(WindowInjection injection) {
+		private static void ActivateInjection(ActiveWindowInjection injection) {
 			WindowInjectionSet set;
 			injectionSets.TryGetValue(injection.windowType, out set);
 			if (set == null) {
@@ -93,7 +98,7 @@ namespace HugsLib.GuiInject {
 		}
 
 		// removes the injection from its set, which will prevent it from being called
-		private static void DeactivateInjection(WindowInjection injection) {
+		private static void DeactivateInjection(ActiveWindowInjection injection) {
 			WindowInjectionSet set;
 			injectionSets.TryGetValue(injection.windowType, out set);
 			if(set == null) return;

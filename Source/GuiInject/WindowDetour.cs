@@ -7,6 +7,10 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.GuiInject {
+	/**
+	 * Detours Window.WindowOnGUI to allow injection for modded code using WindowInjectionManager 
+	 * // TODO: on update, look over the vanilla code to ensure it still matches the original
+	 */
 	public class WindowDetour : Window {
 		// how often fields for already closed windows will be cleaned up
 		private const float PruneFieldsIntervalSeconds = 10f;
