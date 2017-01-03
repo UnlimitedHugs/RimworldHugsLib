@@ -13,9 +13,10 @@ A lightweight shared mod library for Rimworld. Provides a foundation for mods an
 - UtilityWorldObjects: A convenient way to store your data in a save file. Since A16 MapComponents are no longer a reliable way to store your data, and UWO's are designed to be a drop-in replacement.
 - Custom tick scheduling: Includes tools for executing callbacks with a specified tick delay, and registering recurring ticks with non-standard intervals. Recurring ticks are distributed uniformly across the time spectrum, to minimize the performance impact of the ticking entity.
 - Detouring: provides special attributes for more convenient detouring. Detours are safety-checked to prevent improper use. Repeated detours of the same method are not allowed and will generate an error. Mods can implement special methods to handle detouring errors, which allows for graceful failure and easier pinpointing of player issues.
+- GUI injection: provides a special attribute that allows a method to be executed whenever a given window type is drawn. This allows to inject drawing code for any window in the game.
 
 ## Compatibility
-The library does no detour any methods on its own. The only potential points of contention are the replaced Dialog_Options and EditWindow_Log- they are replaced when they appear on the WindowStack.
+The only detour by the library itself is the `Window.WindowOnGUI` method, used to power the GUI injection system.
 
 ## Usage
 This is a public library similar to CCL, designed to be easily updateable between Rimworld versions. Feel free to use it for your own projects.
