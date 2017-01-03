@@ -127,6 +127,7 @@ namespace HugsLib.Test {
 
 			[DetourFallback("InexistingMethodDetour")]
 			public static void MissingSourceFallbackHandler(MemberInfo attemptedDestination, MethodInfo existingDestination, Exception e) {
+				
 				if (attemptedDestination.Name == "InexistingMethodDetour" &&
 					existingDestination == null &&
 					e.InnerException.Message.Contains("could not be found")) {

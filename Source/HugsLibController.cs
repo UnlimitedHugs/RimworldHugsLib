@@ -1,15 +1,14 @@
 ﻿using System;
-using UnityEngine;
-using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using System.Reflection;
 using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
 using HugsLib.Settings;
-using HugsLib.Source.Detour;
+using HugsLib.Source.Attrib;
 using HugsLib.Utils;
-using RimWorld;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 using Verse;
 
 namespace HugsLib {
@@ -76,7 +75,6 @@ namespace HugsLib {
 		private readonly List<Map> pendingMapsLoaded = new List<Map>();
 		private Dictionary<Assembly, ModContentPack> assemblyContentPacks;
 		private DefReloadWatcher reloadWatcher;
-		private WindowReplacer windowReplacer;
 		private SettingHandle<bool> updateNewsSetting;
 		private bool pendingWorldLoaded;
 
@@ -102,7 +100,6 @@ namespace HugsLib {
 				DistributedTicker = new DistributedTickScheduler();
 				LogUploader = new LogPublisher();
 				reloadWatcher = new DefReloadWatcher(OnDefReloadDetected);
-				InitWindowReplacer();
 				RegisterOwnSettings();
 				ReadOwnVersionFile();
 				LoadReloadInitialize();
@@ -179,7 +176,6 @@ namespace HugsLib {
 
 		internal void OnGUI() {
 			try {
-				windowReplacer.OnGUI();
 				LogUploader.OnGUI();
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
@@ -301,7 +297,7 @@ namespace HugsLib {
 		private void LoadReloadInitialize() {
 			try {
 				EnumerateModAssemblies();
-                ApplyNewDetours(); // do detours for (newly) loaded mods
+				AttributeDetector.ProcessNewTypes(); // do detours and other attribute work for (newly) loaded mods
                 EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
@@ -362,21 +358,7 @@ namespace HugsLib {
 
 		private void PrepareReflection() {
 			InjectedDefHasher.PrepareReflection();
-		}
-
-		private void ApplyNewDetours() {
-			try {
-				Helpers.CheckFallbackHandlers();
-				Helpers.DoDetours();
-			} catch (Exception e) {
-				Logger.ReportException(e);
-			}
-		}
-
-		private void InitWindowReplacer() {
-			windowReplacer = new WindowReplacer();
-			windowReplacer.RegisterReplacement<Dialog_Options, Dialog_OptionsExtended>();
-			windowReplacer.RegisterReplacement<EditWindow_Log, EditWindow_LogExtended>();
+			LogWindowInjection.PrepareReflection();
 		}
 
 		private void RegisterOwnSettings() {
