@@ -83,19 +83,12 @@ namespace HugsLib.Utils {
 
 		public static T TryGetAttributeSafely<T>(this MemberInfo member) where T : Attribute {
 			try {
-				return (T)member.GetCustomAttributes(typeof(T), false).FirstOrDefault();
-			} catch {
+				var attrs = member.GetCustomAttributes(typeof (T), false);
+				if (attrs.Length > 0) return (T)attrs[0];
+			} catch { 
 				//mods could include attributes from libraries that are not loaded, which would throw an exception
-				return null;
 			}
-		}
-
-		public static T TryGetAttributeSafely<T>(this Type type) where T : Attribute {
-			try {
-				return (T)type.GetCustomAttributes(typeof(T), false).FirstOrDefault();
-			} catch {
-				return null;
-			}
+			return null;
 		}
 
 		public static IEnumerable<Assembly> GetAllActiveAssemblies() {
@@ -126,12 +119,17 @@ namespace HugsLib.Utils {
 		internal static void BlameCallbackException(string schedulerName, Action callback, Exception e) {
 			string exceptionCause = null;
 			if (callback != null) {
-				var method = callback.Method;
-				var isAnonymous = method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
-				var methodName = isAnonymous ? "An anonymous method" : method.DeclaringType + "." + method.Name;
+				var methodName = DescribeDelegate(callback);
 				exceptionCause = String.Format("{0} ({1})", methodName, e.Source);
 			}
 			HugsLibController.Logger.ReportException(e, exceptionCause, true, String.Format("a {0} callback", schedulerName));
+		}
+
+		internal static string DescribeDelegate(Delegate del) {
+			if (del == null) return "null";
+			var method = del.Method;
+			var isAnonymous = method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
+			return isAnonymous ? "an anonymous method" : method.DeclaringType + "." + method.Name;
 		}
 	}
 
