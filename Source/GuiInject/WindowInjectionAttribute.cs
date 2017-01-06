@@ -10,7 +10,7 @@ namespace HugsLib.GuiInject {
 	 * See below for the required method signature.
 	 */
 	[AttributeUsage(AttributeTargets.Method, Inherited = false)]
-	internal sealed class WindowInjectionAttribute : Attribute, IDetectableAttribute {
+	public sealed class WindowInjectionAttribute : Attribute, IDetectableAttribute {
 		public const string ExpectedSignature = "void(Window drawnWindow, Rect contentRect)";
 
 		public Type WindowType { get; private set; }
