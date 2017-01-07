@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HugsLib.Source.Attrib;
 using HugsLib.Utils;
 using Verse;
@@ -60,7 +61,7 @@ namespace HugsLib.Source.Detour {
 					pair = GetDetourPairFromAttribute(detourAttribute, destination);
 					DetourProvider.CompatibleDetourWithExceptions(pair.source, pair.destination);
 				} catch (Exception e) {
-					DetourProvider.ThrowClearerDetourException(e, pair.source, pair.destination, "method");
+					DetourProvider.ThrowClearerDetourException(e, pair.source, info, "method");
 				}
 			} catch (Exception e) {
 				if (!TryCallDetourFallbackHandler(pair.source, destination, e)) {
@@ -84,7 +85,7 @@ namespace HugsLib.Source.Detour {
 						DetourProvider.CompatibleDetourWithExceptions(pair.source, pair.destination);
 					}
 				} catch (Exception e) {
-					DetourProvider.ThrowClearerDetourException(e, pair.source, pair.destination, "property");
+					DetourProvider.ThrowClearerDetourException(e, pair.source, info, "property");
 				}
 			} catch (Exception e) {
 				if (!TryCallDetourFallbackHandler(pair.source, destination, e)) {
@@ -167,12 +168,17 @@ namespace HugsLib.Source.Detour {
 				return candidates.First();
 
 			// this is where things get slightly complicated, we'll have to search by parameters.
+			var destinationParameterTypes = destinationInfo.GetParameters().Select(pi => pi.ParameterType).ToList();
+			var extensionMethodType = GetExtensionMethodType(destinationInfo);
+			if (extensionMethodType != null) {
+				// the "this" parameter should not be used in the parameter sequence comparison
+				destinationParameterTypes.RemoveAt(0);
+			}
+			
 			candidates = candidates.Where(mi =>
 				mi.ReturnType == destinationInfo.ReturnType &&
-				mi.GetParameters()
-					.Select(pi => pi.ParameterType)
-					.SequenceEqual(destinationInfo.GetParameters().Select(pi => pi.ParameterType)))
-				.ToArray();
+				(extensionMethodType == null || mi.DeclaringType == extensionMethodType) &&
+				mi.GetParameters().Select(pi => pi.ParameterType).SequenceEqual(destinationParameterTypes)).ToArray();
 
 			// if we only get one result, we've got our method info - if the length is zero, the method doesn't exist.
 			if (candidates.Length == 0)
@@ -189,6 +195,14 @@ namespace HugsLib.Source.Detour {
 			if (methodInfo == null) return "[null reference]";
 			if (methodInfo.DeclaringType == null) return methodInfo.Name;
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
+		}
+
+		// returns the type of the first parameter is the method is an extension method, null otherwise
+		private static Type GetExtensionMethodType(MethodInfo method) {
+			if (method.TryGetAttributeSafely<ExtensionAttribute>() != null) {
+				return method.GetParameters().Select(p => p.ParameterType).FirstOrDefault();
+			}
+			return null;
 		}
 	}
 }

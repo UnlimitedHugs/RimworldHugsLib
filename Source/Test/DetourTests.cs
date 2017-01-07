@@ -171,6 +171,7 @@ namespace HugsLib.Test {
 			// overloads
 			sources.Overload(1, 1);
 			sources.Overload("asd", "qwe");
+			sources.Overload(1.1f, 1.1f);
 
 			// properties
 			var x = sources.GetterOnly;
@@ -233,6 +234,10 @@ namespace HugsLib.Test {
 		public void Overload(int asd, int qwe) {
 			DetourTests.Logger.Error("public overload int");
 		}
+
+		public void Overload(float asd, float qwe) {
+			DetourTests.Logger.Error("public overload float");
+		}
 		
 		// Source-destination compatibility
 		public string CompatTest(int param1, string param2) {
@@ -280,6 +285,11 @@ namespace HugsLib.Test {
 		}
 		private static string CompatTestExtensionValid(this DetourTestSources self, int param1, string param2) {
 			return null;
+		}
+
+		[DetourMethod(typeof(DetourTestSources), "Overload")]
+		public static void Overload(this DetourTestSources self, float asd, float qwe) {
+			DetourTests.Logger.Message("overload float");
 		}
 	}
 
