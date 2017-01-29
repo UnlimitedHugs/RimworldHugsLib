@@ -7,7 +7,7 @@ namespace HugsLib.Shell {
      * 
      * See Shell.cs for more info on Commands.
      */
-    class ShellRestartRimWorld : Shell {
+    public class ShellRestartRimWorld : Shell {
         public override bool DoCommand() {
             HugsLibController.Logger.Message("Restarting RimWorld");
             if (base.DoCommand(GetParsedArgs()))

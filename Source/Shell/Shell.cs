@@ -11,7 +11,7 @@ namespace HugsLib.Shell {
      * Refer to the Microsoft documentation for dotNet 3.5 for more info on a process.
      * https://msdn.microsoft.com/en-us/library/system.diagnostics.process(v=vs.90).aspx
      */
-    abstract class Shell {
+    public abstract class Shell {
         public abstract bool DoCommand();
         public Shell(params object[] args) { }
         public Shell() { DoCommand(); }

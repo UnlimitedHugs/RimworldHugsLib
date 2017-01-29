@@ -10,7 +10,7 @@ namespace HugsLib.Shell {
      *
      * See Shell.cs for more info on Commands.
      */
-    class ShellOpenDirectory : Shell {
+    public class ShellOpenDirectory : Shell {
         private string DirectoryPath { get; set; }
 
         public ShellOpenDirectory(string Directory) : base(Directory, false) {

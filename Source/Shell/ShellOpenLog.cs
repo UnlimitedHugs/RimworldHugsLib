@@ -8,7 +8,7 @@ namespace HugsLib.Shell {
      *
      * See Shell.cs for more info on Commands.
      */
-    class ShellOpenLog : Shell {
+    public class ShellOpenLog : Shell {
         public override bool DoCommand() {
             string logfile = string.Empty;
             if (GenCommandLine.TryGetCommandLineArg("logfile", out logfile) && logfile.NullOrEmpty())
