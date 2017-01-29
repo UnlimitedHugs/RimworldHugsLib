@@ -13,10 +13,8 @@ namespace HugsLib.Shell {
      */
     abstract class Shell {
         public abstract bool DoCommand();
-
-        public Shell() {
-            DoCommand();
-        }
+        public Shell(params object[] args) { }
+        public Shell() { DoCommand(); }
 
         public bool DoCommand(ShellCommand command = null) {
             if (command != null)
@@ -39,7 +37,8 @@ namespace HugsLib.Shell {
                 process = new Process();
             if (psi != null)
                 try {
-                    ReplaceUserDirectorys(ref psi);
+                    Utils.HugsLibUtility.TryReplaceUserDirectory(psi.FileName);
+                    Utils.HugsLibUtility.TryReplaceUserDirectory(psi.Arguments);
                     process.StartInfo = psi;
                     process.Start();
                     return true;
@@ -58,13 +57,6 @@ namespace HugsLib.Shell {
             else
                 HugsLibController.Logger.Warning("Could not start {0}, ProcessStartInfo is empty!", this.GetType().Name);
             return false;
-        }
-
-        private static void ReplaceUserDirectorys(ref ProcessStartInfo psi) {
-            if (psi.FileName != null && (psi.FileName.StartsWith(@"~\") || psi.FileName.StartsWith(@"~/")))
-                psi.FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), psi.FileName.Remove(0, 2));
-            if (psi.Arguments != null && (psi.Arguments.StartsWith(@"~\") || psi.Arguments.StartsWith(@"~/")))
-                psi.Arguments = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), psi.Arguments.Remove(0, 2)); ;
         }
 
         [Serializable]

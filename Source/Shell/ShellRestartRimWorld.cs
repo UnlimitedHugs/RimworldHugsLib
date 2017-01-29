@@ -4,6 +4,7 @@ using Verse;
 namespace HugsLib.Shell {
     /**
      * A Command to cleanly restart RimWorld on the target machine.
+     * 
      * See Shell.cs for more info on Commands.
      */
     class ShellRestartRimWorld : Shell {

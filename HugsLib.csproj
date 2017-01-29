@@ -54,6 +54,7 @@
     <Compile Include="Source\Attrib\DetectableAttributeHandler.cs" />
     <Compile Include="Source\Attrib\IDetectableAttribute.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
+    <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />
     <Compile Include="Source\Shell\ShellRestartRimWorld.cs" />
     <Compile Include="Source\Core\DefReloadWatcher.cs" />

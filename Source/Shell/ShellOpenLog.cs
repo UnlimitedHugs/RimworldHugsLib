@@ -4,7 +4,8 @@ using Verse;
 
 namespace HugsLib.Shell {
     /**
-     * A Command to cleanly restart RimWorld on the target machine.
+     * A Command to open the log file in the systems default text editor.
+     *
      * See Shell.cs for more info on Commands.
      */
     class ShellOpenLog : Shell {
