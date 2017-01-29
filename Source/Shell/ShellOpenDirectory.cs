@@ -23,7 +23,6 @@ namespace HugsLib.Shell {
                 HugsLibController.Logger.Warning("Attempted to open a directory but none was set.");
                 return false;
             }
-            HugsLibController.Logger.Message(DirectoryPath);
             if (Utils.PlatformUtility.GetCurrentPlatform() == Utils.PlatformType.MacOSX)
                 return DoCommand(new ShellCommand { FileName = "open", Args = this.DirectoryPath });
             Application.OpenURL(this.DirectoryPath);
