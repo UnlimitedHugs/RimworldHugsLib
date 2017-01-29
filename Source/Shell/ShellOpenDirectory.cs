@@ -13,7 +13,7 @@ namespace HugsLib.Shell {
     class ShellOpenDirectory : Shell {
         private string DirectoryPath { get; set; }
 
-        public ShellOpenDirectory(string Directory) : base(Directory, false) {
+        public ShellOpenDirectory(string Directory) : base(Directory) {
             this.DirectoryPath = ParsePath(Directory);
             DoCommand();
         }
