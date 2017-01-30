@@ -53,6 +53,10 @@
     <Compile Include="Source\Attrib\AttributeDetector.cs" />
     <Compile Include="Source\Attrib\DetectableAttributeHandler.cs" />
     <Compile Include="Source\Attrib\IDetectableAttribute.cs" />
+    <Compile Include="Source\Shell\Shell.cs" />
+    <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
+    <Compile Include="Source\Shell\ShellOpenLog.cs" />
+    <Compile Include="Source\Shell\ShellRestartRimWorld.cs" />
     <Compile Include="Source\Core\DefReloadWatcher.cs" />
     <Compile Include="Source\Core\HugsTickProxy.cs" />
     <Compile Include="Source\Core\KeyBindingDefOf.cs" />
@@ -102,6 +106,7 @@
     <Compile Include="Source\Utils\InjectedDefHasher.cs" />
     <Compile Include="Source\Utils\MapComponentUtility.cs" />
     <Compile Include="Source\Utils\ModLogger.cs" />
+    <Compile Include="Source\Utils\PlatformUtility.cs" />
     <Compile Include="Source\Utils\UtilityWorldObject.cs" />
     <Compile Include="Source\Utils\UtilityWorldObjectManager.cs" />
   </ItemGroup>

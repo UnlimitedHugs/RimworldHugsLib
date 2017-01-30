@@ -22,7 +22,7 @@ namespace HugsLib.Utils {
 
 		public static bool ControlIsHeld {
 			get { return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand); }
-		} 
+		}
 
 		// Returns an enumerable as a comma-separated string.
 		public static string ListElements(this IEnumerable list) {
@@ -85,7 +85,7 @@ namespace HugsLib.Utils {
 			try {
 				var attrs = member.GetCustomAttributes(typeof (T), false);
 				if (attrs.Length > 0) return (T)attrs[0];
-			} catch { 
+			} catch {
 				//mods could include attributes from libraries that are not loaded, which would throw an exception
 			}
 			return null;
@@ -131,7 +131,17 @@ namespace HugsLib.Utils {
 			var isAnonymous = method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
 			return isAnonymous ? "an anonymous method" : method.DeclaringType + "." + method.Name;
 		}
-	}
+
+        public static string TryReplaceUserDirectory(this string text) {
+            if (text.StartsWith(@"~\") || text.StartsWith(@"~/"))
+                text = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
+            return text;
+        }
+
+        public static string SurroundWithDoubleQuotes(this string text) {
+            return string.Format("\"{0}\"", text);
+        }
+    }
 
 
 }
