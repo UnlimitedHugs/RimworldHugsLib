@@ -7,17 +7,19 @@ namespace HugsLib.Shell {
      * 
      * See Shell.cs for more info on Commands.
      */
-    public class ShellRestartRimWorld : Shell {
-        public override bool DoCommand() {
+    public static class ShellRestartRimWorld {
+        public static bool Execute() {
             HugsLibController.Logger.Message("Restarting RimWorld");
-            if (base.DoCommand(GetParsedArgs()))
-                Root.Shutdown();
-            return false;
+	        if (Shell.StartProcess(GetParsedArgs())) {
+		        Root.Shutdown();
+		        return true;
+	        }
+	        return false;
         }
 
-        private ShellCommand GetParsedArgs() {
+        private static Shell.ShellCommand GetParsedArgs() {
             var args = Environment.GetCommandLineArgs();
-            ShellCommand command = new ShellCommand() { FileName = args[0] };
+            var command = new Shell.ShellCommand { FileName = args[0] };
             var argsString = string.Empty;
 
             for (int index = 1; index < args.GetLength(0); ++index) {

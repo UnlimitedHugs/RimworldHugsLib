@@ -37,4 +37,16 @@
 	<HugsLib_logs_retryBtn>Повторить попытку</HugsLib_logs_retryBtn>
 	<HugsLib_logs_browseBtn>Открыть в браузере</HugsLib_logs_browseBtn>
 
+	<HugsLib_logs_filesBtn>Файлы</HugsLib_logs_filesBtn>
+	<HugsLib_logs_openLogFile>Открыть журнал событий</HugsLib_logs_openLogFile>
+	<HugsLib_logs_openSaveDir>Открыть папку с сохраненными играми</HugsLib_logs_openSaveDir>
+	<HugsLib_logs_openModsDir>Открыть папку с модами</HugsLib_logs_openModsDir>
+
+	<HugsLib_restart_title>Требуется перезапуск</HugsLib_restart_title>
+	<HugsLib_restart_text>Изменения сохранены.\n\nЧтобы изменения вступили в силу, необходимо перезапустить игру.</HugsLib_restart_text>
+	<HugsLib_restart_restartNowBtn>Перезапустить сейчас</HugsLib_restart_restartNowBtn>
+	<HugsLib_restart_autoToggle>Перезапускать автоматически</HugsLib_restart_autoToggle>
+	<HugsLib_restart_restarting>Перезапуск</HugsLib_restart_restarting>
+	<HugsLib_setting_autoRestart_label>Перезапускать при перенастройке модов</HugsLib_setting_autoRestart_label>
+	<HugsLib_setting_autoRestart_desc>Автоматически перезапускает игру если состав или порядок загрузки модов был изменен.</HugsLib_setting_autoRestart_desc>
 </LanguageData>

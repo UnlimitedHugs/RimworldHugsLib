@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace HugsLib.Source.Detour {
 	/**
-	 * A tool to detour calls form one method to another. Will use Community Core Library detouring, if available, and its own equivalent otherwise.
+	 * A tool to detour calls form one method to another. Keeps track of already detoured methods so that each method may only be detoured once.
 	 */
 	public class DetourProvider {
 		/**
@@ -113,8 +113,9 @@ namespace HugsLib.Source.Detour {
 		}
 
 		internal static bool CompatibleDetourWithExceptions(MethodInfo source, MethodInfo destination) {
-			if (detours.ContainsKey(source)) {
-				throw new Exception(String.Format("{0} was already detoured to {1}.", source.FullName(), destination.FullName()));
+			MethodInfo existingDestination;
+			if (detours.TryGetValue(source, out existingDestination)) {
+				throw new Exception(String.Format("method was already detoured to {0}.", existingDestination.FullName()));
 			}
 			return TryCompatibleDetour(source, destination);
 		}

@@ -16,7 +16,7 @@ namespace HugsLib.Settings {
 		}
 
 		public string ModId { get; private set; }
-		public string EntryName { get; internal set; }
+		public string EntryName { get; set; }
 		public ListPriority DisplayPriority { get; set; }
 
 		private readonly Dictionary<string, string> loadedValues = new Dictionary<string, string>();

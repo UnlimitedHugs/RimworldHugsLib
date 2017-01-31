@@ -10,23 +10,19 @@ namespace HugsLib.Shell {
      *
      * See Shell.cs for more info on Commands.
      */
-    public class ShellOpenDirectory : Shell {
-        private string DirectoryPath { get; set; }
-
-        public ShellOpenDirectory(string Directory) : base(Directory) {
-            this.DirectoryPath = ParsePath(Directory);
-            DoCommand();
-        }
-
-        public override bool DoCommand() {
-            if(string.IsNullOrEmpty(DirectoryPath)) {
+    public static class ShellOpenDirectory {
+        public static bool Execute(string directory) {
+	        var directoryPath = ParsePath(directory);
+			if (string.IsNullOrEmpty(directoryPath)) {
                 HugsLibController.Logger.Warning("Attempted to open a directory but none was set.");
                 return false;
             }
-            if (Utils.PlatformUtility.GetCurrentPlatform() == Utils.PlatformType.MacOSX)
-                return DoCommand(new ShellCommand { FileName = "open", Args = this.DirectoryPath });
-            Application.OpenURL(this.DirectoryPath);
-            return false;
+	        if (Utils.PlatformUtility.GetCurrentPlatform() == Utils.PlatformType.MacOSX) {
+		        return Shell.StartProcess(new Shell.ShellCommand {FileName = "open", Args = directory});
+	        } else {
+		        Application.OpenURL(directoryPath);
+	        }
+	        return false;
         }
 
         private static string ParsePath(string path) {

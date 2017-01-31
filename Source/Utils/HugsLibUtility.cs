@@ -133,9 +133,10 @@ namespace HugsLib.Utils {
 		}
 
         public static string TryReplaceUserDirectory(this string text) {
-            if (text.StartsWith(@"~\") || text.StartsWith(@"~/"))
-                text = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
-            return text;
+	        if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
+		        text = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
+	        }
+	        return text;
         }
 
         public static string SurroundWithDoubleQuotes(this string text) {

@@ -53,6 +53,9 @@
     <Compile Include="Source\Attrib\AttributeDetector.cs" />
     <Compile Include="Source\Attrib\DetectableAttributeHandler.cs" />
     <Compile Include="Source\Attrib\IDetectableAttribute.cs" />
+    <Compile Include="Source\Core\KeyBindingHandler.cs" />
+    <Compile Include="Source\Restarter\Dialog_RestartGame.cs" />
+    <Compile Include="Source\Restarter\AutoRestarter.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />

@@ -8,22 +8,22 @@ namespace HugsLib.Shell {
      *
      * See Shell.cs for more info on Commands.
      */
-    public class ShellOpenLog : Shell {
-        public override bool DoCommand() {
-            string logfile = string.Empty;
+    public static class ShellOpenLog {
+        public static bool Execute() {
+            string logfile;
             if (GenCommandLine.TryGetCommandLineArg("logfile", out logfile) && logfile.NullOrEmpty())
-                return DoCommand(new ShellCommand() { FileName = logfile });
-            PlatformType platform = PlatformUtility.GetCurrentPlatform();
+                return Shell.StartProcess(new Shell.ShellCommand { FileName = logfile });
+            var platform = PlatformUtility.GetCurrentPlatform();
             switch (platform)
             {
                 case PlatformType.Linux:
-                    return DoCommand(new ShellCommand() { FileName = @"/tmp/rimworld_log" });
+                    return Shell.StartProcess(new Shell.ShellCommand { FileName = @"/tmp/rimworld_log" });
                 case PlatformType.MacOSX:
-                    return DoCommand(new ShellCommand() { FileName = "open", Args = "~/Library/Logs/Unity/Player.log" });
+					return Shell.StartProcess(new Shell.ShellCommand { FileName = "open", Args = "~/Library/Logs/Unity/Player.log" });
                 case PlatformType.Windows:
-                    return DoCommand(new ShellCommand() { FileName = Path.Combine(UnityData.dataPath, "output_log.txt") });
+					return Shell.StartProcess(new Shell.ShellCommand { FileName = Path.Combine(UnityData.dataPath, "output_log.txt") });
                 default:
-                    HugsLibController.Logger.ReportException(new UnsupportedPlatformException(this.GetType()), null, false, this.GetType().Name);
+					HugsLibController.Logger.ReportException(new Shell.UnsupportedPlatformException("ShellOpenLog"));
                     return false;
             }
         }

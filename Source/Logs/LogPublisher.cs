@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using HugsLib.Core;
+using HugsLib.Shell;
 using HugsLib.Utils;
 using UnityEngine;
 using Verse;
@@ -40,13 +41,6 @@ namespace HugsLib.Logs {
 		private bool userAborted;
 
 		private Thread workerThread;
-
-		public void OnGUI() {
-			if (Event.current.type != EventType.KeyDown) return;
-			if (HugsLibKeyBingings.PublishLogs.JustPressed && HugsLibUtility.ControlIsHeld) {
-				ShowPublishPrompt();
-			}
-		}
 
 		public void ShowPublishPrompt() {
 			if (PublisherIsReady()) {

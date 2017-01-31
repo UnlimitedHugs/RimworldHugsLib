@@ -4,6 +4,7 @@ using System.Reflection;
 using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
+using HugsLib.Restarter;
 using HugsLib.Settings;
 using HugsLib.Source.Attrib;
 using HugsLib.Utils;
@@ -83,6 +84,8 @@ namespace HugsLib {
 		public CallbackScheduler CallbackScheduler { get; private set; }
 		public DistributedTickScheduler DistributedTicker { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
+
+		internal AutoRestarter AutoRestarter { get; private set; }
 		
 		private HugsLibController() {
 		}
@@ -100,6 +103,7 @@ namespace HugsLib {
 				DistributedTicker = new DistributedTickScheduler();
 				LogUploader = new LogPublisher();
 				reloadWatcher = new DefReloadWatcher(OnDefReloadDetected);
+				AutoRestarter = new AutoRestarter();
 				RegisterOwnSettings();
 				ReadOwnVersionFile();
 				LoadReloadInitialize();
@@ -176,7 +180,7 @@ namespace HugsLib {
 
 		internal void OnGUI() {
 			try {
-				LogUploader.OnGUI();
+				KeyBindingHandler.OnGUI();
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
 						childMods[i].OnGUI();
@@ -376,6 +380,7 @@ namespace HugsLib {
 				}
 				return false;
 			};
+			AutoRestarter.CreateSettingsHandles(pack);
 		}
 	}
 }
