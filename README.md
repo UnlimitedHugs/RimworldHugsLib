@@ -14,6 +14,8 @@ A lightweight shared mod library for Rimworld. Provides a foundation for mods an
 - Custom tick scheduling: Includes tools for executing callbacks with a specified tick delay, and registering recurring ticks with non-standard intervals. Recurring ticks are distributed uniformly across the time spectrum, to minimize the performance impact of the ticking entity.
 - Detouring: provides special attributes for more convenient detouring. Detours are safety-checked to prevent improper use. Repeated detours of the same method are not allowed and will generate an error. Mods can implement special methods to handle detouring errors, which allows for graceful failure and easier pinpointing of player issues.
 - GUI injection: provides a special attribute that allows a method to be executed whenever a given window type is drawn. This allows to inject drawing code for any window in the game.
+- Auto-restarter: adds a prompt to the Mods dialog to restart the game when changes to the mod configuration have been made. Mod load order changes are also detected.
+- Log window additions: adds buttons to copy the selected log message and activate the log publisher. Also adds a menu to find common files: open the log file and browse the user data and mods folders.
 
 ## Compatibility
 The only detour by the library itself is the `Window.WindowOnGUI` method, used to power the GUI injection system.
