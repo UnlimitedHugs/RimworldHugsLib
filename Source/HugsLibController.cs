@@ -7,6 +7,7 @@ using HugsLib.News;
 using HugsLib.Restarter;
 using HugsLib.Settings;
 using HugsLib.Source.Attrib;
+using HugsLib.Source.Detour;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -301,8 +302,9 @@ namespace HugsLib {
 		private void LoadReloadInitialize() {
 			try {
 				EnumerateModAssemblies();
-				AttributeDetector.ProcessNewTypes(); // do detours and other attribute work for (newly) loaded mods
-                EnumerateChildMods();
+				ProcessAttibutes(); // do detours and other attribute work for (newly) loaded mods
+				EnumerateChildMods();
+				DetourProvider.BeginDetourGroupLogging();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
 					var childMod = childMods[i];
@@ -318,6 +320,7 @@ namespace HugsLib {
 					initializationsThisRun.Add(modId);
 				}
 				if (initializationsThisRun.Count > 0) {
+					DetourProvider.LogNewDetours("Manual detours applied: ");
 					Logger.Message("v{0} initialized {1}", LibraryVersion, initializationsThisRun.ListElements());
 				}
 				OnDefsLoaded();
@@ -325,7 +328,13 @@ namespace HugsLib {
 				Logger.ReportException(e);
 			}
 		}
-		
+
+		private void ProcessAttibutes() {
+			DetourProvider.BeginDetourGroupLogging();
+			AttributeDetector.ProcessNewTypes();
+			DetourProvider.LogNewDetours("Attribute detours applied: ");
+		}
+
 		// will run on startup and on reload. On reload it will add newly loaded mods
 		private void EnumerateChildMods() {
 			foreach (var subclass in typeof (ModBase).InstantiableDescendantsAndSelf()) {

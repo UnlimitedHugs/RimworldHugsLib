@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace HugsLib.Source.Detour {
 	/**
@@ -11,6 +12,9 @@ namespace HugsLib.Source.Detour {
         * keep track of performed detours
         */
 		private static readonly Dictionary<MethodInfo, MethodInfo> detours = new Dictionary<MethodInfo, MethodInfo>();
+
+		private static readonly List<Helpers.DetourPair> detoursToLog = new List<Helpers.DetourPair>();
+		private static bool loggingDetourGroup;
 
 		/**
 		 * Same as TryCompatibleDetour, but writes an error to the console on failure
@@ -101,6 +105,8 @@ namespace HugsLib.Source.Detour {
 				*Pointer_Raw_Address = offset;
 			}
 
+			detoursToLog.Add(new Helpers.DetourPair(source, destination));
+			if(!loggingDetourGroup) LogNewDetours("Manual detour: ");
 			// done!
 			return true;
 		}
@@ -110,6 +116,48 @@ namespace HugsLib.Source.Detour {
 			MethodInfo existing;
 			detours.TryGetValue(source, out existing);
 			return existing;
+		}
+
+		public static void BeginDetourGroupLogging() {
+			loggingDetourGroup = true;
+		}
+
+		public static void LogNewDetours(string message) {
+			if (detoursToLog.Count > 0) {
+				var builder = new StringBuilder("(info) ");
+				builder.Append(message);
+				if (detoursToLog.Count > 1) {
+					builder.Append('\n');
+				}
+				for (int i = 0; i < detoursToLog.Count; i++) {
+					var pair = detoursToLog[i];
+					// source method
+					if (pair.source == null) {
+						builder.Append("[null]");
+					} else {
+						if (pair.source.DeclaringType != null) {
+							builder.Append(pair.source.DeclaringType.Name);
+							builder.Append('.');
+							builder.Append(pair.source.Name);
+						} else {
+							builder.Append(pair.source.FullName());
+						}
+					}
+					builder.Append(" >> ");
+					// destination method
+					if (pair.destination == null) {
+						builder.Append("[null]");
+					} else {
+						builder.Append(pair.destination.FullName());
+					}
+					if (i < detoursToLog.Count - 1) {
+						builder.Append('\n');
+					}
+				}
+				HugsLibController.Logger.Message(builder.ToString());
+			}
+			loggingDetourGroup = false;
+			detoursToLog.Clear();
 		}
 
 		internal static bool CompatibleDetourWithExceptions(MethodInfo source, MethodInfo destination) {

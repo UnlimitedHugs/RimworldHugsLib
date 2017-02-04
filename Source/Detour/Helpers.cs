@@ -11,7 +11,7 @@ namespace HugsLib.Source.Detour {
 	public static class Helpers {
 		public const BindingFlags AllBindingFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-		private struct DetourPair {
+		internal struct DetourPair {
 			public readonly MethodInfo source;
 			public readonly MethodInfo destination;
 
