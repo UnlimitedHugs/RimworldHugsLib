@@ -1,4 +1,5 @@
-﻿using HugsLib.GuiInject;
+﻿using System.Threading;
+using HugsLib.GuiInject;
 using HugsLib.Settings;
 using HugsLib.Shell;
 using RimWorld;
@@ -21,12 +22,15 @@ namespace HugsLib.Restarter {
 		
 		public static void PerformRestart() {
 			LongEventHandler.QueueLongEvent(() => {
-				ShellRestartRimWorld.Execute();
+				// put up the loading screen while the game shuts down
+				Thread.Sleep(5000);
 			}, "HugsLib_restart_restarting", true, null);
+			// execute in main thread
+			LongEventHandler.ExecuteWhenFinished(() => ShellRestartRimWorld.Execute());
 		}
 
 		[WindowInjection(typeof (Page_ModsConfig), Mode = WindowInjectionManager.InjectMode.AfterContents)]
-		private static void DrawLogWindowButtons(Window window, Rect inRect) {
+		private static void DoModsDialogControls(Window window, Rect inRect) {
 			// update mod list hash
 			if (window.GetHashCode() != lastSeenWindowHash) {
 				lastSeenWindowHash = window.GetHashCode();

@@ -200,7 +200,7 @@ namespace HugsLib.Source.Detour {
 				if (typeB == MethodType.Static) {
 					reason = string.Format("'{0}' is static but not an extension method", nameB);
 					return false;
-				} else if (targetA != targetB) {
+				} else if (targetB != null && !targetB.IsAssignableFrom(targetA)) {
 					reason = string.Format("Target classes do not match :: '{0}' target is '{1}'; '{2}' target is '{3}'",
 						nameA, FullNameOfType(targetA), nameB, FullNameOfType(targetB));
 					return false;
