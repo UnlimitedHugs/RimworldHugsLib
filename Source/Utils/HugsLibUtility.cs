@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -134,7 +135,7 @@ namespace HugsLib.Utils {
 
         public static string TryReplaceUserDirectory(this string text) {
 	        if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
-		        text = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
+		        text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
 	        }
 	        return text;
         }
@@ -142,6 +143,24 @@ namespace HugsLib.Utils {
         public static string SurroundWithDoubleQuotes(this string text) {
             return string.Format("\"{0}\"", text);
         }
+
+		public static string TryGetLogFilePath() {
+			string logfile;
+			if (GenCommandLine.TryGetCommandLineArg("logfile", out logfile) && logfile.NullOrEmpty()) {
+				return logfile;
+			}
+			var platform = PlatformUtility.GetCurrentPlatform();
+			switch (platform) {
+				case PlatformType.Linux:
+					return @"/tmp/rimworld_log";
+				case PlatformType.MacOSX:
+					return "~/Library/Logs/Unity/Player.log";
+				case PlatformType.Windows:
+					return Path.Combine(UnityData.dataPath, "output_log.txt");
+				default:
+					return null;
+			}
+		}
     }
 
 

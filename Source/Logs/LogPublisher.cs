@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using HugsLib.Core;
-using HugsLib.Shell;
 using HugsLib.Utils;
 using UnityEngine;
 using Verse;
@@ -160,7 +159,8 @@ namespace HugsLib.Logs {
 				logSection = RedactRimworldPaths(logSection);
 				logSection = RedactPlayerConnectInformation(logSection);
 				logSection = RedactRendererInformation(logSection);
-				if (logSection == null) return null;
+				logSection = RedactHomeDirectoryPaths(logSection);
+				logSection = RedactSteamId(logSection);
 				return String.Concat(MakeLogTimestamp(), ListActiveMods(), "\n", logSection);
 			} catch (Exception e) {
 				HugsLibController.Logger.ReportException(e);
@@ -168,8 +168,28 @@ namespace HugsLib.Logs {
 			return null;
 		}
 
+		// only relevant on linux
+		private string RedactSteamId(string log) {
+			const string IdReplacement = "[Steam Id redacted]";
+			return Regex.Replace(log, "Steam_SetMinidumpSteamID.+", IdReplacement);
+		}
+		
+		private string RedactHomeDirectoryPaths(string log) {
+			// not necessary for windows logs
+			if (PlatformUtility.GetCurrentPlatform() == PlatformType.Windows) {
+				return log;
+			}
+			const string pathReplacement = "[Home_dir]";
+			var homePath = Environment.GetEnvironmentVariable("HOME");
+			if (homePath == null) {
+				return log;
+			}
+			return log.Replace(homePath, pathReplacement);
+		}
+
 		private string RedactRimworldPaths(string log) {
 			const string pathReplacement = "[Rimworld_dir]";
+			// easiest way to get the game folder is one level up from dataPath
 			var appPath = Path.GetFullPath(Application.dataPath);
 			var pathParts = appPath.Split(Path.DirectorySeparatorChar).ToList();
 			pathParts.RemoveAt(pathParts.Count-1);
@@ -192,8 +212,10 @@ namespace HugsLib.Logs {
 		}
 
 		private string GetLogFileContents() {
-			var filePath = Path.Combine(Application.dataPath, OutputLogFilename);
-			if (!File.Exists(filePath)) return null;
+			var filePath = HugsLibUtility.TryGetLogFilePath();
+			if (filePath.NullOrEmpty() || !File.Exists(filePath)) {
+				throw new FileNotFoundException("Log file not found:"+filePath);
+			}
 			var tempPath = Path.GetTempFileName();
 			File.Delete(tempPath);
 			// we need to copy the log file since the original is already opened for writing by Unity
