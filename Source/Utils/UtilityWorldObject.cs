@@ -2,9 +2,9 @@
 using Verse;
 
 namespace HugsLib.Utils {
-	/**
-	 * Base type for utility WorldObjects repurposed to store data. See UtilityWorldObjectManager for more info.
-	 */
+	/// <summary>
+	/// Base type for utility WorldObjects repurposed to store data. See UtilityWorldObjectManager for more info.
+	/// </summary>
 	public abstract class UtilityWorldObject : WorldObject {
 		public override void SpawnSetup() {
 		}

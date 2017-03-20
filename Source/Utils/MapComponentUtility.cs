@@ -3,11 +3,12 @@ using Verse;
 
 namespace HugsLib.Utils {
 	public static class MapComponentUtility {
-		/**
-		 * Injects a map component into the current map if it does not already exist. 
-		 * Required for new MapComponents that were not active at map creation.
-		 * The injection is performed at ExecuteWhenFinished to allow calling this method in MapComponent constructors.
-		 */
+		/// <summary>
+		/// Injects a map component into the current map if it does not already exist. 
+		/// Required for new MapComponents that were not active at map creation.
+		/// The injection is performed at ExecuteWhenFinished to allow calling this method in MapComponent constructors.
+		/// </summary>
+		/// <param name="mapComponent">The MapComponent that is expected to be present is the map's component list</param>
 		public static void EnsureIsActive(this MapComponent mapComponent) {
 			if (mapComponent == null) throw new Exception("MapComponent is null");
 			LongEventHandler.ExecuteWhenFinished(() => {
@@ -19,7 +20,12 @@ namespace HugsLib.Utils {
 		}
 
 		
-		// Gets the map component of the given type from a map
+		/// <summary>
+		/// Gets the map component of the given type from a map.
+		/// Will throw an exception if a component of the requested type is not found.
+		/// </summary>
+		/// <typeparam name="T">The type of your MapComponent</typeparam>
+		/// <param name="map">The map to get the component from</param>
 		public static T GetMapComponent<T>(this Map map) where T : MapComponent {
 			if (map == null || map.components == null) throw new Exception("Cannot get component from null or uninitialized map");
 			var comp = (T)map.components.Find(c => c is T);

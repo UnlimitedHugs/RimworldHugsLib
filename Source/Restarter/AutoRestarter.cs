@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-using HugsLib.GuiInject;
 using HugsLib.Settings;
 using HugsLib.Shell;
 using RimWorld;
@@ -7,11 +6,11 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Restarter {
-	/**
-	 * Makes the the Close button in the Mods dialog prompt the player to restart the game if the mod configuration has changed.
-	 * Will restart the game automatically if the autoRestart setting is active.
-	 * Unlike in vanilla, changes in mod order are also detected and will require a restart.
-	 */
+	/// <summary>
+	/// Makes the the Close button in the Mods dialog prompt the player to restart the game if the mod configuration has changed.
+	/// Will restart the game automatically if the autoRestart setting is active.
+	/// Unlike in vanilla, changes in mod order are also detected and will require a restart.
+	/// </summary>
 	internal class AutoRestarter {
 		private static readonly Vector2 CloseButSize = new Vector2(120f, 40f);
 		
@@ -29,8 +28,7 @@ namespace HugsLib.Restarter {
 			LongEventHandler.ExecuteWhenFinished(() => ShellRestartRimWorld.Execute());
 		}
 
-		[WindowInjection(typeof (Page_ModsConfig), Mode = WindowInjectionManager.InjectMode.AfterContents)]
-		private static void DoModsDialogControls(Window window, Rect inRect) {
+		public static void DoModsDialogControls(Window window, Rect inRect) {
 			// update mod list hash
 			if (window.GetHashCode() != lastSeenWindowHash) {
 				lastSeenWindowHash = window.GetHashCode();

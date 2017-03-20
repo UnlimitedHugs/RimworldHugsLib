@@ -10,8 +10,11 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Utils {
-	// A catch-all place for extension methods and other useful stuff
+	/// <summary>
+	/// A catch-all place for extension methods and other useful stuff
+	/// </summary>
 	public static class HugsLibUtility {
+		public static readonly BindingFlags AllBindingFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
 		public static bool ShiftIsHeld {
 			get { return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift); }
@@ -117,23 +120,7 @@ namespace HugsLib.Utils {
 			Messages.Message("HugsLib_copiedToClipboard".Translate(), MessageSound.Benefit);
 		}
 
-		internal static void BlameCallbackException(string schedulerName, Action callback, Exception e) {
-			string exceptionCause = null;
-			if (callback != null) {
-				var methodName = DescribeDelegate(callback);
-				exceptionCause = String.Format("{0} ({1})", methodName, e.Source);
-			}
-			HugsLibController.Logger.ReportException(e, exceptionCause, true, String.Format("a {0} callback", schedulerName));
-		}
-
-		internal static string DescribeDelegate(Delegate del) {
-			if (del == null) return "null";
-			var method = del.Method;
-			var isAnonymous = method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
-			return isAnonymous ? "an anonymous method" : method.DeclaringType + "." + method.Name;
-		}
-
-        public static string TryReplaceUserDirectory(this string text) {
+		public static string TryReplaceUserDirectory(this string text) {
 	        if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
 		        text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
 	        }
@@ -160,6 +147,28 @@ namespace HugsLib.Utils {
 				default:
 					return null;
 			}
+		}
+
+		internal static void BlameCallbackException(string schedulerName, Action callback, Exception e) {
+			string exceptionCause = null;
+			if (callback != null) {
+				var methodName = DescribeDelegate(callback);
+				exceptionCause = String.Format("{0} ({1})", methodName, e.Source);
+			}
+			HugsLibController.Logger.ReportException(e, exceptionCause, true, String.Format("a {0} callback", schedulerName));
+		}
+
+		internal static string DescribeDelegate(Delegate del) {
+			if (del == null) return "null";
+			var method = del.Method;
+			var isAnonymous = method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
+			return isAnonymous ? "an anonymous method" : method.DeclaringType + "." + method.Name;
+		}
+
+		internal static string FullName(this MethodInfo methodInfo) {
+			if (methodInfo == null) return "[null reference]";
+			if (methodInfo.DeclaringType == null) return methodInfo.Name;
+			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
 		}
     }
 

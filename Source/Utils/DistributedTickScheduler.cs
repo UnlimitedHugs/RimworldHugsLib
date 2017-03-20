@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 
 namespace HugsLib.Utils {
-	/**
-	 * A ticking scheduler for things that require a tick only every so often.
-	 * Distributes tick calls uniformely over multiple frames to reduce the workload.
-	 * Optimized for many tick recipients with the same tick interval.
-	 */
+	/// <summary>
+	/// A ticking scheduler for things that require a tick only every so often.
+	/// Distributes tick calls uniformely over multiple frames to reduce the workload.
+	/// Optimized for many tick recipients with the same tick interval. 
+	/// </summary>
 	public class DistributedTickScheduler {
 		private readonly List<ListTicker> tickers = new List<ListTicker>();
 		private int lastProcessedTick = -1;

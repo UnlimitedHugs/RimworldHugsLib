@@ -6,9 +6,9 @@ using HugsLib.Core;
 using Verse;
 
 namespace HugsLib.News {
-	/**
-	 * Stores the last displayed update news item for all mods. Shows the news dialog window when there are not yet displayed news items available.
-	 */
+	/// <summary>
+	/// Stores the last displayed update news item for all mods. Shows the news dialog window when there are not yet displayed news items available.
+	/// </summary>
 	public class UpdateFeatureManager : PersistentDataManager {
 		protected override string FileName {
 			get { return "LastSeenNews.xml"; }

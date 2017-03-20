@@ -6,9 +6,9 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Settings {
-	/**
-	 * An options window for all configurable settings exposed by mods using the library
-	 */
+	/// <summary>
+	/// An options window for all configurable settings exposed by mods using the library
+	/// </summary>
 	public class Dialog_ModSettings : Window {
 		private delegate bool SettingsHandleDrawer(SettingHandle handle, Rect inRect, HandleControlInfo info);
 

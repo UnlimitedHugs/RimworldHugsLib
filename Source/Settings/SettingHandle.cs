@@ -4,36 +4,59 @@ using UnityEngine;
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace HugsLib.Settings {
-	/**
-	 * An individual persistent setting owned by a mod.
-	 * The extra layer of inheritance allows for type abstraction and storing SettingHandles in lists.
-	 */
+	/// <summary>
+	/// An individual persistent setting owned by a mod.
+	/// The extra layer of inheritance allows for type abstraction and storing SettingHandles in lists.
+	/// </summary>
 	public abstract class SettingHandle {
 		public delegate bool ValueIsValid(string value);
 		public delegate bool ShouldDisplay();
 		public delegate bool DrawCustomControl(Rect rect);
 
-		// unique id
+		/// <summary>
+		/// Unique idenfifier of the setting.
+		/// </summary>
 		public string Name { get; protected set; }
-		// name displayed in the settings menu
+		/// <summary>
+		/// Name displayed in the settings menu.
+		/// </summary>
 		public string Title { get; set; }
-		// displayed as a tooltip in the settings menu
+		/// <summary>
+		/// Displayed as a tooltip in the settings menu.
+		/// </summary>
 		public string Description { get; set; }
-		// should return true if the passed value is valid for this setting, optional
+		/// <summary>
+		/// Should return true if the passed value is valid for this setting. Optional.
+		/// </summary>
 		public ValueIsValid Validator { get; set; }
-		// the string identifier prefix used to display enum values in the settings menu (e.g. "prefix_" for "prefix_EnumValue")
+		/// <summary>
+		/// The string identifier prefix used to display enum values in the settings menu (e.g. "prefix_" for "prefix_EnumValue")
+		/// </summary>
 		public string EnumStringPrefix { get; set; }
-		// return true to make this setting visible in the menu. Optional.
+		/// <summary>
+		/// Return true to make this setting visible in the menu. Optional.
+		/// An invisible setting can still be reset to default using the Reset All button.
+		/// </summary>
 		public ShouldDisplay VisibilityPredicate { get; set; }
-		// draw a custom control for the settings menu entry. Entry name is already drawn when this is called. Optional. Return value indicates if the control changed the setting.
+		/// <summary>
+		/// Draw a custom control for the settings menu entry. Entry name is already drawn when this is called. Optional. Return value indicates if the control changed the setting.
+		/// </summary>
 		public DrawCustomControl CustomDrawer { get; set; }
-		// when true, setting will never appear in the menu. For serialized data.
+		/// <summary>
+		/// When true, setting will never appear in the menu and can not be reset to default by the player. For serialized data.
+		/// </summary>
 		public bool NeverVisible { get; set; }
-		// when true, will not save this setting to the xml file. Useful in conjunction with CustomDrawer for placing buttons in the settings menu.
+		/// <summary>
+		/// When true, will not save this setting to the xml file. Useful in conjunction with CustomDrawer for placing buttons in the settings menu.
+		/// </summary>
 		public bool Unsaved { get; set; }
-		// specifies by how much the + and - buttons should change a numeric setting.
+		/// <summary>
+		/// Specifies by how much the + and - buttons should change a numeric setting.
+		/// </summary>
 		public int SpinnerIncrement { get; set; }
-		// when CustomDrawer is used, specifies the height of the row for the handle. Leave at 0 for default height.
+		/// <summary>
+		/// When CustomDrawer is used, specifies the height of the row for the handle. Leave at 0 for default height.
+		/// </summary>
 		public float CustomDrawerHeight { get; set; }
 
 		public abstract string StringValue { get; set; }
@@ -49,15 +72,24 @@ namespace HugsLib.Settings {
 	public class SettingHandle<T> : SettingHandle {
 		public delegate void ValueChanged(T newValue);
 
-		// implicitly cast settings to its value type
+		/// <summary>
+		/// Implicitly cast handles to the Value they carry.
+		/// </summary>
 		public static implicit operator T(SettingHandle<T> handle) {
 			return handle.Value;
 		}
 
-		// called when the value of the handle changes. Optional.
+		/// <summary>
+		/// Called when the Value of the handle changes. Optional.
+		/// </summary>
 		public ValueChanged OnValueChanged { get; set; }
 
 		private T _value;
+		/// <summary>
+		/// The actual value of the setting. 
+		/// This is converted to its string representation when settings are saved.
+		/// Assigning a new value will trigger the OnValueChanged delegate.
+		/// </summary>
 		public T Value {
 			get { return _value; }
 			set {
@@ -73,8 +105,16 @@ namespace HugsLib.Settings {
 				}
 			}
 		}
+
+		/// <summary>
+		/// The value the setting assumes when initially created or reset.
+		/// </summary>
 		public T DefaultValue { get; set; }
 
+		/// <summary>
+		/// Retrieves the string representation of the setting or assigns a new setting value using a string.
+		/// Will trigger the Validator delegate if assigned and change the Value property if the validation passes.
+		/// </summary>
 		public override string StringValue {
 			get {
 				try {
@@ -110,6 +150,9 @@ namespace HugsLib.Settings {
 			}
 		}
 
+		/// <summary>
+		/// Returns the type of the handle Value property.
+		/// </summary>
 		public override Type ValueType {
 			get { return typeof (T); }
 		}
@@ -118,10 +161,17 @@ namespace HugsLib.Settings {
 			Name = name;
 		}
 
+		/// <summary>
+		/// Assings the default value to the Value property.
+		/// </summary>
 		public override void ResetToDefault() {
 			Value = DefaultValue;
 		}
 
+		/// <summary>
+		/// Returns true if the handle is set to its default value.
+		/// </summary>
+		/// <returns></returns>
 		public override bool HasDefaultValue() {
 			return SafeEquals(Value, DefaultValue);
 		}

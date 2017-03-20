@@ -6,10 +6,10 @@ using HugsLib.Source.Attrib;
 using HugsLib.Utils;
 
 namespace HugsLib.Test {
-	/**
-	 * Tests for the AttributeDetector callback system
-	 * No tests for: signature validation, exceptions during invocation, detection of new types
-	 */
+	/// <summary>
+	/// Tests for the AttributeDetector callback system
+	/// No tests for: signature validation, exceptions during invocation, detection of new types
+    /// </summary>
 	public class AttributeTests : ModBase {
 		public override string ModIdentifier {
 			get { return "AttributeTests"; }

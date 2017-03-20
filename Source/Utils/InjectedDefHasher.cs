@@ -3,7 +3,9 @@ using System.Reflection;
 using Verse;
 
 namespace HugsLib.Utils {
-	// Adds a hash to a manually instantiated def to avoid def collisions
+	/// <summary>
+	/// Adds a hash to a manually instantiated def to avoid def collisions.
+	/// </summary>
 	public static class InjectedDefHasher {
 		private static MethodInfo giveShortHashMethod;
 

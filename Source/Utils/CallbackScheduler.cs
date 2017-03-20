@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 
 namespace HugsLib.Utils {
-	/**
-	* A performance-friendly way to execute code at arbitrary tick intervals.
-	* Optimized for one-off timed callbacks with variable callback delay. 
-	* Use DistributedTickScheduler instead if you have many recepients with recurring callbacks & constant time.
-	*/
+	/// <summary>
+	/// A performance-friendly way to execute code at arbitrary tick intervals.
+	/// Optimized for one-off timed callbacks with variable callback delay. 
+	/// Use DistributedTickScheduler instead if you have many recepients with recurring callbacks & constant time.
+	/// </summary>
 	public class CallbackScheduler {
 		private readonly LinkedList<SchedulerEntry> entries = new LinkedList<SchedulerEntry>();
 		private int lastProcessedTick = -1;

@@ -4,9 +4,9 @@ using System.Xml.Linq;
 using HugsLib.Core;
 
 namespace HugsLib.Settings {
-	/**
-	 * A central place for mods to store persistent settings. Individual settings are grouped by mod using ModSettingsPack
-	 */
+	/// <summary>
+	/// A central place for mods to store persistent settings. Individual settings are grouped by mod using ModSettingsPack
+	/// </summary>
 	public class ModSettingsManager : PersistentDataManager {
 		protected override string FileName {
 			get { return "ModSettings.xml"; }
@@ -15,21 +15,29 @@ namespace HugsLib.Settings {
 		private readonly List<ModSettingsPack> packs = new List<ModSettingsPack>();
 		private readonly Action SettingsChangedCallback;
 		
-		public ModSettingsManager(Action settingsChangedCallback) {
+		internal ModSettingsManager(Action settingsChangedCallback) {
 			SettingsChangedCallback = settingsChangedCallback;
 			LoadData();
 		}
 
-		public ModSettingsPack GetModSettings(string modId) {
+		/// <summary>
+		/// Retrieves the ModSettingsPack for a given mod identifier.
+		/// </summary>
+		/// <param name="modId">The unique identifier of the mod that owns the pack</param>
+		/// <param name="displayModName">A display name of the mod owning the pack. This will be displayed in the Mod Settings dialog.</param>
+		public ModSettingsPack GetModSettings(string modId, string displayModName = null) {
 			if(!IsValidElementName(modId)) throw new Exception("Invalid name for mod settings group: "+modId);
 			for (int i = 0; i < packs.Count; i++) {
 				if (packs[i].ModId == modId) return packs[i];
 			}
-			var pack = new ModSettingsPack(modId);
+			var pack = new ModSettingsPack(modId) {EntryName = displayModName};
 			packs.Add(pack);
 			return pack;
 		}
 
+		/// <summary>
+		/// Saves all settings to disk and notifies all ModBase mods by calling SettingsChanged() 
+		/// </summary>
 		public void SaveChanges() {
 			SaveData();
 			if (SettingsChangedCallback != null) SettingsChangedCallback();
@@ -39,6 +47,10 @@ namespace HugsLib.Settings {
 			return packs.Find(p => p.ModId == modId) != null;
 		}
 
+		/// <summary>
+		/// Removes a settings pack for a mod if it exists. Use SaveChanges to apply the change afterwards.
+		/// </summary>
+		/// <param name="modId">The identifier of the mod owning the pack</param>
 		public bool TryRemoveModSettings(string modId) {
 			var pack = packs.Find(p => p.ModId == modId);
 			if (pack == null) return false;

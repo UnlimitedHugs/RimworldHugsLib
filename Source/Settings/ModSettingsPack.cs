@@ -6,27 +6,48 @@ using HugsLib.Core;
 using Verse;
 
 namespace HugsLib.Settings {
-	/**
-	 * A group of settings values added by a mod. Each mod has their own ModSettingsPack
-	 * Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name
-	 */
+	/// <summary>
+	/// A group of settings values added by a mod. Each mod has their own ModSettingsPack.
+	/// Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
+	/// </summary>
 	public class ModSettingsPack {
 		public enum ListPriority {
 			Higher, Normal, Lower
 		}
 
+		/// <summary>
+		/// Identifier of the mod that owns this pack
+		/// </summary>
 		public string ModId { get; private set; }
+		/// <summary>
+		/// The name of the owning mod that will display is the Mod Settings dialog
+		/// </summary>
 		public string EntryName { get; set; }
+		/// <summary>
+		/// Special display order for the mod in the Mod Settings dialog.
+		/// Mods are generally ordered by name. Please leave this at Normal unless you have a good reason to change it.
+		/// </summary>
 		public ListPriority DisplayPriority { get; set; }
 
 		private readonly Dictionary<string, string> loadedValues = new Dictionary<string, string>();
 		private readonly List<SettingHandle> handles = new List<SettingHandle>();
 
-		public ModSettingsPack(string modId) {
+		internal ModSettingsPack(string modId) {
 			ModId = modId;
 			DisplayPriority = ListPriority.Normal;
 		}
 
+		/// <summary>
+		/// Retrieves an existing SettingHandle from the pack, or creates a new one.
+		/// Loaded settings will only display in the Mod Settings dialog after they have been claimed using this method.
+		/// </summary>
+		/// <typeparam name="T">The type of setting value you are creating.</typeparam>
+		/// <param name="settingName">Unique identifier for the setting. Must be unique for this specific pack only.</param>
+		/// <param name="title">A display name for the setting that will show up next to it in the Mod Settings dialog. Recommended to keep this short.</param>
+		/// <param name="description">A description for the setting that will appear in a tooltip when the player hovers over the setting in the Mod Settings dialog.</param>
+		/// <param name="defaultValue">The value the setting will assume when newly created and when the player resets the setting to its default.</param>
+		/// <param name="validator">An optional delegate that will be called when a new value is about to be assigned to the handle. Receives a string argument and must return a bool to indicate if the passed value is valid for the setting.</param>
+		/// <param name="enumPrefix">Used only for Enum settings. Enum values are displayed in a readable format by the following method: Translate(prefix+EnumValueName)</param>
 		public SettingHandle<T> GetHandle<T>(string settingName, string title, string description, T defaultValue = default(T), SettingHandle.ValueIsValid validator = null, string enumPrefix = null) {
 			if (!PersistentDataManager.IsValidElementName(settingName)) throw new Exception("Invalid name for mod setting: " + settingName);
 			SettingHandle<T> handle = null;
@@ -59,6 +80,11 @@ namespace HugsLib.Settings {
 			return handle;
 		}
 
+		/// <summary>
+		/// Deletes a setting loaded from the xml file before it is claimed using GetHandle.
+		/// Useful for cleaning up settings that are no longer in use.
+		/// </summary>
+		/// <param name="name">The identifier of the setting (handle identifier)</param>
 		public bool TryRemoveUnclaimedValue(string name) {
 			return loadedValues.Remove(name);
 		}

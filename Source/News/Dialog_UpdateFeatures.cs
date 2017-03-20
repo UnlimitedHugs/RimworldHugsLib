@@ -5,9 +5,9 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.News {
-	/**
-	 * Displays a list to update feature defs with basic image and formatting support. See UpdateFeatureDef for proper syntax.
-	 */
+	/// <summary>
+	/// Displays a list to update feature defs with basic image and formatting support. See UpdateFeatureDef for proper syntax.
+	/// </summary>
 	public class Dialog_UpdateFeatures : Window {
 		private const float HeaderLabelHeight = 40f; 
 		private const float EntryTitleLabelHeight = 40f;

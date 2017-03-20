@@ -1,4 +1,5 @@
 #if TEST_MOD
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HugsLib.Settings;
@@ -8,13 +9,9 @@ using UnityEngine.SceneManagement;
 using Verse;
 
 namespace HugsLib.Test {
-	// This mod is for testing the various facilities of the library
-	public class TestMod2 : ModBase {
-		public override string ModIdentifier {
-			get { return "TestMod2"; }
-		}
-	}
-
+	/// <summary>
+	/// This mod is for testing the various facilities of the library
+	/// </summary>
 	public class TestMod : ModBase {
 		public static TestMod Instance { get; private set; }
 
@@ -62,11 +59,17 @@ namespace HugsLib.Test {
 
 		public override void MapLoaded(Map map) {
 			Logger.Message("MapLoaded:"+map);
-			// this will produce an exception if the map mesh was not regenerated yet
-			map.mapDrawer.MapMeshDirty(new IntVec3(0, 0, 0), MapMeshFlag.Buildings);
-			
-			//HugsLibController.Instance.CallbackScheduler.ScheduleCallback(() => Logger.Trace("scheduler callback"), 150, true);
+			try {
+				map.mapDrawer.MapMeshDirty(new IntVec3(0, 0, 0), MapMeshFlag.Buildings);
+			} catch (Exception e) {
+				Logger.Error("MapLoaded fired before map mesh regeneration "+e);
+			}
 
+			//HugsLibController.Instance.CallbackScheduler.ScheduleCallback(() => Logger.Trace("scheduler callback"), 150, true);
+		}
+
+		public override void MapDiscarded(Map map) {
+			Logger.Message("MapDiscarded:" + map);
 		}
 
 		public override void SceneLoaded(Scene scene) {

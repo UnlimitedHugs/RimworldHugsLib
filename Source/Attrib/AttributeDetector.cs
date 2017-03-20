@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using HugsLib.Source.Detour;
 using HugsLib.Utils;
 
 namespace HugsLib.Source.Attrib {
-	/**
-	 * Detects types and members with specific attributes and calls handlers marked with 
-	 * DetectableAttributeHandler to do something with the marked type or member.
-	 * Detectable attributes must implement IDetectableAttribute.
-	 * New types and members are detected after a def reload and each type/member is processed only once.
-	 */
+	
+	  
+	/// <summary>
+	/// Detects types and members with specific attributes and calls handlers marked with 
+	/// DetectableAttributeHandler to do something with the marked type or member.
+	/// Detectable attributes must implement IDetectableAttribute.
+	/// New types and members are detected after a def reload and each type/member is processed only once.
+	/// </summary>
 	internal static class AttributeDetector {
 		private static readonly HashSet<Type> seenTypes = new HashSet<Type>();
 		private static readonly List<AttributePair> knownHandlers = new List<AttributePair>();
@@ -41,7 +42,7 @@ namespace HugsLib.Source.Attrib {
 							thingsWithAttributes.Add(new AttributePair(type, typeAttr));
 						}
 						// get attributed members from type
-						var members = type.GetMembers(Helpers.AllBindingFlags);
+						var members = type.GetMembers(HugsLibUtility.AllBindingFlags);
 						foreach (var member in members) {
 							var memberAttr = TryGetFirstRelevantAttribute(member);
 							if (memberAttr != null) {

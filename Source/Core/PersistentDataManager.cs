@@ -5,9 +5,9 @@ using System.Xml.Linq;
 using Verse;
 
 namespace HugsLib.Core {
-	/**
-	 * A base for managers that save data in xml format, to be stored in the save data folder
-	 */
+	/// <summary>
+	/// A base for managers that save data in xml format, to be stored in the save data folder
+	/// </summary>
 	public abstract class PersistentDataManager {
 
 		public static bool IsValidElementName(string tagName) {

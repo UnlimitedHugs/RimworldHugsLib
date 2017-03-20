@@ -1,10 +1,10 @@
 ﻿using System;
 
 namespace HugsLib.Core {
-	/**
-	 * A shorter, invariable alternative to System.Version in the format of major.minor.patch
-	 * System.Version can be implicitly cast to this type.
-	 */
+	/// <summary>
+	/// A shorter, invariable alternative to System.Version in the format of major.minor.patch
+	/// System.Version can be implicitly cast to this type.
+	/// </summary>
 	public class VersionShort : IComparable, IComparable<VersionShort>, IEquatable<VersionShort> {
 		public const char Separator = '.';
 

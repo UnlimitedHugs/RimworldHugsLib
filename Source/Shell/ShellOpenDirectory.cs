@@ -3,13 +3,10 @@ using System.IO;
 using UnityEngine;
 
 namespace HugsLib.Shell {
-    /**
-     * A command to open a directory in the systems defualt file explorer
-     *
-     * Since Unity's OpenUrl() is broken on OS X, we can use a shell to do it correctly
-     *
-     * See Shell.cs for more info on Commands.
-     */
+	/// <summary>
+	/// A command to open a directory in the systems defualt file explorer.
+	/// Since Unity's OpenUrl() is broken on OS X, we can use a shell to do it correctly.
+	/// </summary>
     public static class ShellOpenDirectory {
         public static bool Execute(string directory) {
 	        var directoryPath = ParsePath(directory);

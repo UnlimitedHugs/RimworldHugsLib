@@ -5,10 +5,10 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Logs {
-	/**
-	 * The front-end for LogPublisher.
-	 * Shows the status of the upload operation, provides controls and shows the produced URL.
-	 */
+	/// <summary>
+	/// The front-end for LogPublisher.
+	/// Shows the status of the upload operation, provides controls and shows the produced URL.
+	/// </summary>
 	[StaticConstructorOnStartup]
 	public class Dialog_PublishLogs : Window {
 		private const float StatusLabelHeight = 60f;

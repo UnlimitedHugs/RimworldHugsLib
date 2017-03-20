@@ -4,9 +4,9 @@ using HugsLib.Utils;
 using UnityEngine;
 
 namespace HugsLib.Core {
-	/**
-	 * Handles the key presses for key bindings added by HugsLib
-	 */
+	/// <summary>
+	/// Handles the key presses for key bindings added by HugsLib
+	/// </summary>
 	internal static class KeyBindingHandler {
 		public static void OnGUI() {
 			if (Event.current.type != EventType.KeyDown) return;

@@ -3,11 +3,9 @@ using System.IO;
 using Verse;
 
 namespace HugsLib.Shell {
-	/**
-     * A Command to open the log file in the systems default text editor.
-     *
-     * See Shell.cs for more info on Commands.
-     */
+	/// <summary>
+	/// A Command to open the log file in the systems default text editor.
+	/// </summary>
 	public static class ShellOpenLog {
 		public static bool Execute() {
 			string logfile = HugsLibUtility.TryGetLogFilePath();

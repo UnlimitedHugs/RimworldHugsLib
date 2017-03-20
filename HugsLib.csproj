@@ -17,7 +17,7 @@
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_DETOUR,xTEST_ATTRIB,xTEST_MOCK_UPLOAD</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;TEST_MOD,xTEST_ATTRIB,xTEST_MOCK_UPLOAD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -33,6 +33,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -54,35 +57,31 @@
     <Compile Include="Source\Attrib\DetectableAttributeHandler.cs" />
     <Compile Include="Source\Attrib\IDetectableAttribute.cs" />
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
+    <Compile Include="Source\Patches\Page_ModsConfig_Patch.cs" />
+    <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
+    <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
+    <Compile Include="Source\Patches\EditWindow_Log_Patch.cs" />
+    <Compile Include="Source\Patches\Game_FinalizeInit_Patch.cs" />
+    <Compile Include="Source\Patches\Map_ConstructComponents_Patch.cs" />
+    <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
+    <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
+    <Compile Include="Source\Patches\Root_Patch.cs" />
+    <Compile Include="Source\Patches\UIRoot_Patch.cs" />
     <Compile Include="Source\Restarter\Dialog_RestartGame.cs" />
     <Compile Include="Source\Restarter\AutoRestarter.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />
     <Compile Include="Source\Shell\ShellRestartRimWorld.cs" />
-    <Compile Include="Source\Core\DefReloadWatcher.cs" />
     <Compile Include="Source\Core\HugsTickProxy.cs" />
     <Compile Include="Source\Core\KeyBindingDefOf.cs" />
-    <Compile Include="Source\Core\MapComponent_HugsProxy.cs" />
     <Compile Include="Source\Core\PersistentDataManager.cs" />
     <Compile Include="Source\Core\ShortHashCollisionResolver.cs" />
     <Compile Include="Source\Core\UnityProxyComponent.cs" />
     <Compile Include="Source\Core\VersionFile.cs" />
     <Compile Include="Source\Core\VersionShort.cs" />
-    <Compile Include="Source\Core\WindowReplacer.cs" />
-    <Compile Include="Source\Detour\Attribute.cs" />
-    <Compile Include="Source\Detour\DetourFallbackAttribute.cs" />
-    <Compile Include="Source\Detour\DetourProvider.cs" />
-    <Compile Include="Source\Detour\DetourValidator.cs" />
-    <Compile Include="Source\Detour\Helpers.cs" />
-    <Compile Include="Source\GuiInject\WindowDetour.cs" />
-    <Compile Include="Source\GuiInject\ActiveWindowInjection.cs" />
-    <Compile Include="Source\GuiInject\WindowInjectionAttribute.cs" />
-    <Compile Include="Source\GuiInject\WindowInjectionAttributeHandler.cs" />
-    <Compile Include="Source\GuiInject\WindowInjectionManager.cs" />
     <Compile Include="Source\HugsLibController.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogs.cs" />
-    <Compile Include="Source\Logs\EditWindow_LogExtended.cs" />
     <Compile Include="Source\Logs\LogPublisher.cs" />
     <Compile Include="Source\Logs\LogWindowInjection.cs" />
     <Compile Include="Source\ModBase.cs" />
@@ -90,7 +89,6 @@
     <Compile Include="Source\News\UpdateFeatureDef.cs" />
     <Compile Include="Source\News\UpdateFeatureManager.cs" />
     <Compile Include="Source\Settings\Dialog_ModSettings.cs" />
-    <Compile Include="Source\Settings\Dialog_OptionsExtended.cs" />
     <Compile Include="Source\Settings\OptionsDialogInjection.cs" />
     <Compile Include="Source\Settings\SettingHandleConvertible.cs" />
     <Compile Include="Source\Settings\Validators.cs" />
@@ -98,10 +96,8 @@
     <Compile Include="Source\Settings\ModSettingsManager.cs" />
     <Compile Include="Source\Settings\SettingHandle.cs" />
     <Compile Include="Source\Test\AttributeTests.cs" />
-    <Compile Include="Source\Test\TestUWO2.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
-    <Compile Include="Source\Test\TestUWO1.cs" />
-    <Compile Include="Source\Test\DetourTests.cs" />
+    <Compile Include="Source\Test\TestUWO.cs" />
     <Compile Include="Source\Utils\CallbackScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />

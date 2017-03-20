@@ -6,13 +6,11 @@ using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Shell {
-	/**
-     * Commands start a new process on the target machine using platform specific commands and args to pass to the shell.
-     *
-     * Refer to the Microsoft documentation for dotNet 3.5 for more info on a process.
-     * https://msdn.microsoft.com/en-us/library/system.diagnostics.process(v=vs.90).aspx
-     */
-
+	/// <summary>
+	/// Commands start a new process on the target machine using platform specific commands and args to pass to the shell.
+	/// Refer to the Microsoft documentation for dotNet 3.5 for more info on a process.
+	/// https://msdn.microsoft.com/en-us/library/system.diagnostics.process(v=vs.90).aspx
+	/// </summary>
 	public static class Shell {
 		public static bool StartProcess(ShellCommand shellCommand) {
 			var process = new Process();

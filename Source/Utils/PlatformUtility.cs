@@ -2,9 +2,9 @@
 using Verse;
 
 namespace HugsLib.Utils {
-    /**
-     * Platform specific methods
-     */
+    /// <summary>
+    /// A tool to identify the platform the game is running on.
+    /// </summary>
     public static class PlatformUtility {
         public static PlatformType GetCurrentPlatform() {
             // Will need changing if another platform is supported by RimWorld in the future

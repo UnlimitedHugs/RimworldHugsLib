@@ -14,9 +14,9 @@ using Verse;
 using Object = System.Object;
 
 namespace HugsLib.Logs {
-	/**
-	 * Collects the game logs and loaded mods and posts the information on GitHub as a gist.
-	 */
+	/// <summary>
+	/// Collects the game logs and loaded mods and posts the information on GitHub as a gist.
+	/// </summary>
 	public class LogPublisher {
 		private const string RequestUserAgent = "HugsLib_log_uploader";
 		private const string OutputLogFilename = "output_log.txt";

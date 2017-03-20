@@ -3,9 +3,9 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Restarter {
-	/**
-	 * A dialog that offers the player to restart the game after a mod configuration change.
-	 */
+	/// <summary>
+	/// A dialog that offers the player to restart the game after a mod configuration change.
+	/// </summary>
 	public class Dialog_RestartGame : Window {
 		private static readonly Color RestartButtonColor = new Color(.55f, 1f, .55f);
 

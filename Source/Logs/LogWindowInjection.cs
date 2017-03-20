@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using HugsLib.GuiInject;
 using HugsLib.Shell;
 using HugsLib.Utils;
 using UnityEngine;
 using Verse;
 
 namespace HugsLib.Logs {
-	/**
-	 * Injects two new buttons into the logger window by using WindowInjectionManager.
-	 * "Copy" will copy the selected message to the clipboard and "Share logs" will initate the log publishing process.
-	 */
+	/// <summary>
+	/// Injects two new buttons into the logger window.
+	/// "Copy" will copy the selected message to the clipboard and "Share logs" will initate the log publishing process.
+	/// </summary>
 	internal static class LogWindowInjection {
 		private const float MessageDetailsScrollBarWidth = 16f;
 		private static readonly Color shareButtonColor = new Color(.3f, 1f, .3f, 1f);
@@ -22,8 +21,7 @@ namespace HugsLib.Logs {
 			if (selectedMessageField == null) HugsLibController.Logger.Error("Failed to reflect EditWindow_Log.selectedMessage");
 		}
 
-		[WindowInjection(typeof(EditWindow_Log))]
-		private static void DrawLogWindowButtons(Window window, Rect inRect) {
+		public static void DrawLogWindowExtensions(Window window, Rect inRect) {
 			var selectedMessage = selectedMessageField != null ? (LogMessage)selectedMessageField.GetValue(window) : null;
 			var prevColor = GUI.color;
 			var widgetRow = new WidgetRow(inRect.width, inRect.y, UIDirection.LeftThenUp);

@@ -3,11 +3,11 @@ using System.IO;
 using System.Xml.Linq;
 using Verse;
 
-namespace HugsLib.Core {	
-	/**
-	 * Represents the information stored in the About/Version.xml file. 
-	 * Since we cannot update the version of the library assembly, we have to store the version externally.
-	 */
+namespace HugsLib.Core {
+	/// <summary>
+	/// Represents the information stored in the About/Version.xml file. 
+	/// Since we cannot update the version of the library assembly, we have to store the version externally.
+	/// </summary>
 	public class VersionFile {
 		public const string VersionFileDir = "About";
 		public const string VersionFileName = "Version.xml";
