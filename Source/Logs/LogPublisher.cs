@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,11 +39,13 @@ namespace HugsLib.Logs {
 		public string ErrorMessage { get; private set; }
 		public string ResultUrl { get; private set; }
 		private bool userAborted;
+		private bool extendedLogScheduled;
 
 		private Thread workerThread;
 
 		public void ShowPublishPrompt() {
 			if (PublisherIsReady()) {
+				if (HugsLibUtility.ShiftIsHeld) extendedLogScheduled = true;
 				Find.WindowStack.Add(new Dialog_Confirm("HugsLib_logs_shareConfirmMessage".Translate(), OnPublishConfirmed, false, "HugsLib_logs_shareConfirmTitle".Translate()));
 			} else {
 				ShowPublishDialog();
@@ -64,13 +67,15 @@ namespace HugsLib.Logs {
 			Status = PublisherStatus.Uploading;
 			ErrorMessage = null;
 			userAborted = false;
-			
+
+			var collatedData = PrepareLogData();
+
 #if TEST_MOCK_UPLOAD
+			Log.Message(collatedData);			
 			MockUpload();
 			return;
 #endif
 
-			var collatedData = PrepareLogData();
 			if (collatedData == null) {
 				ErrorMessage = "Failed to collect data";
 				Status = PublisherStatus.Error;
@@ -155,17 +160,43 @@ namespace HugsLib.Logs {
 		private string PrepareLogData() {
 			try {
 				var logSection = GetLogFileContents();
+				logSection = NormalizeLineEndings(logSection);
 				// redact logs for privacy
 				logSection = RedactRimworldPaths(logSection);
 				logSection = RedactPlayerConnectInformation(logSection);
 				logSection = RedactRendererInformation(logSection);
 				logSection = RedactHomeDirectoryPaths(logSection);
 				logSection = RedactSteamId(logSection);
-				return String.Concat(MakeLogTimestamp(), ListActiveMods(), "\n", logSection);
+				logSection = RedactUselessLines(logSection);
+				var collatedData = String.Concat(MakeLogTimestamp(), 
+					ListActiveMods(), "\n", 
+					ListHarmonyPatches(), "\n", 
+					ListPlatformInfo(), "\n", 
+					logSection);
+				extendedLogScheduled = false;
+				return collatedData;
 			} catch (Exception e) {
 				HugsLibController.Logger.ReportException(e);
 			}
 			return null;
+		}
+
+		private string NormalizeLineEndings(string logSection) {
+			return logSection.Replace("\r\n", "\n");
+		}
+
+		private string RedactUselessLines(string logSection) {
+			logSection = Regex.Replace(logSection, "Non platform assembly:.+\n", "");
+			logSection = Regex.Replace(logSection, "Platform assembly: .+\n", "");
+			logSection = Regex.Replace(logSection, "Fallback handler could not load library.+\n", "");
+			logSection = Regex.Replace(logSection, "- Completed reload, in [\\d\\. ]+ seconds\n", "");
+			logSection = Regex.Replace(logSection, "UnloadTime: [\\d\\. ]+ ms\n", "");
+			logSection = Regex.Replace(logSection, "<RI> Initializing input\\.\r\n", "");
+			logSection = Regex.Replace(logSection, "<RI> Input initialized\\.\r\n", "");
+			logSection = Regex.Replace(logSection, "<RI> Initialized touch support\\.\r\n", "");
+			logSection = Regex.Replace(logSection, "\\(Filename: C:/buildslave.+\n", "");
+			logSection = Regex.Replace(logSection, "\n \n", "\n");
+			return logSection;
 		}
 
 		// only relevant on linux
@@ -242,6 +273,34 @@ namespace HugsLib.Logs {
 			return result;
 		}
 
+		private string ListHarmonyPatches() {
+			IEnumerable<string> ownerList;
+			var patchListing = HarmonyUtility.DescribePatchedMethods(HugsLibController.Instance.HarmonyInst, out ownerList);
+
+			return String.Concat("Active Harmony patches:\n", 
+				patchListing, 
+				patchListing.EndsWith("\n")?"":"\n", 
+				"Patch owners:\n", 
+				ownerList.ListElements(), 
+				"\n") ;
+		}
+
+		private string ListPlatformInfo() {
+			const string sectionTitle = "Platform information: ";
+			if (extendedLogScheduled || HugsLibUtility.ShiftIsHeld) {
+				return String.Concat(sectionTitle, "\nCPU: ",
+				SystemInfo.processorType,
+				"\nOS: ",
+				SystemInfo.operatingSystem,
+				"\nMemory: ",
+				SystemInfo.systemMemorySize,
+				" MB",
+				"\n");
+			} else {
+				return sectionTitle + "(hidden, hold Shift while publishing to include)\n";
+			}
+		}
+
 		private string ListActiveMods() {
 			var builder = new StringBuilder();
 			builder.Append("Loaded mods:\n");
@@ -273,7 +332,6 @@ namespace HugsLib.Logs {
 		}
 
 		// sanitizes a string for valid inclusion in JSON
-
 		private static string CleanForJSON(string s) {
 			if (String.IsNullOrEmpty(s)) {
 				return "";

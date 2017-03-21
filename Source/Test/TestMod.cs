@@ -27,6 +27,10 @@ namespace HugsLib.Test {
 			get { return "TestMod"; }
 		}
 
+		protected override bool HarmonyAutoPatch {
+			get { return false; }
+		}
+
 		public override void Initialize() {
 			Logger.Message("Initialized");
 		}

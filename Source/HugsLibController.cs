@@ -77,7 +77,6 @@ namespace HugsLib {
 		private readonly List<ModBase> childMods = new List<ModBase>();
 		private readonly List<ModBase> initializedMods = new List<ModBase>();
 		private Dictionary<Assembly, ModContentPack> assemblyContentPacks;
-		private HarmonyInstance harmonyInstance;
 		private SettingHandle<bool> updateNewsSetting;
 		private bool initializationInProgress;
 
@@ -88,6 +87,7 @@ namespace HugsLib {
 		public LogPublisher LogUploader { get; private set; }
 
 		internal AutoRestarter AutoRestarter { get; private set; }
+		internal HarmonyInstance HarmonyInst { get; private set; }
 		
 		private HugsLibController() {
 		}
@@ -361,8 +361,8 @@ namespace HugsLib {
 
 		private void ApplyHarmonyPatches() {
 			try {
-				harmonyInstance = HarmonyInstance.Create(HarmonyInstanceIdentifier);
-				harmonyInstance.PatchAll(typeof (HugsLibController).Assembly);
+				HarmonyInst = HarmonyInstance.Create(HarmonyInstanceIdentifier);
+				HarmonyInst.PatchAll(typeof (HugsLibController).Assembly);
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
