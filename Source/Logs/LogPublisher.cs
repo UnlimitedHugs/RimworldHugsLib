@@ -274,15 +274,13 @@ namespace HugsLib.Logs {
 		}
 
 		private string ListHarmonyPatches() {
-			IEnumerable<string> ownerList;
-			var patchListing = HarmonyUtility.DescribePatchedMethods(HugsLibController.Instance.HarmonyInst, out ownerList);
+			var harmonyInstance = HugsLibController.Instance.HarmonyInst;
+			var patchListing = HarmonyUtility.DescribePatchedMethods(harmonyInstance);
 
 			return String.Concat("Active Harmony patches:\n", 
 				patchListing, 
-				patchListing.EndsWith("\n")?"":"\n", 
-				"Patch owners:\n", 
-				ownerList.ListElements(), 
-				"\n") ;
+				patchListing.EndsWith("\n")?"":"\n",
+				HarmonyUtility.DescribeHarmonyVersions(harmonyInstance), "\n");
 		}
 
 		private string ListPlatformInfo() {

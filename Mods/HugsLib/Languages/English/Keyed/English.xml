@@ -50,6 +50,9 @@
 	<HugsLib_setting_autoRestart_label>Restart after Mods menu changes</HugsLib_setting_autoRestart_label>
 	<HugsLib_setting_autoRestart_desc>Automatically restarts the game after changes to the Mods menu have been made.</HugsLib_setting_autoRestart_desc>
 	
+	<HugsLib_loadOrderWarning_title>Improper mod load order</HugsLib_loadOrderWarning_title>
+	<HugsLib_loadOrderWarning_text>&lt;b&gt;The HugsLib mod&lt;/b&gt; should always be loaded after &lt;b&gt;Core&lt;/b&gt; to avoid issues.\nPlease adjust your mod order in the Mods menu and restart the game.</HugsLib_loadOrderWarning_text>
+		
 	<test_enumSetting_DefaultValue>Default Value</test_enumSetting_DefaultValue>
 	<test_enumSetting_ValueOne>Value One</test_enumSetting_ValueOne>
 	<test_enumSetting_ValueTwo>Value Two</test_enumSetting_ValueTwo>

@@ -104,6 +104,7 @@ namespace HugsLib {
 				AutoRestarter = new AutoRestarter();
 				RegisterOwnSettings();
 				ReadOwnVersionFile();
+				LoadOrderChecker.ValidateLoadOrder();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.ReportException(e);

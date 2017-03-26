@@ -57,6 +57,7 @@
     <Compile Include="Source\Attrib\DetectableAttributeHandler.cs" />
     <Compile Include="Source\Attrib\IDetectableAttribute.cs" />
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
+    <Compile Include="Source\Core\LoadOrderChecker.cs" />
     <Compile Include="Source\Patches\Page_ModsConfig_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
     <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Source\Test\TestUWO.cs" />
     <Compile Include="Source\Utils\CallbackScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
+    <Compile Include="Source\Utils\Dialog_Message.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />
     <Compile Include="Source\Utils\HarmonyUtility.cs" />
     <Compile Include="Source\Utils\HugsLibUtility.cs" />

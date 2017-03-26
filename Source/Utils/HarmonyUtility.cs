@@ -11,38 +11,16 @@ namespace HugsLib.Utils {
 	/// </summary>
 	public static class HarmonyUtility {
 		private const int DefaultPatchPriority = 400;
-
-		/// <summary>
-		/// Enumerates all methods that have been patched by Harmony.
-		/// </summary>
-		public static IEnumerable<MethodBase> AllPatchedMethods() {
-			const string AssemblyNameField = "name";
-			const string StateField = "state";
-			const string AssemblyRetrievalMethod = "SharedStateAssembly";
-			// get the name of the dynamic assembly
-			var stateAssemblyName = Traverse.Create(typeof(HarmonySharedState)).Field(AssemblyNameField).GetValue<string>();
-			if(stateAssemblyName == null) throw new Exception("Failed to get state assembly name.");
-			// request the assembly object
-			var assembly = Traverse.Create(typeof(HarmonySharedState)).Method(AssemblyRetrievalMethod).GetValue<Assembly>();
-			if (assembly == null) throw new Exception("State assembly could not be retrieved.");
-			// extract private patch dictionary
-			var harmonyState = Traverse.Create(assembly.GetType(stateAssemblyName)).Field(StateField).GetValue<Dictionary<MethodBase, byte[]>>();
-			if (harmonyState == null) throw new Exception("Failed to retrieve state from state assembly.");
-			return harmonyState.Keys;
-		}
-
+		
 		/// <summary>
 		/// Produces a human-readable list of all patched methods and their respective patches.
 		/// </summary>
 		/// <param name="instance">A HarmonyInstance that can be queried for patch information.</param>
-		/// <param name="patchOwners">A list of all patch owner identifiers that have at least one patch on the list.</param>
-		public static string DescribePatchedMethods(HarmonyInstance instance, out IEnumerable<string> patchOwners) {
-			var patchOwnerIds = new HashSet<string>();
-			patchOwners = patchOwnerIds;
+		public static string DescribePatchedMethods(HarmonyInstance instance) {
 			try {
 				IEnumerable<MethodBase> patchedMethods;
 				try {
-					patchedMethods = AllPatchedMethods();
+					patchedMethods = instance.GetPatchedMethods();
 				} catch (Exception e) {
 					return "Could not retrieve patched methods from the Harmony library:\n" + e;
 				}
@@ -72,24 +50,26 @@ namespace HugsLib.Utils {
 					builder.Append(": ");
 					// write patches
 					var patches = instance.IsPatched(pair.Method);
-					if (patches == null ||
-					    ((patches.Prefixes == null || patches.Prefixes.Count == 0) &&
-					     (patches.Postfixes == null || patches.Postfixes.Count == 0))) {
-						builder.Append("(no patches)");
-					} else {
+					if (HasActivePatches(patches)) {
 						// write prefixes
 						if (patches.Prefixes != null && patches.Prefixes.Count > 0) {
 							builder.Append("Pre: ");
-							AppendPatchList(patches.Prefixes, builder, patchOwnerIds);
+							AppendPatchList(patches.Prefixes, builder);
 						}
 						// write postfixes
 						if (patches.Postfixes != null && patches.Postfixes.Count > 0) {
-							if (builder[builder.Length - 1] != ' ') {
-								builder.Append(" ");
-							}
+							EnsureEndsWithSpace(builder);
 							builder.Append("Post: ");
-							AppendPatchList(patches.Postfixes, builder, patchOwnerIds);
+							AppendPatchList(patches.Postfixes, builder);
 						}
+						// write transpilers
+						if (patches.Transpilers != null && patches.Transpilers.Count > 0) {
+							EnsureEndsWithSpace(builder);
+							builder.Append("Trans: ");
+							AppendPatchList(patches.Transpilers, builder);
+						}
+					} else {
+						builder.Append("(no patches)");
 					}
 					builder.AppendLine();
 				}
@@ -99,14 +79,39 @@ namespace HugsLib.Utils {
 			}
 		}
 
-		private static void AppendPatchList(IEnumerable<Patch> patchList, StringBuilder builder, HashSet<string> patchOwners) {
+		/// <summary>
+		/// Produces a human-readable list of all Harmony versions present and their respective owners.
+		/// </summary>
+		/// <param name="instance">A HarmonyInstance that can be queried for version information.</param>
+		/// <returns></returns>
+		public static string DescribeHarmonyVersions(HarmonyInstance instance) {
+			try {
+				Version currentVersion;
+				var allVersions = instance.VersionInfo(out currentVersion);
+				var builder = new StringBuilder("Harmony versions present: ");
+				var firstElement = true;
+				foreach (var pair in allVersions) {
+					if (!firstElement) {
+						builder.Append(", ");
+					}
+					firstElement = false;
+					builder.Append(pair.Key);
+					builder.Append(':');
+					builder.Append(pair.Value);
+				}
+				return builder.ToString();
+			} catch (Exception e) {
+				return "An exception occurred while collating Harmony version data:\n" + e;
+			}
+		}
+
+		private static void AppendPatchList(IEnumerable<Patch> patchList, StringBuilder builder) {
 			// ensure that patches appear in the same order they execute
 			var sortedPatches = new List<Patch>(patchList);
 			sortedPatches.Sort();
 
 			var isFirstEntry = true;
 			foreach (var patch in sortedPatches) {
-				patchOwners.Add(patch.owner);
 				if (!isFirstEntry) {
 					builder.Append(", ");
 				}
@@ -117,6 +122,19 @@ namespace HugsLib.Utils {
 				}
 				// write full destination method name
 				builder.Append(patch.patch.FullName());
+			}
+		}
+
+		private static bool HasActivePatches(Harmony.Patches patches) {
+			return patches != null &&
+			        ((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
+			         (patches.Postfixes != null && patches.Postfixes.Count != 0) ||
+			         (patches.Transpilers != null && patches.Transpilers.Count != 0));
+		}
+
+		private static void EnsureEndsWithSpace(StringBuilder builder) {
+			if (builder[builder.Length - 1] != ' ') {
+				builder.Append(" ");
 			}
 		}
 
