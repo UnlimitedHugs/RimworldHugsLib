@@ -235,7 +235,13 @@ namespace HugsLib.Logs {
 		}
 
 		private string RedactRendererInformation(string log) {
-			return RedactString(log, "GfxDevice: ", "\nBegin MonoManager", "[Renderer information redacted]");
+			// apparently renderer information can appear multiple times in the log
+			for (int i = 0; i < 5; i++) {
+				var redacted = RedactString(log, "GfxDevice: ", "\nBegin MonoManager", "[Renderer information redacted]");
+				if (log.Length == redacted.Length) break;
+				log = redacted;
+			}
+			return log;
 		}
 
 		private string RedactPlayerConnectInformation(string log) {

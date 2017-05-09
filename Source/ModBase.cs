@@ -78,10 +78,12 @@ namespace HugsLib {
 			Logger = new ModLogger(modId);
 			Settings = HugsLibController.Instance.Settings.GetModSettings(modId);
 			if (HarmonyAutoPatch) {
-				var harmonyId = HarmonyInstancePrefix + ModIdentifier;
+				var harmonyId = HarmonyInstancePrefix + modId;
 				try {
-					HarmonyInst = HarmonyInstance.Create(harmonyId);
-					HarmonyInst.PatchAll(GetType().Assembly);
+					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, modId)) {
+						HarmonyInst = HarmonyInstance.Create(harmonyId);
+						HarmonyInst.PatchAll(GetType().Assembly);
+					}
 				} catch (Exception e) {
 					HugsLibController.Logger.Error("Failed to apply Harmony patches for {0}. Exception was: {1}", harmonyId, e);
 				}

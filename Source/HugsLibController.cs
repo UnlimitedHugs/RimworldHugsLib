@@ -5,7 +5,6 @@ using Harmony;
 using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
-using HugsLib.Restarter;
 using HugsLib.Settings;
 using HugsLib.Source.Attrib;
 using HugsLib.Utils;
@@ -18,12 +17,15 @@ namespace HugsLib {
 	/// The hub of the library. Instantiates classes that extend ModBase and forwards some of the more useful events to them.
 	/// The minor version of the assembly should reflect the current major Rimworld version, just like CCL.
 	/// This gives us the ability to release updates to the library without breaking compatibility with the mods that implement it.
+	/// See Core.HugsLibMod for the entry point.
 	/// </summary>
-	[StaticConstructorOnStartup]
 	public class HugsLibController {
 		private const string SceneObjectName = "HugsLibProxy";
 		private const string ModIdentifier = "HugsLib";
 		private const string HarmonyInstanceIdentifier = "UnlimitedHugs.HugsLib";
+
+		private static bool earlyInitalizationCompleted;
+		private static bool lateInitalizationCompleted;
 
 		private static HugsLibController instance;
 		public static HugsLibController Instance {
@@ -42,23 +44,35 @@ namespace HugsLib {
 			get { return Instance.Settings; }
 		}
 
-		// entry point
-		static HugsLibController() {
-			Logger = new ModLogger(ModIdentifier);
-			CreateSceneObject();
-			Instance.InitializeController();
+		// most of the initalization happens during Verse.Mod instantiation. Pretty much no vanilla data is yet loaded at this point.
+		internal static void EarlyInitialize() {
+			try {
+				if (earlyInitalizationCompleted) {
+					Log.Warning("[HugsLib][warn] Attempted repeated early initialization of controller: " + Environment.StackTrace);
+					return;
+				}
+				earlyInitalizationCompleted = true;
+				Logger = new ModLogger(ModIdentifier);
+				CreateSceneObject();
+				Instance.InitializeController();
+			} catch (Exception e) {
+				Log.Message("[HugsLib][ERR] An exception occurred during early initialization: "+e);
+			}
 		}
-
+		
 		internal static ModLogger Logger { get; private set; }
 
 		private static void CreateSceneObject() {
-			if (GameObject.Find(SceneObjectName) != null) {
-				Logger.Error("Another version of the library is already loaded. The HugsLib assembly should be loaded as a standalone mod.");
-				return;
-			}
-			var obj = new GameObject(SceneObjectName);
-			GameObject.DontDestroyOnLoad(obj);
-			obj.AddComponent<UnityProxyComponent>();
+			// this must execute in the main thread
+			LongEventHandler.ExecuteWhenFinished(() => {
+				if (GameObject.Find(SceneObjectName) != null) {
+					Logger.Error("Another version of the library is already loaded. The HugsLib assembly should be loaded as a standalone mod.");
+					return;
+				}
+				var obj = new GameObject(SceneObjectName);
+				GameObject.DontDestroyOnLoad(obj);
+				obj.AddComponent<UnityProxyComponent>();
+			});
 		}
 
 		private static VersionFile ReadOwnVersionFile() {
@@ -76,6 +90,7 @@ namespace HugsLib {
 
 		private readonly List<ModBase> childMods = new List<ModBase>();
 		private readonly List<ModBase> initializedMods = new List<ModBase>();
+		private readonly HashSet<Assembly> autoHarmonyPatchedAssemblies = new HashSet<Assembly>();
 		private Dictionary<Assembly, ModContentPack> assemblyContentPacks;
 		private SettingHandle<bool> updateNewsSetting;
 		private bool initializationInProgress;
@@ -86,12 +101,12 @@ namespace HugsLib {
 		public DistributedTickScheduler DistributedTicker { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
 
-		internal AutoRestarter AutoRestarter { get; private set; }
 		internal HarmonyInstance HarmonyInst { get; private set; }
 		
 		private HugsLibController() {
 		}
 
+		// called during Verse.Mod instantiation
 		private void InitializeController() {
 			try {
 				PrepareReflection();
@@ -101,13 +116,29 @@ namespace HugsLib {
 				CallbackScheduler = new CallbackScheduler();
 				DistributedTicker = new DistributedTickScheduler();
 				LogUploader = new LogPublisher();
-				AutoRestarter = new AutoRestarter();
-				RegisterOwnSettings();
 				ReadOwnVersionFile();
 				LoadOrderChecker.ValidateLoadOrder();
-				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.ReportException(e);
+			}
+		}
+
+		// called during static constructor initalization
+		internal void LateInitalize() {
+			try {
+				if (!earlyInitalizationCompleted) {
+					Logger.Error("Attempted late initialization before early initalization: "+ Environment.StackTrace);
+					return;
+				}
+				if (lateInitalizationCompleted) {
+					Logger.Warning("Attempted repeated late initialization of controller: " + Environment.StackTrace);
+					return;
+				}
+				lateInitalizationCompleted = true;
+				RegisterOwnSettings();
+				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
+			} catch (Exception e) {
+				Logger.Error("An exception occurred during late initialization: " + e);
 			}
 		}
 
@@ -259,6 +290,16 @@ namespace HugsLib {
 			LongEventHandler.QueueLongEvent(() => OnMapLoaded(map), null, false, null);
 		}
 
+		internal bool ShouldHarmonyAutoPatch(Assembly assembly, string modId) {
+			if (autoHarmonyPatchedAssemblies.Contains(assembly)) {
+				Logger.Warning("The {0} assembly contains multiple ModBase mods with HarmonyAutoPatch set to true. This warning was caused by modId {1}.", assembly.GetName().Name, modId);
+				return false;
+			} else {
+				autoHarmonyPatchedAssemblies.Add(assembly);
+				return true;
+			}
+		}
+
 		private void OnMapLoaded(Map map){
 			try {
 				for (int i = 0; i < childMods.Count; i++) {
@@ -307,7 +348,6 @@ namespace HugsLib {
 
 		private void OnDefsLoaded() {
 			try {
-				ShortHashCollisionResolver.ResolveCollisions();
 				RegisterOwnSettings();
 				UtilityWorldObjectManager.OnDefsLoaded();
 				for (int i = 0; i < childMods.Count; i++) {
@@ -362,8 +402,10 @@ namespace HugsLib {
 
 		private void ApplyHarmonyPatches() {
 			try {
-				HarmonyInst = HarmonyInstance.Create(HarmonyInstanceIdentifier);
-				HarmonyInst.PatchAll(typeof (HugsLibController).Assembly);
+				if (ShouldHarmonyAutoPatch(typeof (HugsLibController).Assembly, ModIdentifier)) {
+					HarmonyInst = HarmonyInstance.Create(HarmonyInstanceIdentifier);
+					HarmonyInst.PatchAll(typeof (HugsLibController).Assembly);
+				}
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
@@ -375,21 +417,24 @@ namespace HugsLib {
 		}
 
 		private void RegisterOwnSettings() {
-			var pack = Settings.GetModSettings(ModIdentifier);
-			pack.EntryName = "HugsLib_ownSettingsName".Translate();
-			pack.DisplayPriority = ModSettingsPack.ListPriority.Lower;
-			updateNewsSetting = pack.GetHandle("modUpdateNews", "HugsLib_setting_showNews_label".Translate(), "HugsLib_setting_showNews_desc".Translate(), true);
-			var allNewsHandle = pack.GetHandle("showAllNews", "HugsLib_setting_allNews_label".Translate(), "HugsLib_setting_allNews_desc".Translate(), false);
-			allNewsHandle.Unsaved = true;
-			allNewsHandle.CustomDrawer = rect => {
-				if (Widgets.ButtonText(rect, "HugsLib_setting_allNews_button".Translate())) {
-					if (!UpdateFeatures.TryShowDialog(true)) {
-						Find.WindowStack.Add(new Dialog_MessageBox("HugsLib_setting_allNews_fail".Translate()));
+			try {
+				var pack = Settings.GetModSettings(ModIdentifier);
+				pack.EntryName = "HugsLib_ownSettingsName".Translate();
+				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
+				updateNewsSetting = pack.GetHandle("modUpdateNews", "HugsLib_setting_showNews_label".Translate(), "HugsLib_setting_showNews_desc".Translate(), true);
+				var allNewsHandle = pack.GetHandle("showAllNews", "HugsLib_setting_allNews_label".Translate(), "HugsLib_setting_allNews_desc".Translate(), false);
+				allNewsHandle.Unsaved = true;
+				allNewsHandle.CustomDrawer = rect => {
+					if (Widgets.ButtonText(rect, "HugsLib_setting_allNews_button".Translate())) {
+						if (!UpdateFeatures.TryShowDialog(true)) {
+							Find.WindowStack.Add(new Dialog_MessageBox("HugsLib_setting_allNews_fail".Translate()));
+						}
 					}
-				}
-				return false;
-			};
-			AutoRestarter.CreateSettingsHandles(pack);
+					return false;
+				};
+			} catch (Exception e) {
+				Logger.ReportException(e);
+			}
 		}
 	}
 }

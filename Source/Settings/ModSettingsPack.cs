@@ -12,7 +12,7 @@ namespace HugsLib.Settings {
 	/// </summary>
 	public class ModSettingsPack {
 		public enum ListPriority {
-			Higher, Normal, Lower
+			Higher, Normal, Lower, Lowest
 		}
 
 		/// <summary>

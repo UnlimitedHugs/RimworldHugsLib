@@ -96,7 +96,7 @@ namespace HugsLib.Test {
 			var spinner = Settings.GetHandle("intSpinner", "Spinner", "desc", 5, Validators.IntRangeValidator(0, 30));
 			spinner.SpinnerIncrement = 2;
 			var enumHandle = Settings.GetHandle("enumThing", "Enum setting", "", HandleEnum.DefaultValue, null, "test_enumSetting_");
-			var toggle = Settings.GetHandle("toggle", "Toggle setting", "Toggle setting", false);
+			var toggle = Settings.GetHandle("toggle", "Toggle setting extra long title that would not fit into one line", "Toggle setting", false);
 			var custom = Settings.GetHandle("custom", "custom setting", "custom setting desc", false);
 			custom.CustomDrawerHeight = 30f;
 			custom.CustomDrawer = rect => {

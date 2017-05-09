@@ -24,13 +24,14 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -56,9 +57,11 @@
     <Compile Include="Source\Attrib\AttributeDetector.cs" />
     <Compile Include="Source\Attrib\DetectableAttributeHandler.cs" />
     <Compile Include="Source\Attrib\IDetectableAttribute.cs" />
+    <Compile Include="Source\Core\HugsLibMod.cs" />
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
-    <Compile Include="Source\Patches\Page_ModsConfig_Patch.cs" />
+    <Compile Include="Source\Core\StaticInitalizer.cs" />
+    <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
     <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
     <Compile Include="Source\Patches\EditWindow_Log_Patch.cs" />
@@ -68,8 +71,7 @@
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
     <Compile Include="Source\Patches\UIRoot_Patch.cs" />
-    <Compile Include="Source\Restarter\Dialog_RestartGame.cs" />
-    <Compile Include="Source\Restarter\AutoRestarter.cs" />
+    <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />
@@ -77,7 +79,6 @@
     <Compile Include="Source\Core\HugsTickProxy.cs" />
     <Compile Include="Source\Core\KeyBindingDefOf.cs" />
     <Compile Include="Source\Core\PersistentDataManager.cs" />
-    <Compile Include="Source\Core\ShortHashCollisionResolver.cs" />
     <Compile Include="Source\Core\UnityProxyComponent.cs" />
     <Compile Include="Source\Core\VersionFile.cs" />
     <Compile Include="Source\Core\VersionShort.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Source\Test\AttributeTests.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
     <Compile Include="Source\Test\TestUWO.cs" />
+    <Compile Include="Source\Test\VanillaMod.cs" />
     <Compile Include="Source\Utils\CallbackScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\Dialog_Message.cs" />

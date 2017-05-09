@@ -1,7 +1,7 @@
-﻿using HugsLib.Restarter;
-using HugsLib.Shell;
+﻿using HugsLib.Shell;
 using HugsLib.Utils;
 using UnityEngine;
+using Verse;
 
 namespace HugsLib.Core {
 	/// <summary>
@@ -17,7 +17,7 @@ namespace HugsLib.Core {
 				ShellOpenLog.Execute();
 			}
 			if (HugsLibKeyBingings.RestartRimworld.JustPressed) {
-				AutoRestarter.PerformRestart();
+				LongEventHandler.ExecuteWhenFinished(GenCommandLine.Restart);
 			}
 		}
 	}

@@ -6,6 +6,7 @@ namespace HugsLib.Shell {
 	/// A Command to cleanly restart RimWorld on the target machine.
     /// </summary>
     public static class ShellRestartRimWorld {
+		[Obsolete(message: "Use of GenCommandLine.Restart() is recommended since A17.")]
         public static bool Execute() {
             HugsLibController.Logger.Message("Restarting RimWorld");
 	        if (Shell.StartProcess(GetParsedArgs())) {

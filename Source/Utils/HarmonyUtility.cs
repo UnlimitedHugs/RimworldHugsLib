@@ -53,19 +53,19 @@ namespace HugsLib.Utils {
 					if (HasActivePatches(patches)) {
 						// write prefixes
 						if (patches.Prefixes != null && patches.Prefixes.Count > 0) {
-							builder.Append("Pre: ");
+							builder.Append("PRE: ");
 							AppendPatchList(patches.Prefixes, builder);
 						}
 						// write postfixes
 						if (patches.Postfixes != null && patches.Postfixes.Count > 0) {
 							EnsureEndsWithSpace(builder);
-							builder.Append("Post: ");
+							builder.Append("post: ");
 							AppendPatchList(patches.Postfixes, builder);
 						}
 						// write transpilers
 						if (patches.Transpilers != null && patches.Transpilers.Count > 0) {
 							EnsureEndsWithSpace(builder);
-							builder.Append("Trans: ");
+							builder.Append("TRANS: ");
 							AppendPatchList(patches.Transpilers, builder);
 						}
 					} else {

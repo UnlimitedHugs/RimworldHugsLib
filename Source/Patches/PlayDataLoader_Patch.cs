@@ -3,11 +3,15 @@ using Harmony;
 using Verse;
 
 namespace HugsLib.Patches {
+	/// <summary>
+	/// Adds a hook to produce the DefsLoaded callback for ModBase mods.
+	/// </summary>
 	[HarmonyPatch(typeof(PlayDataLoader))]
 	[HarmonyPatch("DoPlayLoad")]
 	[HarmonyPatch(new Type[0])]
 	internal static class PlayDataLoader_Patch {
-		private static void Postfix() {
+		[HarmonyPostfix]
+		private static void InitModsHook() {
 			HugsLibController.Instance.LoadReloadInitialize();
 		}
 	}

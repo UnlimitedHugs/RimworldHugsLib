@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Verse;
 
 namespace HugsLib.Utils {
@@ -9,6 +10,7 @@ namespace HugsLib.Utils {
 		private readonly string title;
 		private readonly string message;
 		private readonly string closeButtonText;
+		private readonly Action postCloseAction;
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(500f, 400f); }
@@ -17,10 +19,11 @@ namespace HugsLib.Utils {
 		/// <param name="title">A title to display in the dialog</param>
 		/// <param name="message">A message to display in the dialog</param>
 		/// <param name="closeButtonText">A custom label to the close button. Optional- when null, the default label will be used instead.</param>
-		public Dialog_Message(string title, string message, string closeButtonText = null) {
+		public Dialog_Message(string title, string message, string closeButtonText = null, Action postCloseAction = null) {
 			this.title = title;
 			this.message = message;
 			this.closeButtonText = closeButtonText;
+			this.postCloseAction = postCloseAction;
 			closeOnEscapeKey = true;
 			doCloseButton = false;
 			doCloseX = true;
@@ -40,6 +43,11 @@ namespace HugsLib.Utils {
 			if (Widgets.ButtonText(closeButtonRect, closeText)) {
 				Close();
 			}
+		}
+
+		public override void PostClose() {
+			base.PostClose();
+			if (postCloseAction != null) postCloseAction();
 		}
 	}
 }

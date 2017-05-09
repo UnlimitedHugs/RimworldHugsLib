@@ -71,7 +71,31 @@ namespace HugsLib.Utils {
 			}
 		}
 
+		// Checks if a cell has a designation of a given def
+		public static bool HasDesignation(this IntVec3 pos, DesignationDef def, Map map = null) {
+			if (map == null) {
+				map = Find.VisibleMap;
+			}
+			if (map == null || map.designationManager == null) return false;
+			return map.designationManager.DesignationAt(pos, def) != null;
+		}
+
+		// Adds or removes a designation of a given def on a cell. Fails silently if designation is already in the desired state.
+		public static void ToggleDesignation(this IntVec3 pos, DesignationDef def, bool enable, Map map = null) {
+			if (map == null) {
+				map = Find.VisibleMap;
+			}
+			if (map == null || map.designationManager == null) throw new Exception("ToggleDesignation requires a map argument or VisibleMap must be set");
+			var des = map.designationManager.DesignationAt(pos, def);
+			if (enable && des == null) {
+				map.designationManager.AddDesignation(new Designation(pos, def));
+			} else if (!enable && des != null) {
+				map.designationManager.RemoveDesignation(des);
+			}
+		}
+
 		public static bool MethodMatchesSignature(this MethodInfo method, Type expectedReturnType, params Type[] expectedParameters) {
+			if (method == null) return false;
 			if (method.ReturnType != expectedReturnType) return false;
 			var methodParams = method.GetParameters();
 			if (expectedParameters != null) {

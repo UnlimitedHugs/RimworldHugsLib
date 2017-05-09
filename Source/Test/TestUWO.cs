@@ -8,7 +8,7 @@ namespace HugsLib.Test {
 		
 		public override void ExposeData() {
 			base.ExposeData();
-			Scribe_Values.LookValue(ref testInt, "testInt", 0);
+			Scribe_Values.Look(ref testInt, "testInt", 0);
 		}
 		
 		public void UpdateAndReport() {
@@ -22,7 +22,7 @@ namespace HugsLib.Test {
 
 		public override void ExposeData() {
 			base.ExposeData();
-			Scribe_Values.LookValue(ref testString, "testString", "");
+			Scribe_Values.Look(ref testString, "testString", "");
 		}
 
 		public void UpdateAndReport() {

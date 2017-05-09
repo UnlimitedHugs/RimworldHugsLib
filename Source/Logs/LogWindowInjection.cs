@@ -30,8 +30,8 @@ namespace HugsLib.Logs {
 			if (widgetRow.ButtonText("HugsLib_logs_shareBtn".Translate())) {
 				HugsLibController.Instance.LogUploader.ShowPublishPrompt();
 			}
-			// Files drop-down menu
 			GUI.color = prevColor;
+			// Files drop-down menu
 			if (widgetRow.ButtonText("HugsLib_logs_filesBtn".Translate())) {
 				Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption> {
 					new FloatMenuOption("HugsLib_logs_openLogFile".Translate(), () => {
@@ -45,26 +45,21 @@ namespace HugsLib.Logs {
 					})
 				}));
 			}
-			if (selectedMessage != null) {
-				var copyButtonPos = new Vector2(inRect.width - MessageDetailsScrollBarWidth, inRect.height);
-				if (DoAutoWidthButton(copyButtonPos, "HugsLib_logs_copy".Translate())) {
-					CopyMessage(selectedMessage);
-				}
-			}
 		}
 
+	
+
 		private static bool DoAutoWidthButton(Vector2 position, string label) {
+			return Widgets.ButtonText(GetAutoWidthRect(position, label), label);
+		}
+
+		private static Rect GetAutoWidthRect(Vector2 position, string label) {
 			const float ButtonPaddingX = 16f;
 			const float ButtonPaddingY = 2f;
 			var buttonSize = Text.CalcSize(label);
 			buttonSize.x += ButtonPaddingX;
 			buttonSize.y += ButtonPaddingY;
-			var buttonRect = new Rect(position.x - buttonSize.x, position.y - buttonSize.y, buttonSize.x, buttonSize.y);
-			return Widgets.ButtonText(buttonRect, label);
-		}
-
-		private static void CopyMessage(LogMessage logMessage) {
-			HugsLibUtility.CopyToClipboard(logMessage.text + "\n" + logMessage.StackTrace);
+			return new Rect(position.x - buttonSize.x, position.y, buttonSize.x, buttonSize.y);
 		}
 	}
 }

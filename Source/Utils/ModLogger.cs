@@ -9,6 +9,9 @@ namespace HugsLib.Utils {
 	/// A logger that prefixes all mesages with the identifier of the issuing mod.
 	/// </summary>
 	public class ModLogger {
+		private const string WarningPrefix = "warn";
+		private const string ErrorPrefix = "ERR";
+
 		private readonly StringBuilder builder;
 		private readonly string logPrefix;
 		private string lastExceptionLocation;
@@ -24,14 +27,14 @@ namespace HugsLib.Utils {
 		/// <param name="message">The message to write</param>
 		/// <param name="substitiutions">Optional substitution values for the message</param>
 		public void Message(string message, params object[] substitiutions) {
-			Log.Message(FormatOutput(message, substitiutions));
+			Log.Message(FormatOutput(message, null, substitiutions));
 		}
 
 		/// <summary>
 		/// Same as Message(), but the console will display the message as a warning.
 		/// </summary>
 		public void Warning(string message, params object[] substitiutions) {
-			Log.Warning(FormatOutput(message, substitiutions));
+			Log.Warning(FormatOutput(message, WarningPrefix, substitiutions));
 		}
 
 		/// <summary>
@@ -39,7 +42,7 @@ namespace HugsLib.Utils {
 		/// This will open the Log window in in Dev mode.
 		/// </summary>
 		public void Error(string message, params object[] substitiutions) {
-			Log.Error(FormatOutput(message, substitiutions));
+			Log.Error(FormatOutput(message, ErrorPrefix, substitiutions));
 		}
 
 		/// <summary>
@@ -50,7 +53,7 @@ namespace HugsLib.Utils {
 			if (!Prefs.DevMode) return;
 			if (strings.Length == 1) {
 				var msg = strings[0];
-				Log.Message(FormatOutput(msg != null ? msg.ToString() : "null"));
+				Log.Message(FormatOutput(msg != null ? msg.ToString() : "null", null));
 			} else {
 				Log.Message(strings.ListElements());
 			}
@@ -61,7 +64,7 @@ namespace HugsLib.Utils {
 		/// </summary>
 		public void TraceFormat(string message, params object[] substitiutions) {
 			if (!Prefs.DevMode) return;
-			Log.Message(FormatOutput(message, substitiutions));
+			Log.Message(FormatOutput(message, null, substitiutions));
 		}
 
 		/// <summary>
@@ -80,18 +83,20 @@ namespace HugsLib.Utils {
 			lastExceptionLocation = location;
 			string message;
 			if (modIdentifier != null) {
-				message = FormatOutput("{0} caused an exception during {1}: {2}", modIdentifier, location, e);
+				message = FormatOutput("{0} caused an exception during {1}: {2}", ErrorPrefix, modIdentifier, location, e);
 			} else {
-				message = FormatOutput("Exception during {0}: {1}", location, e);
+				message = FormatOutput("Exception during {0}: {1}", ErrorPrefix, location, e);
 			}
 			Log.Error(message);
 		}
 
-		private string FormatOutput(string message, params object[] substitiutions) {
+		private string FormatOutput(string message, string extraPrefix, params object[] substitiutions) {
 			builder.Length = 0;
-			builder.Append("[");
-			builder.Append(logPrefix);
-			builder.Append("] ");
+			builder.AppendFormat("[{0}]", logPrefix);
+			if (extraPrefix!=null) {
+				builder.AppendFormat("[{0}]", extraPrefix);
+			}
+			builder.Append(" ");
 			if (substitiutions.Length>0) {
 				builder.AppendFormat(message, substitiutions);
 			} else {
