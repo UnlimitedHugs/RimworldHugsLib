@@ -44,9 +44,10 @@
 
 	<HugsLib_restart_title>Требуется перезапуск</HugsLib_restart_title>
 	<HugsLib_restart_text>Изменения сохранены.\n\nЧтобы изменения вступили в силу, необходимо перезапустить игру.</HugsLib_restart_text>
+	<HugsLib_restart_language_text>Язык был изменен.\n\nЧтобы изменения вступили в силу, необходимо перезапустить игру.</HugsLib_restart_language_text>
 	<HugsLib_restart_restartNowBtn>Перезапустить сейчас</HugsLib_restart_restartNowBtn>
 	<HugsLib_restart_autoToggle>Перезапускать автоматически</HugsLib_restart_autoToggle>
 	<HugsLib_restart_restarting>Перезапуск</HugsLib_restart_restarting>
 	<HugsLib_setting_autoRestart_label>Перезапускать при перенастройке модов</HugsLib_setting_autoRestart_label>
-	<HugsLib_setting_autoRestart_desc>Автоматически перезапускает игру если состав или порядок загрузки модов был изменен.</HugsLib_setting_autoRestart_desc>
+	<HugsLib_setting_autoRestart_desc>Автоматически перезапускает игру если состав или порядок загрузки модов был изменен. Также включает автоматический перезапуск при смене языка игры.</HugsLib_setting_autoRestart_desc>
 </LanguageData>

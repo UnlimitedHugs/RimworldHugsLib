@@ -1,4 +1,5 @@
-﻿using RimWorld;
+﻿using System;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -7,6 +8,8 @@ namespace HugsLib.Restarter {
 	 * A dialog that offers the player to restart the game after a mod configuration change.
 	 */
 	public class Dialog_RestartGame : Window {
+		private readonly string dialogTextKey;
+		private readonly Action closeAction;
 		private static readonly Color RestartButtonColor = new Color(.55f, 1f, .55f);
 
 		private bool autoCheckboxIsOn;
@@ -15,7 +18,9 @@ namespace HugsLib.Restarter {
 			get { return new Vector2(500f, 300f); }
 		}
 
-		public Dialog_RestartGame() {
+		public Dialog_RestartGame(string dialogTextKey, Action closeAction) {
+			this.dialogTextKey = dialogTextKey;
+			this.closeAction = closeAction;
 			closeOnEscapeKey = false;
 			absorbInputAroundWindow = true;
 			doCloseX = true;
@@ -38,7 +43,7 @@ namespace HugsLib.Restarter {
 			// text
 			Text.Font = GameFont.Small;
 			Rect textRect = new Rect(inRect.x, inRect.y + titleHeight, inRect.width, textHeight);
-			Widgets.Label(textRect, "HugsLib_restart_text".Translate());
+			Widgets.Label(textRect, dialogTextKey.Translate());
 			
 			// toggle
 			bool toggleWasOn = autoCheckboxIsOn;
@@ -61,8 +66,8 @@ namespace HugsLib.Restarter {
 			// close button
 			GUI.color = Color.white;
 			if (Widgets.ButtonText(new Rect(inRect.x, inRect.height - buttonHeight, buttonWidth, buttonHeight), "CloseButton".Translate()) ||
-				(Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)) {
-				CloseAction();
+			    (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Escape)) {
+				if (closeAction != null) closeAction();
 				Close();
 			}
 		}
@@ -76,11 +81,5 @@ namespace HugsLib.Restarter {
 			AutoRestarter.PerformRestart();
 		}
 
-		private void CloseAction() {
-			var modsDialog = Find.WindowStack.WindowOfType<Page_ModsConfig>();
-			if (modsDialog != null) {
-				modsDialog.Close();
-			}
-		}
 	}
 }

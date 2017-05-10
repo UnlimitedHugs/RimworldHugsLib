@@ -44,11 +44,12 @@
 
 	<HugsLib_restart_title>Restart game</HugsLib_restart_title>
 	<HugsLib_restart_text>Changes have been saved.\n\nTo activate the new mod configuration it is recommended to restart the game.</HugsLib_restart_text>
+	<HugsLib_restart_language_text>Game language has been changed.\n\nIt is recommended to restart the game to allow mods to reload.</HugsLib_restart_language_text>
 	<HugsLib_restart_restartNowBtn>Restart now</HugsLib_restart_restartNowBtn>
 	<HugsLib_restart_autoToggle>Restart automatically</HugsLib_restart_autoToggle>
 	<HugsLib_restart_restarting>Restarting</HugsLib_restart_restarting>
 	<HugsLib_setting_autoRestart_label>Restart after Mods menu changes</HugsLib_setting_autoRestart_label>
-	<HugsLib_setting_autoRestart_desc>Automatically restarts the game after changes to the Mods menu have been made.</HugsLib_setting_autoRestart_desc>
+	<HugsLib_setting_autoRestart_desc>Automatically restarts the game after changes to the Mods menu have been made or the game language is changed.</HugsLib_setting_autoRestart_desc>
 	
 	<test_enumSetting_DefaultValue>Default Value</test_enumSetting_DefaultValue>
 	<test_enumSetting_ValueOne>Value One</test_enumSetting_ValueOne>

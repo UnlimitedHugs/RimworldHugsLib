@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using HugsLib.GuiInject;
 using HugsLib.Settings;
 using HugsLib.Shell;
@@ -20,6 +21,9 @@ namespace HugsLib.Restarter {
 
 		public SettingHandle<bool> AutoRestartSetting { get; private set; }
 		
+		/// <summary>
+		/// Puts up a loading screen and restarts the game.
+		/// </summary>
 		public static void PerformRestart() {
 			LongEventHandler.QueueLongEvent(() => {
 				// put up the loading screen while the game shuts down
@@ -27,6 +31,20 @@ namespace HugsLib.Restarter {
 			}, "HugsLib_restart_restarting", true, null);
 			// execute in main thread
 			LongEventHandler.ExecuteWhenFinished(() => ShellRestartRimWorld.Execute());
+		}
+
+		/// <summary>
+		/// Auto-restarts the game if the player selected the auto-restart setting, or shows the restart dialog otherwise.
+		/// </summary>
+		/// <param name="dialogTextKey">The text key for the dialog text.</param>
+		/// <param name="closeAction">Called when the player closes the dialog without choosing to restart.</param>
+		public static void AutoRestartOrShowRestartDialog(string dialogTextKey, Action closeAction) {
+			if (HugsLibController.Instance.AutoRestarter.AutoRestartSetting) {
+					PerformRestart();
+				} else {
+					Find.WindowStack.Add(new Dialog_RestartGame(dialogTextKey, closeAction));
+				}
+
 		}
 
 		[WindowInjection(typeof (Page_ModsConfig), Mode = WindowInjectionManager.InjectMode.AfterContents)]
@@ -52,11 +70,9 @@ namespace HugsLib.Restarter {
 		private static void CloseAction(Window window) {
 			ModsConfig.Save();
 			if (lastModListHash != GetModListHash()) {
-				if (HugsLibController.Instance.AutoRestarter.AutoRestartSetting) {
-					PerformRestart();
-				} else {
-					Find.WindowStack.Add(new Dialog_RestartGame());
-				}
+				AutoRestartOrShowRestartDialog("HugsLib_restart_text", () => {
+					window.Close();
+				});
 			} else {
 				window.Close();
 			}

@@ -18,7 +18,9 @@ A lightweight shared mod library for Rimworld. Provides a foundation for mods an
 - Log window additions: adds buttons to copy the selected log message and activate the log publisher. Also adds a menu to find common files: open the log file and browse the user data and mods folders.
 
 ## Compatibility
-The only detour by the library itself is the `Window.WindowOnGUI` method, used to power the GUI injection system.
+Methods detoured by the library:  
+`Window.WindowOnGUI` method, used to power the GUI injection system.  
+`LanguageDatabase.SelectLanguage` method, used to restart the game when a new language is selected.
 
 ## Usage
 This is a public library similar to CCL, designed to be easily updateable between Rimworld versions. Feel free to use it for your own projects.
