@@ -40,7 +40,7 @@
 	<HugsLib_logs_retryBtn>Retry</HugsLib_logs_retryBtn>
 	<HugsLib_logs_browseBtn>Open in browser</HugsLib_logs_browseBtn>
 	
-	<HugsLib_logs_filesBtn>+</HugsLib_logs_filesBtn>
+	<HugsLib_logs_filesBtn>Files</HugsLib_logs_filesBtn>
 	<HugsLib_logs_openLogFile>Open log file</HugsLib_logs_openLogFile>
 	<HugsLib_logs_openSaveDir>Open save folder</HugsLib_logs_openSaveDir>
 	<HugsLib_logs_openModsDir>Open mods folder</HugsLib_logs_openModsDir>

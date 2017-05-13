@@ -22,6 +22,8 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -32,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <DocumentationFile>Mods\HugsLib\Assemblies\HugsLib.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -85,7 +88,7 @@
     <Compile Include="Source\HugsLibController.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogs.cs" />
     <Compile Include="Source\Logs\LogPublisher.cs" />
-    <Compile Include="Source\Logs\LogWindowInjection.cs" />
+    <Compile Include="Source\Logs\LogWindowExtensions.cs" />
     <Compile Include="Source\ModBase.cs" />
     <Compile Include="Source\News\Dialog_UpdateFeatures.cs" />
     <Compile Include="Source\News\UpdateFeatureDef.cs" />

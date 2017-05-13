@@ -334,36 +334,49 @@ namespace HugsLib.Settings {
 
 		// pulls all available mods with settings to display
 		private void EnumerateSettings() {
-			listedMods.Clear();
-			totalContentHeight = 0;
-			
-			// get HugsLib settings packs
-			foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
-				var handles = pack.Handles.Where(h => !h.NeverVisible).ToList();
-				if (handles.Count == 0) continue;
-				totalContentHeight += ModEntryHeight + handles.Count*HandleEntryHeight;
-				var entry = new ModEntry(pack.EntryName, handles, null);
-				entry.DisplayPriority = pack.DisplayPriority;
-				listedMods.Add(entry);
-			}
-			// get vanilla mods
-			foreach (var mod in LoadedModManager.ModHandles) {
-				if(mod == null || mod.SettingsCategory().NullOrEmpty()) continue;
-				totalContentHeight += ModEntryHeight;
-				listedMods.Add(new ModEntry(mod.SettingsCategory(), new List<SettingHandle>(0), mod));
-			}
-			// normalize improperly named mods
-			foreach (var listedMod in listedMods) {
-				if (listedMod.ModName.NullOrEmpty()) {
-					listedMod.ModName = "HugsLib_setting_unnamed_mod".Translate();
-					listedMod.DisplayPriority = ModSettingsPack.ListPriority.Lower;
+			try {
+				listedMods.Clear();
+				totalContentHeight = 0;
+
+				// get HugsLib settings packs
+				foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
+					try {
+						var handles = pack.Handles.Where(h => !h.NeverVisible).OrderBy(h => h.DisplayOrder).ToList();
+						if (handles.Count == 0) continue;
+						totalContentHeight += ModEntryHeight + handles.Count*HandleEntryHeight;
+						var entry = new ModEntry(pack.EntryName, handles, null);
+						entry.DisplayPriority = pack.DisplayPriority;
+						listedMods.Add(entry);
+					} catch (Exception e) {
+						HugsLibController.Logger.Error("Exception while enumerating HugsLib settings for {0}: {1}", pack.ModId, e);
+					}
 				}
+				// get vanilla mods
+				foreach (var mod in LoadedModManager.ModHandles) {
+					if (mod == null) continue;
+					try {
+						if (mod.SettingsCategory().NullOrEmpty()) continue;
+						totalContentHeight += ModEntryHeight;
+						listedMods.Add(new ModEntry(mod.SettingsCategory(), new List<SettingHandle>(0), mod));
+					} catch (Exception e) {
+						HugsLibController.Logger.Error("Exception while enumerating vanilla settings for {0}: {1}", mod.GetType(), e);
+					}
+				}
+				// normalize improperly named mods
+				foreach (var listedMod in listedMods) {
+					if (listedMod.ModName.NullOrEmpty()) {
+						listedMod.ModName = "HugsLib_setting_unnamed_mod".Translate();
+						listedMod.DisplayPriority = ModSettingsPack.ListPriority.Lower;
+					}
+				}
+				// sort by display priority, entry name
+				listedMods.Sort((p1, p2) => {
+					if (p1.DisplayPriority != p2.DisplayPriority) return p1.DisplayPriority.CompareTo(p2.DisplayPriority);
+					return String.Compare(p1.ModName, p2.ModName, StringComparison.Ordinal);
+				});
+			} catch (Exception e) {
+				HugsLibController.Logger.ReportException(e);
 			}
-			// sort by display priority, entry name
-			listedMods.Sort((p1, p2) => {
-				if (p1.DisplayPriority != p2.DisplayPriority) return p1.DisplayPriority.CompareTo(p2.DisplayPriority);
-				return String.Compare(p1.ModName, p2.ModName, StringComparison.Ordinal);
-			});
 		}
 		
 		// prepares support objects to store data for settings handle controls

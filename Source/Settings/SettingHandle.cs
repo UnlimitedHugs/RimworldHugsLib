@@ -58,6 +58,10 @@ namespace HugsLib.Settings {
 		/// When CustomDrawer is used, specifies the height of the row for the handle. Leave at 0 for default height.
 		/// </summary>
 		public float CustomDrawerHeight { get; set; }
+		/// <summary>
+		/// Affects the order in which handles appear in the settings menu. Lower comes first, default is 0.
+		/// </summary>
+		public int DisplayOrder { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }

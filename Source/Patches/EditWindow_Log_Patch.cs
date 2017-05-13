@@ -8,12 +8,16 @@ namespace HugsLib.Patches {
 	/// Adds extra buttons to the Log window.
 	/// </summary>
 	[HarmonyPatch(typeof(EditWindow_Log))]
-	[HarmonyPatch("DoWindowContents")]
+	[HarmonyPatch("DoMessagesListing")]
 	[HarmonyPatch(new[]{typeof(Rect)})]
 	internal static class EditWindow_Log_Patch {
-		[HarmonyPostfix]
-		private static void ExtraLogWindowButtons(Window __instance, Rect inRect) {
-			LogWindowInjection.DrawLogWindowExtensions(__instance, inRect);
+		[HarmonyPrefix]
+		private static bool ExtraLogWindowButtons(Window __instance, ref Rect listingRect) {
+			var extensionsRect = new Rect(listingRect);
+			listingRect.yMax -= LogWindowExtensions.ExtensionsAreaHeight;
+			extensionsRect.yMin = listingRect.yMax;
+			LogWindowExtensions.DrawLogWindowExtensions(__instance, extensionsRect);
+			return true;
 		} 
 	}
 }
