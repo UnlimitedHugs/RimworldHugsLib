@@ -40,7 +40,7 @@
 	<HugsLib_logs_retryBtn>Повторить попытку</HugsLib_logs_retryBtn>
 	<HugsLib_logs_browseBtn>Открыть в браузере</HugsLib_logs_browseBtn>
 
-	<HugsLib_logs_filesBtn>+</HugsLib_logs_filesBtn>
+	<HugsLib_logs_filesBtn>Файлы</HugsLib_logs_filesBtn>
 	<HugsLib_logs_openLogFile>Открыть журнал событий</HugsLib_logs_openLogFile>
 	<HugsLib_logs_openSaveDir>Открыть папку с сохраненными играми</HugsLib_logs_openSaveDir>
 	<HugsLib_logs_openModsDir>Открыть папку с модами</HugsLib_logs_openModsDir>

@@ -77,10 +77,13 @@ namespace HugsLib {
 			if (!PersistentDataManager.IsValidElementName(modId)) throw new FormatException("Invalid mod identifier: " + modId);
 			Logger = new ModLogger(modId);
 			Settings = HugsLibController.Instance.Settings.GetModSettings(modId);
+		}
+
+		internal void ApplyHarmonyPatches() {
 			if (HarmonyAutoPatch) {
-				var harmonyId = HarmonyInstancePrefix + modId;
+				var harmonyId = HarmonyInstancePrefix + ModIdentifier;
 				try {
-					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, modId)) {
+					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, ModIdentifier)) {
 						HarmonyInst = HarmonyInstance.Create(harmonyId);
 						HarmonyInst.PatchAll(GetType().Assembly);
 					}

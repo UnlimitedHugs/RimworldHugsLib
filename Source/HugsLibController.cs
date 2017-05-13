@@ -376,6 +376,7 @@ namespace HugsLib {
 				ModBase modbase = null;
 				try {
 					modbase = (ModBase) Activator.CreateInstance(subclass, true);
+					modbase.ApplyHarmonyPatches();
 					modbase.ModContentPack = pack;
 					if (childMods.Find(m => m.ModIdentifier == modbase.ModIdentifier) != null) {
 						Logger.Error("Duplicate mod identifier: " + modbase.ModIdentifier);
@@ -413,7 +414,7 @@ namespace HugsLib {
 
 		private void PrepareReflection() {
 			InjectedDefHasher.PrepareReflection();
-			LogWindowInjection.PrepareReflection();
+			LogWindowExtensions.PrepareReflection();
 		}
 
 		private void RegisterOwnSettings() {
