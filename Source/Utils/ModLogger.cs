@@ -47,16 +47,13 @@ namespace HugsLib.Utils {
 
 		/// <summary>
 		/// Writes a message only if Dev mode is enabled.
+		/// Message is written using Tracer.Trace with the addition of the ModIdentifier as the first value.
 		/// </summary>
 		/// <param name="strings">The strings to display</param>
 		public void Trace(params object[] strings) {
 			if (!Prefs.DevMode) return;
-			if (strings.Length == 1) {
-				var msg = strings[0];
-				Log.Message(FormatOutput(msg != null ? msg.ToString() : "null", null));
-			} else {
-				Log.Message(strings.ListElements());
-			}
+			strings = UnshiftValue(strings, GetModPrefix());
+			Tracer.Trace(strings);
 		}
 
 		/// <summary>
@@ -64,7 +61,8 @@ namespace HugsLib.Utils {
 		/// </summary>
 		public void TraceFormat(string message, params object[] substitiutions) {
 			if (!Prefs.DevMode) return;
-			Log.Message(FormatOutput(message, null, substitiutions));
+			message = String.Format("{0} {1}", GetModPrefix(), message);
+			Tracer.TraceFormat(message, substitiutions);
 		}
 
 		/// <summary>
@@ -92,7 +90,7 @@ namespace HugsLib.Utils {
 
 		private string FormatOutput(string message, string extraPrefix, params object[] substitiutions) {
 			builder.Length = 0;
-			builder.AppendFormat("[{0}]", logPrefix);
+			builder.Append(GetModPrefix());
 			if (extraPrefix!=null) {
 				builder.AppendFormat("[{0}]", extraPrefix);
 			}
@@ -103,6 +101,18 @@ namespace HugsLib.Utils {
 				builder.Append(message);
 			}
 			return builder.ToString();
+		}
+
+		private string GetModPrefix() {
+			return String.Format("[{0}]", logPrefix);
+		}
+
+		// adds a value on the front of an object arrray
+		private object[] UnshiftValue(object[] arr, object value) {
+			var newArr = new object[arr.Length+1];
+			Array.ConstrainedCopy(arr, 0, newArr, 1, arr.Length);
+			newArr[0] = value;
+			return newArr;
 		}
 	}
 }

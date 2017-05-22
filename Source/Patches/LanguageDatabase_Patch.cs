@@ -1,4 +1,5 @@
 ﻿using Harmony;
+using HugsLib.Core;
 using Verse;
 
 namespace HugsLib.Patches {
@@ -14,9 +15,10 @@ namespace HugsLib.Patches {
 		public static bool ForceRestartAfterLangChange(LoadedLanguage lang) {
 			Prefs.LangFolderName = lang.folderName;
 			Prefs.Save();
-			Find.WindowStack.Add(new Dialog_MessageBox("HugsLib_restart_language_text".Translate(), null, () => {
+			var dialog = new Dialog_MessageBox("HugsLib_restart_language_text".Translate(), null, () => {
 				LongEventHandler.ExecuteWhenFinished(GenCommandLine.Restart);
-			}));
+			});
+			QuickRestarter.BypassOrShowDialog(dialog);
 			return false;
 		}
 	}
