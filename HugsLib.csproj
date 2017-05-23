@@ -65,6 +65,7 @@
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitalizer.cs" />
+    <Compile Include="Source\Patches\DebugWindowsOpener_Patch.cs" />
     <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
     <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
@@ -76,6 +77,8 @@
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
     <Compile Include="Source\Patches\UIRoot_Patch.cs" />
+    <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />
+    <Compile Include="Source\Quickstart\QuickstartController.cs" />
     <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
@@ -122,6 +125,9 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>RimWorldWin.exe</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

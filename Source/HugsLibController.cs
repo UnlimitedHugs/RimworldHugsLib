@@ -5,6 +5,7 @@ using Harmony;
 using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
+using HugsLib.Quickstart;
 using HugsLib.Settings;
 using HugsLib.Source.Attrib;
 using HugsLib.Utils;
