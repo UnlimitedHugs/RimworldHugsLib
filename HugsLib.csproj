@@ -75,11 +75,14 @@
     <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
     <Compile Include="Source\Patches\ModsConfig_PostClose_Patch.cs" />
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
+    <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
     <Compile Include="Source\Patches\UIRoot_Patch.cs" />
     <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />
     <Compile Include="Source\Quickstart\QuickstartController.cs" />
+    <Compile Include="Source\Quickstart\QuickstartSettings.cs" />
     <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
+    <Compile Include="Source\Settings\SettingHandleConvertibleUtility.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />

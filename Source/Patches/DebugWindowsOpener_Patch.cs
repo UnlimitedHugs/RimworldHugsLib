@@ -7,6 +7,10 @@ using HugsLib.Quickstart;
 using Verse;
 
 namespace HugsLib.Patches {
+	/// <summary>
+	/// Adds an entry point to draw and additional debug button on the toolbar.
+	/// The infix is necessary to catch the WidgetRow that the stock buttons are drawn to.
+	/// </summary>
 	[HarmonyPatch(typeof(DebugWindowsOpener))]
 	[HarmonyPatch("DrawButtons")]
 	internal class DebugWindowsOpener_Patch {

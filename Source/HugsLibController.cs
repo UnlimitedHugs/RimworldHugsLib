@@ -137,6 +137,7 @@ namespace HugsLib {
 				}
 				lateInitalizationCompleted = true;
 				RegisterOwnSettings();
+				QuickstartController.Initialize();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
@@ -416,6 +417,7 @@ namespace HugsLib {
 		private void PrepareReflection() {
 			InjectedDefHasher.PrepareReflection();
 			LogWindowExtensions.PrepareReflection();
+			QuickstartController.PrepareReflection();
 		}
 
 		private void RegisterOwnSettings() {
@@ -434,6 +436,7 @@ namespace HugsLib {
 					}
 					return false;
 				};
+				QuickstartController.RegisterSettings(pack);
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
