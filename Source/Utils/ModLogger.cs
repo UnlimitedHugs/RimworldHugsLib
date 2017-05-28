@@ -52,7 +52,12 @@ namespace HugsLib.Utils {
 		/// <param name="strings">The strings to display</param>
 		public void Trace(params object[] strings) {
 			if (!Prefs.DevMode) return;
-			strings = UnshiftValue(strings, GetModPrefix());
+			if (strings.Length > 0) {
+				Tracer.ExpandObjectsToTraceableStrings(strings);
+				strings[0] = String.Format("{0} {1}", GetModPrefix(), strings[0]);
+			} else {
+				strings = new object[] {GetModPrefix()};
+			}
 			Tracer.Trace(strings);
 		}
 
@@ -105,14 +110,6 @@ namespace HugsLib.Utils {
 
 		private string GetModPrefix() {
 			return String.Format("[{0}]", logPrefix);
-		}
-
-		// adds a value on the front of an object arrray
-		private object[] UnshiftValue(object[] arr, object value) {
-			var newArr = new object[arr.Length+1];
-			Array.ConstrainedCopy(arr, 0, newArr, 1, arr.Length);
-			newArr[0] = value;
-			return newArr;
 		}
 	}
 }

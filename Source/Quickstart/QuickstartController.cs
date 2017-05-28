@@ -66,10 +66,11 @@ namespace HugsLib.Quickstart {
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {
 			if (widgets.ButtonIcon(quickstartIconTex, "Open the quickstart settings.\n\nThis lets you automatically generate a map or load an existing save when the game is started.\nShift-click to quick-generate a new map.")) {
+				var stack = Find.WindowStack;
 				if (HugsLibUtility.ShiftIsHeld) {
+					stack.TryRemove(typeof(Dialog_QuickstartSettings));
 					InitateMapGeneration();
 				} else {
-					var stack = Find.WindowStack;
 					if (stack.IsOpen<Dialog_QuickstartSettings>()) {
 						stack.TryRemove(typeof(Dialog_QuickstartSettings));
 					} else {

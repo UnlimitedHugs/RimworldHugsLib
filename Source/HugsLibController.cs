@@ -23,7 +23,9 @@ namespace HugsLib {
 	public class HugsLibController {
 		private const string SceneObjectName = "HugsLibProxy";
 		private const string ModIdentifier = "HugsLib";
+		private const string ModPackName = "HugsLib";
 		private const string HarmonyInstanceIdentifier = "UnlimitedHugs.HugsLib";
+		private const string HarmonyDebugCommandLineArg = "harmony_debug";
 
 		private static bool earlyInitalizationCompleted;
 		private static bool lateInitalizationCompleted;
@@ -149,6 +151,7 @@ namespace HugsLib {
 			try {
 				initializationInProgress = true; // prevent the Unity events from causing race conditions during async loading
 				EnumerateModAssemblies();
+				CheckForIncludedHugsLibAssembly();
 				ProcessAttibutes(); // do detours and other attribute work for (newly) loaded mods
 				EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
@@ -403,9 +406,23 @@ namespace HugsLib {
 			}
 		}
 
+		// Ensure that no other mod has accidentaly included the dll
+		private void CheckForIncludedHugsLibAssembly() {
+			var controllerTypeName = GetType().FullName;
+			Logger.Message(controllerTypeName);
+			foreach (var modContentPack in LoadedModManager.RunningMods) {
+				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
+					if (loadedAssembly.GetType(controllerTypeName, false) != null && modContentPack.Name != ModPackName) {
+						Logger.Error("Found HugsLib assembly included by mod {0}. The dll should never be included by other mods.", modContentPack.Name);
+					}
+				}
+			}
+		}
+
 		private void ApplyHarmonyPatches() {
 			try {
 				if (ShouldHarmonyAutoPatch(typeof (HugsLibController).Assembly, ModIdentifier)) {
+					HarmonyInstance.DEBUG = GenCommandLine.CommandLineArgPassed(HarmonyDebugCommandLineArg);
 					HarmonyInst = HarmonyInstance.Create(HarmonyInstanceIdentifier);
 					HarmonyInst.PatchAll(typeof (HugsLibController).Assembly);
 				}

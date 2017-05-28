@@ -28,7 +28,7 @@ namespace HugsLib.Utils {
 			Trace(String.Format(format, formatArgs));
 		}
 
-		private static void ExpandObjectsToTraceableStrings(object[] traceables) {
+		internal static void ExpandObjectsToTraceableStrings(object[] traceables) {
 			for (int i = 0; i < traceables.Length; i++) {
 				var obj = traceables[i];
 				if (obj == null) {

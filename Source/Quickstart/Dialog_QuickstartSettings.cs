@@ -114,30 +114,25 @@ namespace HugsLib.Quickstart {
 			float lineHeight = Text.LineHeight;
 			var entryRect = listing.GetRect(lineHeight + listing.verticalSpacing);
 			var labelRect = new Rect(entryRect.x + labelInset, entryRect.y + labelTopMargin, entryRect.width - labelInset, entryRect.height - labelTopMargin);
+			var rowRect = new Rect(entryRect.x, entryRect.y, entryRect.width, entryRect.height);
 			if (tooltip != null) {
-				var tipRect = new Rect(entryRect.x, entryRect.y, entryRect.width, entryRect.height);
-				if (Mouse.IsOver(tipRect)) {
-					Widgets.DrawHighlight(tipRect);
+				if (Mouse.IsOver(rowRect)) {
+					Widgets.DrawHighlight(rowRect);
 				}
-				TooltipHandler.TipRegion(tipRect, tooltip);
+				TooltipHandler.TipRegion(rowRect, tooltip);
 			}
-			if (Widgets.RadioButton(entryRect.x, entryRect.y, settings.OperationMode == assignedMode)) {
-				SetOperationMode(assignedMode);
+			if (Widgets.ButtonInvisible(rowRect)) {
+				if (settings.OperationMode != assignedMode) {
+					SoundDefOf.RadioButtonClicked.PlayOneShotOnCamera();
+					QuickstartController.Settings.OperationMode = assignedMode;
+				}
 			}
-			if (Widgets.ButtonInvisible(labelRect)) {
-				SetOperationMode(assignedMode);
-				SoundDefOf.RadioButtonClicked.PlayOneShotOnCamera();
-			}
+			Widgets.RadioButton(entryRect.x, entryRect.y, settings.OperationMode == assignedMode);
+			
 			Text.Font = GameFont.Medium;
 			var emphasizedLabel = String.Format("<size={0}>{1}</size>", fontSize, label);
 			Widgets.Label(labelRect, emphasizedLabel);
 			Text.Font = GameFont.Small;
-		}
-
-		private void SetOperationMode(QuickstartSettings.QuickstartMode newMode) {
-			if (newMode == QuickstartController.Settings.OperationMode) return;
-			QuickstartController.Settings.OperationMode = newMode;
-			QuickstartController.SaveSettings();
 		}
 
 		private void MakeSubListing(Listing_Standard mainListing, float width, float allocatedHeight, float padding, float extraInset, float verticalSpacing, Action<Listing_Standard, float> drawContents) {

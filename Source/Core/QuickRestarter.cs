@@ -9,7 +9,7 @@ namespace HugsLib.Core {
 	public static class QuickRestarter {
 		public static void BypassOrShowDialog(Window originalDialog) {
 			if (Prefs.DevMode) {
-				if (!HugsLibUtility.ControlIsHeld) {
+				if (!HugsLibUtility.ShiftIsHeld) {
 					GenCommandLine.Restart();
 				}
 			} else {
