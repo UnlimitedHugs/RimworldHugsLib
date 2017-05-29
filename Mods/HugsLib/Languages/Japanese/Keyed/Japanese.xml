@@ -47,11 +47,12 @@
 
   <HugsLib_restart_language_text>ゲームの言語が変更されました。Modをリロードできるようにゲームを再起動することをお勧めします。</HugsLib_restart_language_text>
 
-  <HugsLib_loadOrderWarning_title>Improper mod load order</HugsLib_loadOrderWarning_title>
+  <HugsLib_loadOrderWarning_title>不適切なmod読込順</HugsLib_loadOrderWarning_title>
   <HugsLib_loadOrderWarning_text>問題を避けるために、&lt;b&gt;HugsLib mod&lt;/b&gt;は常に&lt;b&gt;Core&lt;/b&gt;の後にロードする必要があります。\nModsメニューでmodの順序を調整してゲームを再開してください。</HugsLib_loadOrderWarning_text>
 
   <test_enumSetting_DefaultValue>初期値</test_enumSetting_DefaultValue>
   <test_enumSetting_ValueOne>初期値 1</test_enumSetting_ValueOne>
   <test_enumSetting_ValueTwo>初期値 2</test_enumSetting_ValueTwo>
-  
+
+
 </LanguageData>
