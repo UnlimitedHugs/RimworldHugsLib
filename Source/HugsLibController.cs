@@ -409,7 +409,6 @@ namespace HugsLib {
 		// Ensure that no other mod has accidentaly included the dll
 		private void CheckForIncludedHugsLibAssembly() {
 			var controllerTypeName = GetType().FullName;
-			Logger.Message(controllerTypeName);
 			foreach (var modContentPack in LoadedModManager.RunningMods) {
 				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
 					if (loadedAssembly.GetType(controllerTypeName, false) != null && modContentPack.Name != ModPackName) {
