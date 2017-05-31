@@ -15,6 +15,9 @@
   <HugsLib_setting_allNews_desc>显示所有可用的Mod更新信息，包含之前已显示过的更新信息。</HugsLib_setting_allNews_desc>
   <HugsLib_setting_allNews_button>显示更新</HugsLib_setting_allNews_button>
   <HugsLib_setting_allNews_fail>已启用的Mod中没有任何可供显示的更新信息。</HugsLib_setting_allNews_fail>
+  <HugsLib_setting_unnamed_mod>（未命名Mod）</HugsLib_setting_unnamed_mod>
+  <HugsLib_setting_show_settings>显示设置</HugsLib_setting_show_settings>
+  <HugsLib_setting_mod_name_title>{0} Mod 设置</HugsLib_setting_mod_name_title>
 
   <HugsLib_features_title>Mod新特性</HugsLib_features_title>
   <HugsLib_features_description>以下是新安装的Mod的更新信息，包含了新特性和对游戏的改进。\n你可以在「选项」 &gt; 「Mod 选项」中关闭这个弹出窗口。</HugsLib_features_description>
@@ -42,13 +45,10 @@
   <HugsLib_logs_openSaveDir>打开存档文件夹</HugsLib_logs_openSaveDir>
   <HugsLib_logs_openModsDir>打开Mod文件夹</HugsLib_logs_openModsDir>
 
-  <HugsLib_restart_title>重启游戏</HugsLib_restart_title>
-  <HugsLib_restart_text>改动已保存。\n\n为了激活新的Mod配置，建议重启游戏。</HugsLib_restart_text>
-  <HugsLib_restart_restartNowBtn>立即重启</HugsLib_restart_restartNowBtn>
-  <HugsLib_restart_autoToggle>自动重启</HugsLib_restart_autoToggle>
-  <HugsLib_restart_restarting>正在重启</HugsLib_restart_restarting>
-  <HugsLib_setting_autoRestart_label>Mod列表改变后重启</HugsLib_setting_autoRestart_label>
-  <HugsLib_setting_autoRestart_desc>在Mod列表改变后自动重启游戏。</HugsLib_setting_autoRestart_desc>
+  <HugsLib_restart_language_text>游戏语言已更改。游戏将会自动重启。</HugsLib_restart_language_text>
+
+  <HugsLib_loadOrderWarning_title>错误的Mod排序</HugsLib_loadOrderWarning_title>
+  <HugsLib_loadOrderWarning_text>&lt;b&gt;HugsLib Mod&lt;/b&gt;应该排在&lt;b&gt;Core&lt;/b&gt;之后，以避免引起问题。\n请在Mod菜单中调整你的Mod排序并重启游戏。</HugsLib_loadOrderWarning_text>
 
   <test_enumSetting_DefaultValue>默认值</test_enumSetting_DefaultValue>
   <test_enumSetting_ValueOne>默认值一</test_enumSetting_ValueOne>
