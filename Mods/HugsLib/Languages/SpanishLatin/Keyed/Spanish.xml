@@ -15,7 +15,11 @@
 	<HugsLib_setting_allNews_desc>Muestra todas las noticias de actualizaciones de mods disponibles, incluidas las que ya se han mostrado.</HugsLib_setting_allNews_desc>
 	<HugsLib_setting_allNews_button>Mostrar ahora</HugsLib_setting_allNews_button>
 	<HugsLib_setting_allNews_fail>Ninguno de los mods activos tiene noticias de actualizaciones que mostrar.</HugsLib_setting_allNews_fail>
+	<HugsLib_setting_unnamed_mod>(unnamed mod)</HugsLib_setting_unnamed_mod>
+	<HugsLib_setting_show_settings>Mostrar ajustes</HugsLib_setting_show_settings>
+	<HugsLib_setting_mod_name_title>Ajustes del mod {0}</HugsLib_setting_mod_name_title>
 
+	
 	<HugsLib_features_title>Nuevas funciones de mod</HugsLib_features_title>
 	<HugsLib_features_description>Se han instalado las siguientes actualizaciones de mod y éstas son las nuevas características y mejoras incluidas en ellas. \nPuede deshabilitar este diálogo en Opciones &gt; Mod Settings</HugsLib_features_description>
 	<HugsLib_features_update>{0} v{1}</HugsLib_features_update>
@@ -42,14 +46,11 @@
 	<HugsLib_logs_openSaveDir>Abrir carpeta de guardados</HugsLib_logs_openSaveDir>
 	<HugsLib_logs_openModsDir>Abrir carpeta de Mods</HugsLib_logs_openModsDir>
 
-	<HugsLib_restart_title>Reiniciar juego</HugsLib_restart_title>
-	<HugsLib_restart_text>Los cambios han sido guardados.\n\nPara activar la nueva configuración del mod, se recomienda reiniciar el juego.</HugsLib_restart_text>
-	<HugsLib_restart_restartNowBtn>Reiniciar ahora</HugsLib_restart_restartNowBtn>
-	<HugsLib_restart_autoToggle>Reiniciar automáticamente</HugsLib_restart_autoToggle>
-	<HugsLib_restart_restarting>Reiniciando</HugsLib_restart_restarting>
-	<HugsLib_setting_autoRestart_label>Reiniciar después de cambiar el menú Mods</HugsLib_setting_autoRestart_label>
-	<HugsLib_setting_autoRestart_desc>Reinicia automáticamente el juego después de haber realizado cambios en el menú Mods.</HugsLib_setting_autoRestart_desc>
+	<HugsLib_restart_language_text>El idioma del juego ha cambiado. El juego se reiniciará automáticamente.</HugsLib_restart_language_text>
 
+	<HugsLib_loadOrderWarning_title>Orden de carga de los mods incorrecto</HugsLib_loadOrderWarning_title>
+	<HugsLib_loadOrderWarning_text>&lt;b&gt;El mod HugsLib&lt;/b&gt; debe cargarse siempre después de &lt;b&gt;Core&lt;/b&gt; para evitar problemas.\nPor favor, ajuste su orden de carga de mods en el menú Mods y reinicie el juego.</HugsLib_loadOrderWarning_text>
+	
 	<test_enumSetting_DefaultValue>Valor por defecto</test_enumSetting_DefaultValue>
 	<test_enumSetting_ValueOne>Valor Uno</test_enumSetting_ValueOne>
 	<test_enumSetting_ValueTwo>Valor Dos</test_enumSetting_ValueTwo>
