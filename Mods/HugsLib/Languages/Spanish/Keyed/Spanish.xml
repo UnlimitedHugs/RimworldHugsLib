@@ -15,7 +15,7 @@
 	<HugsLib_setting_allNews_desc>Muestra todas las noticias de actualizaciones de mods disponibles, incluidas las que ya se han mostrado.</HugsLib_setting_allNews_desc>
 	<HugsLib_setting_allNews_button>Mostrar ahora</HugsLib_setting_allNews_button>
 	<HugsLib_setting_allNews_fail>Ninguno de los mods activos tiene noticias de actualizaciones que mostrar.</HugsLib_setting_allNews_fail>
-	<HugsLib_setting_unnamed_mod>(unnamed mod)</HugsLib_setting_unnamed_mod>
+	<HugsLib_setting_unnamed_mod>(Mod sin nombre)</HugsLib_setting_unnamed_mod>
 	<HugsLib_setting_show_settings>Mostrar ajustes</HugsLib_setting_show_settings>
 	<HugsLib_setting_mod_name_title>Ajustes del mod {0}</HugsLib_setting_mod_name_title>
 	
