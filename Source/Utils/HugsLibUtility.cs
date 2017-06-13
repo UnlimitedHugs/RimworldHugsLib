@@ -240,7 +240,11 @@ namespace HugsLib.Utils {
 				case PlatformType.MacOSX:
 					return "~/Library/Logs/Unity/Player.log";
 				case PlatformType.Windows:
-					return Path.Combine(UnityData.dataPath, "output_log.txt");
+					logfile = Path.Combine(UnityData.dataPath, "output_log.txt");
+					if (File.Exists(logfile)) {
+						return logfile;
+					}
+					return Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%") + $@"Low\{Application.companyName}\{Application.productName}\output_log.txt";
 				default:
 					return null;
 			}
