@@ -71,6 +71,7 @@
     <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
     <Compile Include="Source\Patches\EditWindow_Log_Patch.cs" />
     <Compile Include="Source\Patches\Game_FinalizeInit_Patch.cs" />
+    <Compile Include="Source\Patches\MapComponentUtility_MapGenerated_Patch.cs" />
     <Compile Include="Source\Patches\Map_ConstructComponents_Patch.cs" />
     <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
     <Compile Include="Source\Patches\ModsConfig_PostClose_Patch.cs" />

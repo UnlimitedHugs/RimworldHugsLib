@@ -142,6 +142,14 @@ namespace HugsLib {
 		}
 
 		/// <summary>
+		/// Called right after a new map has been generated.
+		/// This is the equivalent of MapComponent.MapGenerated().
+		/// </summary>
+		/// <param name="map">The new map that has just fininished generating</param>
+		public virtual void MapGenerated(Map map) {
+		}
+
+		/// <summary>
 		/// Called when the map was fully loaded
 		/// </summary>
 		/// <param name="map">The map that has finished loading</param>

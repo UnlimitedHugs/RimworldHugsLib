@@ -244,7 +244,7 @@ namespace HugsLib.Utils {
 					if (File.Exists(logfile)) {
 						return logfile;
 					}
-					return Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%") + $@"Low\{Application.companyName}\{Application.productName}\output_log.txt";
+					return Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%") + String.Format(@"Low\{0}\{1}\output_log.txt", Application.companyName, Application.productName);
 				default:
 					return null;
 			}

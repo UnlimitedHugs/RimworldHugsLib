@@ -82,6 +82,11 @@
             Adds a hook to produce the WorldLoaded callback for ModBase mods.
             </summary>
         </member>
+        <member name="T:HugsLib.Patches.MapComponentUtility_MapGenerated_Patch">
+            <summary>
+            Adds a hook to produce the MapGenerated callback for ModBase mods.
+            </summary>
+        </member>
         <member name="T:HugsLib.Patches.Map_ConstructComponents_Patch">
             <summary>
             Adds a hook to produce the MapComponentsInitializing callback for ModBase mods.
@@ -319,6 +324,13 @@
             Called right after Map.ConstructComponents() (before MapLoaded)
             </summary>
             <param name="map">The map being initialized</param>
+        </member>
+        <member name="M:HugsLib.ModBase.MapGenerated(Verse.Map)">
+            <summary>
+            Called right after a new map has been generated.
+            This is the equivalent of MapComponent.MapGenerated().
+            </summary>
+            <param name="map">The new map that has just fininished generating</param>
         </member>
         <member name="M:HugsLib.ModBase.MapLoaded(Verse.Map)">
             <summary>

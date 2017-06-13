@@ -276,6 +276,20 @@ namespace HugsLib {
 			}
 		}
 
+		internal void OnMapGenerated(Map map) {
+			try {
+				for (int i = 0; i < childMods.Count; i++) {
+					try {
+						childMods[i].MapGenerated(map);
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].ModIdentifier);
+					}
+				}
+			} catch (Exception e) {
+				Logger.ReportException(e);
+			}
+		}
+
 		internal void OnMapComponentsConstructed(Map map) {
 			try {
 				for (int i = 0; i < childMods.Count; i++) {

@@ -62,6 +62,10 @@ namespace HugsLib.Test {
 			Logger.Message("MapComponentsInitializing on map:" + map);
 		}
 
+		public override void MapGenerated(Map map) {
+			Logger.Message("MapGenerated:" + map);
+		}
+
 		public override void MapLoaded(Map map) {
 			Logger.Message("MapLoaded:" + map);
 			try {
