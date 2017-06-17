@@ -1,8 +1,9 @@
 #if TEST_MOD
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Xml.Serialization;
 using HugsLib.Settings;
+using HugsLib.Source.Settings;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -38,7 +39,7 @@ namespace HugsLib.Test {
 		public override void Tick(int currentTick) {
 			//Logger.Message("Tick:"+currentTick);
 		}
-		
+
 		public override void Update() {
 			//Logger.Message("Update");
 		}
@@ -58,15 +59,19 @@ namespace HugsLib.Test {
 		}
 
 		public override void MapComponentsInitializing(Map map) {
-			Logger.Message("MapComponentsInitializing on map:"+map);
+			Logger.Message("MapComponentsInitializing on map:" + map);
+		}
+
+		public override void MapGenerated(Map map) {
+			Logger.Message("MapGenerated:" + map);
 		}
 
 		public override void MapLoaded(Map map) {
-			Logger.Message("MapLoaded:"+map);
+			Logger.Message("MapLoaded:" + map);
 			try {
 				map.mapDrawer.MapMeshDirty(new IntVec3(0, 0, 0), MapMeshFlag.Buildings);
 			} catch (Exception e) {
-				Logger.Error("MapLoaded fired before map mesh regeneration "+e);
+				Logger.Error("MapLoaded fired before map mesh regeneration " + e);
 			}
 
 			//HugsLibController.Instance.CallbackScheduler.ScheduleCallback(() => Logger.Trace("scheduler callback"), 150, true);
@@ -77,7 +82,7 @@ namespace HugsLib.Test {
 		}
 
 		public override void SceneLoaded(Scene scene) {
-			Logger.Message("SceneLoaded:"+scene.name);
+			Logger.Message("SceneLoaded:" + scene.name);
 		}
 
 		public override void SettingsChanged() {
@@ -101,11 +106,11 @@ namespace HugsLib.Test {
 			custom.CustomDrawerHeight = 30f;
 			custom.CustomDrawer = rect => {
 				if (Widgets.ButtonText(new Rect(rect.x, rect.y, rect.width, custom.CustomDrawerHeight), "I Iz Button")) {
-					custom.CustomDrawerHeight = custom.CustomDrawerHeight>30?30f:400f;
+					custom.CustomDrawerHeight = custom.CustomDrawerHeight > 30 ? 30f : 400f;
 				}
 				return false;
 			};
-			//TestCustomTypeSetting();
+			TestCustomTypeSetting();
 			//TestConditionalVisibilitySettings();	
 		}
 
@@ -113,7 +118,7 @@ namespace HugsLib.Test {
 
 		private void TestConditionalVisibilitySettings() {
 			for (int i = 0; i < 50; i++) {
-				var toggle = Settings.GetHandle("toggle"+i, "toggle", null, false);
+				var toggle = Settings.GetHandle("toggle" + i, "toggle", null, false);
 				var index = i;
 				toggle.VisibilityPredicate = () => Input.mousePosition.x/22 < index;
 			}
@@ -122,24 +127,35 @@ namespace HugsLib.Test {
 		private void TestCustomTypeSetting() {
 			var custom = Settings.GetHandle<CustomHandleType>("customType", null, null);
 			custom.NeverVisible = true;
-			if (custom.Value == null) custom.Value = new CustomHandleType { nums = new List<int>() };
-			if (custom.Value.nums.Count < 10) custom.Value.nums.Add(Rand.Range(1, 100));
+			if (custom.Value == null) custom.Value = new CustomHandleType { Nums = new List<int>() };
+			custom.Value.Nums.Add(Rand.Range(1, 100));
+			if (custom.Value.Nums.Count > 10) {
+				custom.Value.Nums.RemoveAt(0);
+			}
+			custom.Value.Prop++;
 			HugsLibController.SettingsManager.SaveChanges();
-			Logger.Trace("Custom setting values: " + custom.Value.nums.Join(","));
+			Logger.Trace(string.Format("Custom setting values: Nums:{0} Prop:{1}", custom.Value.Nums.Join(","), custom.Value.Prop));
 		}
 
-		private class CustomHandleType : SettingHandleConvertible {
-			public List<int> nums = new List<int>();
+		//<customType>aasd1w423</customType>
+		[Serializable]
+		public class CustomHandleType : SettingHandleConvertible {
+			[XmlElement] public List<int> Nums = new List<int>();
+
+			[XmlElement]
+			public int Prop { get; set; }
 
 			public override void FromString(string settingValue) {
-				nums = settingValue.Length > 0 ? settingValue.Split('|').Select(int.Parse).ToList() : new List<int>();
+				SettingHandleConvertibleUtility.DeserializeValuesFromString(settingValue, this);
 			}
 
 			public override string ToString() {
-				return nums != null ? nums.Join("|") : "";
+				return SettingHandleConvertibleUtility.SerializeValuesToString(this);
 			}
 		}
-	 
+
 	}
+
+
 }
 #endif

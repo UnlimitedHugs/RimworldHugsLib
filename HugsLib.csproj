@@ -17,7 +17,7 @@
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;TEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -63,18 +63,27 @@
     <Compile Include="Source\Core\HugsLibMod.cs" />
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
+    <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitalizer.cs" />
+    <Compile Include="Source\Patches\DebugWindowsOpener_Patch.cs" />
     <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
     <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
     <Compile Include="Source\Patches\EditWindow_Log_Patch.cs" />
     <Compile Include="Source\Patches\Game_FinalizeInit_Patch.cs" />
+    <Compile Include="Source\Patches\MapComponentUtility_MapGenerated_Patch.cs" />
     <Compile Include="Source\Patches\Map_ConstructComponents_Patch.cs" />
     <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
+    <Compile Include="Source\Patches\ModsConfig_PostClose_Patch.cs" />
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
+    <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
     <Compile Include="Source\Patches\UIRoot_Patch.cs" />
+    <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />
+    <Compile Include="Source\Quickstart\QuickstartController.cs" />
+    <Compile Include="Source\Quickstart\QuickstartSettings.cs" />
     <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
+    <Compile Include="Source\Settings\SettingHandleConvertibleUtility.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />
@@ -114,11 +123,15 @@
     <Compile Include="Source\Utils\MapComponentUtility.cs" />
     <Compile Include="Source\Utils\ModLogger.cs" />
     <Compile Include="Source\Utils\PlatformUtility.cs" />
+    <Compile Include="Source\Utils\Tracer.cs" />
     <Compile Include="Source\Utils\UtilityWorldObject.cs" />
     <Compile Include="Source\Utils\UtilityWorldObjectManager.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>RimWorldWin.exe</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

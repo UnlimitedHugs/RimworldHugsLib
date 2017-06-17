@@ -18,6 +18,7 @@ namespace HugsLib.Logs {
 		public enum WidgetAlignMode {
 			Left, Right
 		}
+
 		/// <summary>
 		/// Callback to draw log window widgets in.
 		/// </summary>
@@ -27,9 +28,10 @@ namespace HugsLib.Logs {
 		/// <param name="widgetRow">Draw your widget using this to automatically align it with the others.</param>
 		public delegate void WidgetDrawer(Window logWindow, Rect widgetArea, LogMessage selectedLogMessage, WidgetRow widgetRow);
 
+		private static readonly float widgetRowHeight = 23f;
+		private static readonly float buttonRowMarginTop = 2f;
 		private static readonly Color shareButtonColor = new Color(.3f, 1f, .3f, 1f);
 		private static readonly Color separatorLineColor = GenColor.FromHex("303030");
-		private static readonly float widgetRowHeight = 28f;
 		private static readonly List<LogWindowWidget> widgets = new List<LogWindowWidget>();
 		
 		private static Texture2D lineTexture;
@@ -61,8 +63,7 @@ namespace HugsLib.Logs {
 			if(widgets.Count == 0) return;
 			var selectedMessage = selectedMessageField != null ? (LogMessage)selectedMessageField.GetValue(window) : null;
 			Text.Font = GameFont.Tiny;
-			const float buttonRowOffset = 5f;
-			var buttonsRect = new Rect(inRect.x, inRect.y + buttonRowOffset, inRect.width, inRect.height - buttonRowOffset);
+			var buttonsRect = new Rect(inRect.x, inRect.y + buttonRowMarginTop, inRect.width, inRect.height - buttonRowMarginTop);
 			var widgetRowLeft = new WidgetRow(buttonsRect.x, buttonsRect.y);
 			var widgetRowRight = new WidgetRow(buttonsRect.width, buttonsRect.y, UIDirection.LeftThenUp);
 			// horizontal line

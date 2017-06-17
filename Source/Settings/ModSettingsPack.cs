@@ -81,6 +81,51 @@ namespace HugsLib.Settings {
 		}
 
 		/// <summary>
+		/// Returns a handle that was already created.
+		/// Will return null if the handle does not exist yet.
+		/// </summary>
+		/// <exception cref="InvalidCastException">Throws an exception if the referenced handle does not match the provided type</exception>
+		/// <param name="settingName">The name of the handle to retrieve</param>
+		public SettingHandle<T> GetHandle<T>(string settingName) {
+			for (int i = 0; i < handles.Count; i++) {
+				var handle = handles[i];
+				if (handle.Name == settingName) {
+					if (!(handle is SettingHandle<T>)) throw new InvalidCastException(string.Format("Handle {0} does not match the specified type of {1}", settingName, typeof(SettingHandle<T>)));
+					return (SettingHandle<T>)handle;
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Attempts to retrieve a setting value by name.
+		/// If a handle for that value has already been created, returns that handle's StringValue.
+		/// Otherwise will return the unclaimed value that was loaded from the XML file.
+		/// Will return null if the value does not exist.
+		/// </summary>
+		/// <param name="settingName">The name of the setting the value of which should be retrieved</param>
+		public string PeekValue(string settingName) {
+			var handle = handles.Find(h => h.Name == settingName);
+			if (handle != null) {
+				return handle.StringValue;
+			}
+			string loadedValue;
+			if (loadedValues.TryGetValue(settingName, out loadedValue)) {
+				return loadedValue;
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Returns true, if there is a setting value that can be retrieved with PeekValue.
+		/// This includes already created handles and unclaimed values.
+		/// </summary>
+		/// <param name="settingName">The name of the setting to check</param>
+		public bool ValueExists(string settingName) {
+			return handles.Find(h => h.Name == settingName) != null || loadedValues.ContainsKey(settingName);
+		}
+
+		/// <summary>
 		/// Deletes a setting loaded from the xml file before it is claimed using GetHandle.
 		/// Useful for cleaning up settings that are no longer in use.
 		/// </summary>
