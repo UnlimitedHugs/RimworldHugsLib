@@ -111,9 +111,19 @@ namespace HugsLib.Test {
 				return false;
 			};
 			TestCustomTypeSetting();
+			TestGiveShortHash();
 			//TestConditionalVisibilitySettings();	
 		}
 
+		private void TestGiveShortHash() {
+			var def = new Def{defName = "randomDefForTesting"};
+			InjectedDefHasher.GiveShortHasToDef(def, typeof(Def));
+			if (def.shortHash == 0) {
+				Logger.Error("GiveShortHasToDef has failed");
+			} else {
+				Logger.Message("Given short hash: "+def.shortHash);
+			}
+		}
 
 
 		private void TestConditionalVisibilitySettings() {

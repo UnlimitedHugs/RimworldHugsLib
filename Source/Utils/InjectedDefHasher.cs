@@ -7,13 +7,16 @@ namespace HugsLib.Utils {
 	/// Adds a hash to a manually instantiated def to avoid def collisions.
 	/// </summary>
 	public static class InjectedDefHasher {
-		private static MethodInfo giveShortHashMethod;
+		private delegate void GiveShortHash(Def def, Type defType);
+		private static GiveShortHash giveShortHashDelegate;
 
 		internal static void PrepareReflection() {
-			giveShortHashMethod = typeof(ShortHashGiver).GetMethod("GiveShortHash", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(Def), typeof(Type) }, null);
-			if (giveShortHashMethod == null) {
+			var methodInfo = typeof(ShortHashGiver).GetMethod("GiveShortHash", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(Def), typeof(Type) }, null);
+			if (methodInfo == null) {
 				HugsLibController.Logger.Error("Failed to reflect ShortHashGiver.GiveShortHash");
+				return;
 			}
+			giveShortHashDelegate = (GiveShortHash)Delegate.CreateDelegate(typeof(GiveShortHash), methodInfo);
 		}
 
 		/// <summary>
@@ -23,8 +26,8 @@ namespace HugsLib.Utils {
 		/// <param name="newDef"></param>
 		/// <param name="defType">The type of defs your def will be saved with. For example, use typeof(ThingDef) if your def extends ThingDef.</param>
 		public static void GiveShortHasToDef(Def newDef, Type defType) {
-			if(giveShortHashMethod == null) throw new Exception("Hasher not initalized");
-			giveShortHashMethod.Invoke(null, new object[] { newDef, defType });
+			if (giveShortHashDelegate == null) throw new Exception("Hasher not initalized");
+			giveShortHashDelegate(newDef, defType);
 		}
 	}
 }
