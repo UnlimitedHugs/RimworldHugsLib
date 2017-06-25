@@ -238,7 +238,7 @@ namespace HugsLib.Utils {
 				case PlatformType.Linux:
 					return @"/tmp/rimworld_log";
 				case PlatformType.MacOSX:
-					return "~/Library/Logs/Unity/Player.log";
+					return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Logs/Unity/Player.log");
 				case PlatformType.Windows:
 					logfile = Path.Combine(UnityData.dataPath, "output_log.txt");
 					if (File.Exists(logfile)) {
