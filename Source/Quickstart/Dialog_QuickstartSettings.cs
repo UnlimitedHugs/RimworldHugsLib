@@ -130,7 +130,7 @@ namespace HugsLib.Quickstart {
 			Widgets.RadioButton(entryRect.x, entryRect.y, settings.OperationMode == assignedMode);
 			
 			Text.Font = GameFont.Medium;
-			var emphasizedLabel = String.Format("<size={0}>{1}</size>", fontSize, label);
+			var emphasizedLabel = string.Format("<size={0}>{1}</size>", fontSize, label);
 			Widgets.Label(labelRect, emphasizedLabel);
 			Text.Font = GameFont.Small;
 		}
@@ -169,8 +169,8 @@ namespace HugsLib.Quickstart {
 		private void MakeSelectScenarioButton(Listing_Standard sub, QuickstartSettings settings) {
 			var selected = settings.ScenarioToGen;
 			if (sub.ButtonText(selected ?? "Select a scenario")) {
-				var menu = new FloatMenu(DefDatabase<ScenarioDef>.AllDefs.Select(s => {
-					return new FloatMenuOption(s.label, () => { settings.ScenarioToGen = s.defName; });
+				var menu = new FloatMenu(ScenarioLister.AllScenarios().Select(s => {
+					return new FloatMenuOption(s.name, () => { settings.ScenarioToGen = s.name; });
 				}).ToList());
 				Find.WindowStack.Add(menu);
 			}
@@ -203,7 +203,7 @@ namespace HugsLib.Quickstart {
 			if (saveFiles.Select(s => s.Name).All(s => s != settings.SaveFileToLoad)) {
 				settings.SaveFileToLoad = null;
 			}
-			if (settings.ScenarioToGen != null && DefDatabase<ScenarioDef>.GetNamedSilentFail(settings.ScenarioToGen) == null) {
+			if (settings.ScenarioToGen != null && ScenarioLister.AllScenarios().All(s => s.name != settings.ScenarioToGen)) {
 				settings.ScenarioToGen = null;
 			}
 			if (settings.ScenarioToGen == null) {
@@ -220,7 +220,7 @@ namespace HugsLib.Quickstart {
 				FileInfo = new SaveFileInfo(file);
 				Name = Path.GetFileNameWithoutExtension(FileInfo.FileInfo.Name);
 				Label = Name;
-				VersionLabel = String.Format("({0})", FileInfo.GameVersion);
+				VersionLabel = string.Format("({0})", FileInfo.GameVersion);
 			}
 		}
 	}

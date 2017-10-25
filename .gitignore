@@ -17,3 +17,4 @@ Version.cs
 Version.h
 Version.cpp
 *.sln
+*.tmp
