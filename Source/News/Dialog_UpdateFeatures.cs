@@ -264,7 +264,7 @@ namespace HugsLib.News {
 					}
 					curY += expectedHeight;
 				} else if (type == SegmentType.Caption && text != null && previousSegment!=null) {
-					// can't skipDrawing this one, since it's drawn at a negative offest
+					// can't skipDrawing this one, since it's drawn at a negative offset
 					var offset = previousSegment.expectedWidth + SegmentImageMargin;
 					var textRect = new Rect(offset, curY - previousSegment.expectedHeight, rect.width - offset, previousSegment.expectedHeight);
 					GenUI.SetLabelAlign(TextAnchor.MiddleLeft);

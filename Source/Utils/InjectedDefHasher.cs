@@ -25,8 +25,8 @@ namespace HugsLib.Utils {
 		/// </summary>
 		/// <param name="newDef"></param>
 		/// <param name="defType">The type of defs your def will be saved with. For example, use typeof(ThingDef) if your def extends ThingDef.</param>
-		public static void GiveShortHasToDef(Def newDef, Type defType) {
-			if (giveShortHashDelegate == null) throw new Exception("Hasher not initalized");
+		public static void GiveShortHashToDef(Def newDef, Type defType) {
+			if (giveShortHashDelegate == null) throw new Exception("Hasher not initialized");
 			giveShortHashDelegate(newDef, defType);
 		}
 	}

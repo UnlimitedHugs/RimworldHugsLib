@@ -24,7 +24,7 @@ namespace HugsLib.Patches {
 		}
 
 		[HarmonyTranspiler]
-		public static IEnumerable<CodeInstruction> DrawAdditonalButtons(IEnumerable<CodeInstruction> instructions) {
+		public static IEnumerable<CodeInstruction> DrawAdditionalButtons(IEnumerable<CodeInstruction> instructions) {
 			var instructionsArr = instructions.ToArray();
 			var widgetRowIndex = TryGetLocalIndexOfConstructedObject(instructionsArr, typeof(WidgetRow));
 			foreach (var inst in instructionsArr) {
@@ -44,9 +44,9 @@ namespace HugsLib.Patches {
 				HugsLibController.Logger.Error("Could not reflect constructor for type {0}: {1}", constructedType, Environment.StackTrace);
 				return localIndex;
 			}
-			CodeInstruction prevInstrunction = null;
+			CodeInstruction prevInstruction = null;
 			foreach (var inst in instructions) {
-				if (prevInstrunction != null && prevInstrunction.opcode == OpCodes.Newobj && constructor.Equals(prevInstrunction.operand)) {
+				if (prevInstruction != null && prevInstruction.opcode == OpCodes.Newobj && constructor.Equals(prevInstruction.operand)) {
 					if (inst.opcode == OpCodes.Stloc_0) {
 						localIndex = 0;
 					} else if (inst.opcode == OpCodes.Stloc_1) {
@@ -60,7 +60,7 @@ namespace HugsLib.Patches {
 					}
 					if (localIndex >= 0) break;
 				}
-				prevInstrunction = inst;
+				prevInstruction = inst;
 			}
 			if (localIndex < 0) {
 				HugsLibController.Logger.Error("Could not determine local index for constructed type {0}: {1}", constructedType, Environment.StackTrace);

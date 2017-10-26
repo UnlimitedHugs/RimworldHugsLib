@@ -4,17 +4,17 @@ using Verse;
 namespace HugsLib.Core {
 	/// <summary>
 	/// Checks for Dev mode and bypasses the Restart message box.
-	/// Holding Ctrl will prevent the automatic restart.
+	/// Holding Shift will prevent the automatic restart.
 	/// </summary>
 	public static class QuickRestarter {
-		public static void BypassOrShowDialog(Window originalDialog) {
+		public static bool ShowRestartDialogOutsideDevMode() {
 			if (Prefs.DevMode) {
 				if (!HugsLibUtility.ShiftIsHeld) {
 					GenCommandLine.Restart();
 				}
-			} else {
-				Find.WindowStack.Add(originalDialog);
+				return false;
 			}
+			return true;
 		}
 	}
 }

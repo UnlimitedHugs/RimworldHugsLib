@@ -17,7 +17,7 @@
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD,TEST_TICKERS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -64,8 +64,9 @@
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
-    <Compile Include="Source\Core\StaticInitalizer.cs" />
+    <Compile Include="Source\Core\StaticInitializer.cs" />
     <Compile Include="Source\Patches\DebugWindowsOpener_Patch.cs" />
+    <Compile Include="Source\Patches\Game_FillComponents_Patch.cs" />
     <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
     <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
@@ -74,7 +75,7 @@
     <Compile Include="Source\Patches\MapComponentUtility_MapGenerated_Patch.cs" />
     <Compile Include="Source\Patches\Map_ConstructComponents_Patch.cs" />
     <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
-    <Compile Include="Source\Patches\ModsConfig_PostClose_Patch.cs" />
+    <Compile Include="Source\Patches\ModsConfig_RestartFromChangedMods_Patch.cs" />
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
     <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
@@ -112,8 +113,9 @@
     <Compile Include="Source\Test\AttributeTests.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
     <Compile Include="Source\Test\TestUWO.cs" />
+    <Compile Include="Source\Test\TickersTests.cs" />
     <Compile Include="Source\Test\VanillaMod.cs" />
-    <Compile Include="Source\Utils\CallbackScheduler.cs" />
+    <Compile Include="Source\Utils\TickDelayScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\Dialog_Message.cs" />
     <Compile Include="Source\Utils\DistributedTickScheduler.cs" />

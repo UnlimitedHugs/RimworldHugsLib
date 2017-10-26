@@ -10,13 +10,13 @@ namespace HugsLib.Core {
 	internal static class KeyBindingHandler {
 		public static void OnGUI() {
 			if (Event.current.type != EventType.KeyDown) return;
-			if (HugsLibKeyBingings.PublishLogs.JustPressed && HugsLibUtility.ControlIsHeld) {
+			if (HugsLibKeyBindings.PublishLogs.JustPressed && HugsLibUtility.ControlIsHeld) {
 				HugsLibController.Instance.LogUploader.ShowPublishPrompt();
 			}
-			if (HugsLibKeyBingings.OpenLogFile.JustPressed) {
+			if (HugsLibKeyBindings.OpenLogFile.JustPressed) {
 				ShellOpenLog.Execute();
 			}
-			if (HugsLibKeyBingings.RestartRimworld.JustPressed) {
+			if (HugsLibKeyBindings.RestartRimworld.JustPressed) {
 				LongEventHandler.ExecuteWhenFinished(GenCommandLine.Restart);
 			}
 		}

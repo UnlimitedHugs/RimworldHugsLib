@@ -73,8 +73,6 @@ namespace HugsLib.Test {
 			} catch (Exception e) {
 				Logger.Error("MapLoaded fired before map mesh regeneration " + e);
 			}
-
-			//HugsLibController.Instance.CallbackScheduler.ScheduleCallback(() => Logger.Trace("scheduler callback"), 150, true);
 		}
 
 		public override void MapDiscarded(Map map) {

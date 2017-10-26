@@ -15,10 +15,11 @@ namespace HugsLib.Patches {
 		public static bool ForceRestartAfterLangChange(LoadedLanguage lang) {
 			Prefs.LangFolderName = lang.folderName;
 			Prefs.Save();
-			var dialog = new Dialog_MessageBox("HugsLib_restart_language_text".Translate(), null, () => {
-				LongEventHandler.ExecuteWhenFinished(GenCommandLine.Restart);
-			});
-			QuickRestarter.BypassOrShowDialog(dialog);
+			if (QuickRestarter.ShowRestartDialogOutsideDevMode()) {
+				Find.WindowStack.Add(new Dialog_MessageBox("HugsLib_restart_language_text".Translate(), null, () => {
+					LongEventHandler.ExecuteWhenFinished(GenCommandLine.Restart);
+				}));
+			}
 			return false;
 		}
 	}

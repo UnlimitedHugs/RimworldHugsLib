@@ -71,7 +71,7 @@ namespace HugsLib.Utils {
 				useDynamicDrawer = true
 			};
 			
-			InjectedDefHasher.GiveShortHasToDef(def, typeof(WorldObject));
+			InjectedDefHasher.GiveShortHashToDef(def, typeof(WorldObject));
 			DefDatabase<WorldObjectDef>.Add(def);
 		}
 	}

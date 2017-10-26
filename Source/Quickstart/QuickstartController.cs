@@ -37,7 +37,7 @@ namespace HugsLib.Quickstart {
 
 		public static void InitateMapGeneration() {
 			PrepareMapGeneration();
-			HugsLibController.Logger.Message("Quickstarter generating map with scenario: " + DefDatabase<ScenarioDef>.GetNamed(Settings.ScenarioToGen).label);
+			HugsLibController.Logger.Message("Quickstarter generating map with scenario: " + TryGetScenarioByName(Settings.ScenarioToGen).name);
 			quickStartedField.SetValue(null, true);
 			LongEventHandler.QueueLongEvent(() => {
 				Current.Game = null;
@@ -85,7 +85,7 @@ namespace HugsLib.Quickstart {
 		}
 
 		internal static Scenario ReplaceQuickstartScenarioIfNeeded(Scenario original) {
-			return mapGenerationPending ? DefDatabase<ScenarioDef>.GetNamed(Settings.ScenarioToGen).scenario : original;
+			return mapGenerationPending ? TryGetScenarioByName(Settings.ScenarioToGen) : original;
 		}
 
 		internal static int ReplaceQuickstartMapSizeIfNeeded(int original) {
@@ -158,18 +158,22 @@ namespace HugsLib.Quickstart {
 					case 300: desc = "MapSizeLarge".Translate(); break;
 					case 350: desc = "MapSizeExtreme".Translate(); break;
 				}
-				var label = String.Format("{0}x{0}", size) + (desc != null ? String.Format(" ({0})", desc) : "");
+				var label = string.Format("{0}x{0}", size) + (desc != null ? string.Format(" ({0})", desc) : "");
 				MapSizes.Add(new MapSizeEntry(size, label));
 			}
 			SnapSettingsMapSizeToClosestValue(Settings, MapSizes);
 		}
 
 		private static void PrepareMapGeneration() {
-			var scenarioDef = DefDatabase<ScenarioDef>.GetNamedSilentFail(Settings.ScenarioToGen);
-			if (scenarioDef == null) {
+			var scenario = TryGetScenarioByName(Settings.ScenarioToGen);
+			if (scenario == null) {
 				throw new WarningException("scenario not found: " + Settings.ScenarioToGen);
 			}
 			mapGenerationPending = true;
+		}
+
+		private static Scenario TryGetScenarioByName(string name) {
+			return ScenarioLister.AllScenarios().FirstOrDefault(s => s.name == name);
 		}
 
 		// ensure that the settings have a valid map size

@@ -27,8 +27,8 @@ namespace HugsLib {
 		private const string HarmonyInstanceIdentifier = "UnlimitedHugs.HugsLib";
 		private const string HarmonyDebugCommandLineArg = "harmony_debug";
 
-		private static bool earlyInitalizationCompleted;
-		private static bool lateInitalizationCompleted;
+		private static bool earlyInitializationCompleted;
+		private static bool lateInitializationCompleted;
 
 		private static HugsLibController instance;
 		public static HugsLibController Instance {
@@ -47,14 +47,14 @@ namespace HugsLib {
 			get { return Instance.Settings; }
 		}
 
-		// most of the initalization happens during Verse.Mod instantiation. Pretty much no vanilla data is yet loaded at this point.
+		// most of the initialization happens during Verse.Mod instantiation. Pretty much no vanilla data is yet loaded at this point.
 		internal static void EarlyInitialize() {
 			try {
-				if (earlyInitalizationCompleted) {
+				if (earlyInitializationCompleted) {
 					Log.Warning("[HugsLib][warn] Attempted repeated early initialization of controller: " + Environment.StackTrace);
 					return;
 				}
-				earlyInitalizationCompleted = true;
+				earlyInitializationCompleted = true;
 				Logger = new ModLogger(ModIdentifier);
 				CreateSceneObject();
 				Instance.InitializeController();
@@ -100,7 +100,7 @@ namespace HugsLib {
 
 		public ModSettingsManager Settings { get; private set; }
 		public UpdateFeatureManager UpdateFeatures { get; private set; }
-		public CallbackScheduler CallbackScheduler { get; private set; }
+		public TickDelayScheduler TickDelayScheduler { get; private set; }
 		public DistributedTickScheduler DistributedTicker { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
 
@@ -116,7 +116,7 @@ namespace HugsLib {
 				ApplyHarmonyPatches();
 				Settings = new ModSettingsManager(OnSettingsChanged);
 				UpdateFeatures = new UpdateFeatureManager();
-				CallbackScheduler = new CallbackScheduler();
+				TickDelayScheduler = new TickDelayScheduler();
 				DistributedTicker = new DistributedTickScheduler();
 				LogUploader = new LogPublisher();
 				ReadOwnVersionFile();
@@ -126,18 +126,18 @@ namespace HugsLib {
 			}
 		}
 
-		// called during static constructor initalization
-		internal void LateInitalize() {
+		// called during static constructor initialization
+		internal void LateInitialize() {
 			try {
-				if (!earlyInitalizationCompleted) {
-					Logger.Error("Attempted late initialization before early initalization: "+ Environment.StackTrace);
+				if (!earlyInitializationCompleted) {
+					Logger.Error("Attempted late initialization before early initialization: "+ Environment.StackTrace);
 					return;
 				}
-				if (lateInitalizationCompleted) {
+				if (lateInitializationCompleted) {
 					Logger.Warning("Attempted repeated late initialization of controller: " + Environment.StackTrace);
 					return;
 				}
-				lateInitalizationCompleted = true;
+				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.Initialize();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
@@ -152,7 +152,7 @@ namespace HugsLib {
 				initializationInProgress = true; // prevent the Unity events from causing race conditions during async loading
 				EnumerateModAssemblies();
 				CheckForIncludedHugsLibAssembly();
-				ProcessAttibutes(); // do detours and other attribute work for (newly) loaded mods
+				ProcessAttributes(); // do detours and other attribute work for (newly) loaded mods
 				EnumerateChildMods();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
@@ -205,7 +205,7 @@ namespace HugsLib {
 						Logger.ReportException(e, childMods[i].ModIdentifier, true);
 					}
 				}
-				CallbackScheduler.Tick(currentTick);
+				TickDelayScheduler.Tick(currentTick);
 				DistributedTicker.Tick(currentTick);
 			} catch (Exception e) {
 				Logger.ReportException(e, null, true);
@@ -257,13 +257,20 @@ namespace HugsLib {
 			}
 		}
 
+		internal void OnGameInitializationStart(Game game) {
+			try {
+				var currentTick = game.tickManager.TicksGame;
+				TickDelayScheduler.Initialize(currentTick);
+				DistributedTicker.Initialize(currentTick);
+				game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy { CreatedByController = true });
+			} catch (Exception e) {
+				Logger.ReportException(e);
+			}
+		}
+
 		internal void OnPlayingStateEntered() {
 			try {
-				var currentTick = Find.TickManager.TicksGame;
-				CallbackScheduler.Initialize(currentTick);
-				DistributedTicker.Initialize(currentTick);
 				UtilityWorldObjectManager.OnWorldLoaded();
-				Current.Game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy { CreatedByController = true });
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
 						childMods[i].WorldLoaded();
@@ -381,7 +388,7 @@ namespace HugsLib {
 			}
 		}
 
-		private void ProcessAttibutes() {
+		private void ProcessAttributes() {
 			AttributeDetector.ProcessNewTypes();
 		}
 
@@ -420,7 +427,7 @@ namespace HugsLib {
 			}
 		}
 
-		// Ensure that no other mod has accidentaly included the dll
+		// Ensure that no other mod has accidentally included the dll
 		private void CheckForIncludedHugsLibAssembly() {
 			var controllerTypeName = GetType().FullName;
 			foreach (var modContentPack in LoadedModManager.RunningMods) {

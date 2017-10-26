@@ -13,7 +13,7 @@ namespace HugsLib.Logs {
 	public class Dialog_PublishLogs : Window {
 		private const float StatusLabelHeight = 60f;
 		private const int MaxResultUrlLength = 32;
-		private static readonly Texture2D UrlBackgroudTex = SolidColorMaterials.NewSolidColorTexture(new Color(0.25f, 0.25f, 0.17f, 0.85f));
+		private static readonly Texture2D UrlBackgroundTex = SolidColorMaterials.NewSolidColorTexture(new Color(0.25f, 0.25f, 0.17f, 0.85f));
 		private readonly Vector2 CopyButtonSize = new Vector2(100f, 40f);
 		private readonly Vector2 ControlButtonSize = new Vector2(150f, 40f);
 		private readonly Dictionary<LogPublisher.PublisherStatus, StatusLabelEntry> statusMessages = new Dictionary<LogPublisher.PublisherStatus, StatusLabelEntry> {
@@ -54,7 +54,7 @@ namespace HugsLib.Logs {
 			Widgets.Label(statusLabelRect, statusLabelText);
 			if (publisher.Status == LogPublisher.PublisherStatus.Done) {
 				var urlAreaRect = new Rect(inRect.x, statusLabelRect.y + statusLabelRect.height, inRect.width, CopyButtonSize.y);
-				GUI.DrawTexture(urlAreaRect, UrlBackgroudTex);
+				GUI.DrawTexture(urlAreaRect, UrlBackgroundTex);
 				var urlLabelRect = new Rect(urlAreaRect.x, urlAreaRect.y, urlAreaRect.width - CopyButtonSize.x, urlAreaRect.height);
 				Text.Font = GameFont.Medium;
 				var prevAnchor = Text.Anchor;

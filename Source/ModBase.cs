@@ -16,7 +16,7 @@ namespace HugsLib {
 
 		/// <summary>
 		/// This can be used to log messages specific to your mod.
-		/// It will prefix everithing with your ModIdentifier.
+		/// It will prefix everything with your ModIdentifier.
 		/// </summary>
 		protected ModLogger Logger { get; private set; }
 
@@ -94,7 +94,7 @@ namespace HugsLib {
 		}
 
 		/// <summary>
-		/// Called after the static constructors for non-HugsLib mods have execuded. Is not called again on def reload
+		/// Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
 		/// </summary>
 		public virtual void Initialize() {
 		}
@@ -119,8 +119,8 @@ namespace HugsLib {
 		}
 
 		/// <summary>
-		/// Callead on each unity gui event, after UIRoot.UIRootOnGUI.
-		/// Resprects UI scaling and screen fading. Will not be called during loading screens.
+		/// Called on each unity gui event, after UIRoot.UIRootOnGUI.
+		/// Respects UI scaling and screen fading. Will not be called during loading screens.
 		/// This is a good place to listen for hotkey events.
 		/// </summary>
 		public virtual void OnGUI() {
@@ -145,7 +145,7 @@ namespace HugsLib {
 		/// Called right after a new map has been generated.
 		/// This is the equivalent of MapComponent.MapGenerated().
 		/// </summary>
-		/// <param name="map">The new map that has just fininished generating</param>
+		/// <param name="map">The new map that has just finished generating</param>
 		public virtual void MapGenerated(Map map) {
 		}
 
@@ -158,7 +158,7 @@ namespace HugsLib {
 
 		/// <summary>
 		/// Called after a map has been abandoned or otherwise made inaccessible.
-		/// Works on player bases, enounter maps, destroyed faction bases, etc.
+		/// Works on player bases, encounter maps, destroyed faction bases, etc.
 		/// </summary>
 		/// <param name="map">The map that has been discarded</param>
 		public virtual void MapDiscarded(Map map) {

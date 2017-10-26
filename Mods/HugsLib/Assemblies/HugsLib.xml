@@ -20,7 +20,7 @@
         </member>
         <member name="T:HugsLib.Source.Attrib.IDetectableAttribute">
             <summary>
-            This interface must be implemented by all appributes that should be detectable with AttributeDetector
+            This interface must be implemented by all attributes that should be detectable with AttributeDetector
             </summary>
         </member>
         <member name="T:HugsLib.Core.HugsLibMod">
@@ -42,10 +42,10 @@
         <member name="T:HugsLib.Core.QuickRestarter">
             <summary>
             Checks for Dev mode and bypasses the Restart message box.
-            Holding Ctrl will prevent the automatic restart.
+            Holding Shift will prevent the automatic restart.
             </summary>
         </member>
-        <member name="T:HugsLib.Core.StaticInitalizer">
+        <member name="T:HugsLib.Core.StaticInitializer">
             <summary>
             Provides an entry point for late controller setup during static constructor initialization.
             </summary>
@@ -54,6 +54,11 @@
             <summary>
             Adds an entry point to draw and additional debug button on the toolbar.
             The infix is necessary to catch the WidgetRow that the stock buttons are drawn to.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Patches.Game_FillComponents_Patch">
+            <summary>
+            Adds a hook for the early initialization of a Game.
             </summary>
         </member>
         <member name="T:HugsLib.Patches.LanguageDatabase_Patch">
@@ -97,10 +102,10 @@
             Adds a hook to produce the MapLoaded callback for ModBase mods.
             </summary>
         </member>
-        <member name="T:HugsLib.Patches.ModsConfig_PostClose_Patch">
+        <member name="T:HugsLib.Patches.ModsConfig_RestartFromChangedMods_Patch">
             <summary>
             Restarts the game automatically, bypassing the message dialog, if changes in the mod configuration have been made and dev mode is on.
-            Holding Ctrl will prevent the restart, while allowing the config changes to still be saved.
+            Holding Shift will prevent the restart, while allowing the config changes to still be saved.
             </summary>
         </member>
         <member name="T:HugsLib.Patches.PlayDataLoader_Patch">
@@ -116,12 +121,12 @@
         </member>
         <member name="T:HugsLib.Patches.Root_Patch">
             <summary>
-            Hooks into the flow of the vanilla MonoBehaviour.Update()
+            Hooks into the flow of the vanilla MonoBehavior.Update()
             </summary>
         </member>
         <member name="T:HugsLib.Patches.UIRoot_Patch">
             <summary>
-            Hooks into the flow of the vanilla MonoBehaviour.OnGUI()
+            Hooks into the flow of the vanilla MonoBehavior.OnGUI()
             This allows to take advantage of automatic UI scaling and prevents GUI updates during a loading screen.
             </summary>
         </member>
@@ -184,7 +189,7 @@
         </member>
         <member name="T:HugsLib.Shell.ShellOpenDirectory">
             <summary>
-            A command to open a directory in the systems defualt file explorer.
+            A command to open a directory in the systems default file explorer.
             Since Unity's OpenUrl() is broken on OS X, we can use a shell to do it correctly.
             </summary>
         </member>
@@ -203,7 +208,7 @@
             Forwards ticks to the controller. Will not be saved and is never spawned.
             </summary>
         </member>
-        <member name="T:HugsLib.Core.HugsLibKeyBingings">
+        <member name="T:HugsLib.Core.HugsLibKeyBindings">
             <summary>
             Holds references to key binding defs used by the library.
             </summary>
@@ -287,7 +292,7 @@
         </member>
         <member name="M:HugsLib.ModBase.Initialize">
             <summary>
-            Called after the static constructors for non-HugsLib mods have execuded. Is not called again on def reload
+            Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
             </summary>
         </member>
         <member name="M:HugsLib.ModBase.Tick(System.Int32)">
@@ -308,8 +313,8 @@
         </member>
         <member name="M:HugsLib.ModBase.OnGUI">
             <summary>
-            Callead on each unity gui event, after UIRoot.UIRootOnGUI.
-            Resprects UI scaling and screen fading. Will not be called during loading screens.
+            Called on each unity gui event, after UIRoot.UIRootOnGUI.
+            Respects UI scaling and screen fading. Will not be called during loading screens.
             This is a good place to listen for hotkey events.
             </summary>
         </member>
@@ -330,7 +335,7 @@
             Called right after a new map has been generated.
             This is the equivalent of MapComponent.MapGenerated().
             </summary>
-            <param name="map">The new map that has just fininished generating</param>
+            <param name="map">The new map that has just finished generating</param>
         </member>
         <member name="M:HugsLib.ModBase.MapLoaded(Verse.Map)">
             <summary>
@@ -341,7 +346,7 @@
         <member name="M:HugsLib.ModBase.MapDiscarded(Verse.Map)">
             <summary>
             Called after a map has been abandoned or otherwise made inaccessible.
-            Works on player bases, enounter maps, destroyed faction bases, etc.
+            Works on player bases, encounter maps, destroyed faction bases, etc.
             </summary>
             <param name="map">The map that has been discarded</param>
         </member>
@@ -367,7 +372,7 @@
         <member name="P:HugsLib.ModBase.Logger">
             <summary>
             This can be used to log messages specific to your mod.
-            It will prefix everithing with your ModIdentifier.
+            It will prefix everything with your ModIdentifier.
             </summary>
         </member>
         <member name="P:HugsLib.ModBase.Settings">
@@ -527,7 +532,7 @@
         </member>
         <member name="M:HugsLib.Settings.ModSettingsManager.TryRemoveModSettings(System.String)">
             <summary>
-            Removes a settings pack for a mod if it exists. Use SaveChanges to apply the change afterwards.
+            Removes a settings pack for a mod if it exists. Use SaveChanges to apply the change afterward.
             </summary>
             <param name="modId">The identifier of the mod owning the pack</param>
         </member>
@@ -539,7 +544,7 @@
         </member>
         <member name="P:HugsLib.Settings.SettingHandle.Name">
             <summary>
-            Unique idenfifier of the setting.
+            Unique identifier of the setting.
             </summary>
         </member>
         <member name="P:HugsLib.Settings.SettingHandle.Title">
@@ -605,7 +610,7 @@
         </member>
         <member name="M:HugsLib.Settings.SettingHandle`1.ResetToDefault">
             <summary>
-            Assings the default value to the Value property.
+            Assigns the default value to the Value property.
             </summary>
         </member>
         <member name="M:HugsLib.Settings.SettingHandle`1.HasDefaultValue">
@@ -642,7 +647,28 @@
             Returns the type of the handle Value property.
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:HugsLib.Utils.CallbackScheduler" -->
+        <!-- Badly formed XML comment ignored for member "T:HugsLib.Utils.TickDelayScheduler" -->
+        <member name="M:HugsLib.Utils.TickDelayScheduler.ScheduleCallback(System.Action,System.Int32,Verse.Thing,System.Boolean)">
+            <summary>
+            Registers a delegate to be called in a given number of ticks.
+            </summary>
+            <param name="callback">The delegate to be called</param>
+            <param name="dueInTicks">The delay in ticks before the delegate is called</param>
+            <param name="owner">Optional owner of the delegate. Callback will not fire if the Thing is not spawned at call time.</param>
+            <param name="repeat">If true, the callback will be rescheduled after each call until manually unscheduled</param>
+        </member>
+        <member name="M:HugsLib.Utils.TickDelayScheduler.TryUnscheduleCallback(System.Action)">
+            <summary>
+            Manually remove a callback to abort a delay or clear a recurring callback.
+            Silently fails if the callback is not found.
+            </summary>
+            <param name="callback">The scheduled callback</param>
+        </member>
+        <member name="M:HugsLib.Utils.TickDelayScheduler.GetAllPendingCallbacks">
+            <summary>
+            Only for debug purposes
+            </summary>
+        </member>
         <member name="T:HugsLib.Utils.Dialog_Confirm">
             <summary>
             A classic A15-style confirm dialog with Esc and Enter key support.
@@ -661,8 +687,35 @@
         <member name="T:HugsLib.Utils.DistributedTickScheduler">
             <summary>
             A ticking scheduler for things that require a tick only every so often.
-            Distributes tick calls uniformely over multiple frames to reduce the workload.
-            Optimized for many tick recipients with the same tick interval. 
+            Distributes tick calls uniformly over multiple frames to reduce the workload.
+            Optimized for many tick recipients with the same tick interval.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.RegisterTickability(System.Action,System.Int32,Verse.Thing)">
+            <summary>
+            Registers a delegate to be called every tickInterval ticks.
+            </summary>
+            <param name="callback">The delegate that will be called</param>
+            <param name="tickInterval">The interval between the calls (for example 30 to have the delegate be called 2 times a second)</param>
+            <param name="owner">The Thing the delegate is attached to. The callback will be automatically unregistered if the owner is found to be despawned at call time.</param>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.UnregisterTickability(Verse.Thing)">
+            <summary>
+            Manually removes a delegate to prevent further calls.
+            </summary>
+            <exception cref="T:System.ArgumentException">Throws if the provided owner is not registered. Use IsRegistered() to check.</exception>
+            <param name="owner">The Thing the delegate was registered with</param>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.IsRegistered(Verse.Thing)">
+            <summary>
+            Returns true if the passed Thing is registered as the owner of a delegate.
+            </summary>
+            <param name="owner"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.GetAllEntries">
+            <summary>
+            Only for debug purposes
             </summary>
         </member>
         <member name="T:HugsLib.Utils.HarmonyUtility">
@@ -696,7 +749,7 @@
         </member>
         <member name="M:HugsLib.Utils.HugsLibUtility.Join(System.Collections.IEnumerable,System.String,System.Boolean)">
             <summary>
-            Returns an enumerable as a string, soined by a separator string. By default null values appear as an empty string.
+            Returns an enumerable as a string, joined by a separator string. By default null values appear as an empty string.
             </summary>
             <param name="list">A list of elements to string together</param>
             <param name="separator">A string to inset between elements</param>
@@ -758,7 +811,7 @@
         </member>
         <member name="M:HugsLib.Utils.HugsLibUtility.GetAllActiveAssemblies">
             <summary>
-            Enumerates all loaded assemblies, inluding stock and enabled mods.
+            Enumerates all loaded assemblies, including stock and enabled mods.
             </summary>
         </member>
         <member name="M:HugsLib.Utils.HugsLibUtility.IsModActive(System.String)">
@@ -809,7 +862,7 @@
             Adds a hash to a manually instantiated def to avoid def collisions.
             </summary>
         </member>
-        <member name="M:HugsLib.Utils.InjectedDefHasher.GiveShortHasToDef(Verse.Def,System.Type)">
+        <member name="M:HugsLib.Utils.InjectedDefHasher.GiveShortHashToDef(Verse.Def,System.Type)">
             <summary>
             Give a short hash to a def created at runtime.
             Short hashes are used for proper saving of defs in compressed maps within a save file.
@@ -835,7 +888,7 @@
         </member>
         <member name="T:HugsLib.Utils.ModLogger">
             <summary>
-            A logger that prefixes all mesages with the identifier of the issuing mod.
+            A logger that prefixes all messages with the identifier of the issuing mod.
             </summary>
         </member>
         <member name="M:HugsLib.Utils.ModLogger.Message(System.String,System.Object[])">
@@ -843,7 +896,7 @@
             Writes a message to the log, prefixing it with the issuing mod identifier.
             </summary>
             <param name="message">The message to write</param>
-            <param name="substitiutions">Optional substitution values for the message</param>
+            <param name="substitutions">Optional substitution values for the message</param>
         </member>
         <member name="M:HugsLib.Utils.ModLogger.Warning(System.String,System.Object[])">
             <summary>
@@ -873,7 +926,7 @@
             Writes an error to the log to report an exception.
             The message will contain the name of the method that caused the exception if a location is not provided.
             </summary>
-            <param name="e">The excepton that occurred</param>
+            <param name="e">The exception that occurred</param>
             <param name="modIdentifier">Optional identifier of the mod that caused the exception</param>
             <param name="reportOnceOnly">True, if the exception should only be reported once for that specific location. Useful for errors that will trigger each frame or tick.</param>
             <param name="location">Optional name of the location where the exception occurred. Will display as "exception during (location)"</param>
