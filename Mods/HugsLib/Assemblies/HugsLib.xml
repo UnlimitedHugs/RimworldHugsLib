@@ -56,6 +56,11 @@
             The infix is necessary to catch the WidgetRow that the stock buttons are drawn to.
             </summary>
         </member>
+        <member name="T:HugsLib.Patches.Game_FillComponents_Patch">
+            <summary>
+            Adds a hook for the early initialization of a Game.
+            </summary>
+        </member>
         <member name="T:HugsLib.Patches.LanguageDatabase_Patch">
             <summary>
             Forces a game restart after a language change.
@@ -642,7 +647,28 @@
             Returns the type of the handle Value property.
             </summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:HugsLib.Utils.CallbackScheduler" -->
+        <!-- Badly formed XML comment ignored for member "T:HugsLib.Utils.TickDelayScheduler" -->
+        <member name="M:HugsLib.Utils.TickDelayScheduler.ScheduleCallback(System.Action,System.Int32,Verse.Thing,System.Boolean)">
+            <summary>
+            Registers a delegate to be called in a given number of ticks.
+            </summary>
+            <param name="callback">The delegate to be called</param>
+            <param name="dueInTicks">The delay in ticks before the delegate is called</param>
+            <param name="owner">Optional owner of the delegate. Callback will not fire if the Thing is not spawned at call time.</param>
+            <param name="repeat">If true, the callback will be rescheduled after each call until manually unscheduled</param>
+        </member>
+        <member name="M:HugsLib.Utils.TickDelayScheduler.TryUnscheduleCallback(System.Action)">
+            <summary>
+            Manually remove a callback to abort a delay or clear a recurring callback.
+            Silently fails if the callback is not found.
+            </summary>
+            <param name="callback">The scheduled callback</param>
+        </member>
+        <member name="M:HugsLib.Utils.TickDelayScheduler.GetAllPendingCallbacks">
+            <summary>
+            Only for debug purposes
+            </summary>
+        </member>
         <member name="T:HugsLib.Utils.Dialog_Confirm">
             <summary>
             A classic A15-style confirm dialog with Esc and Enter key support.
@@ -662,7 +688,34 @@
             <summary>
             A ticking scheduler for things that require a tick only every so often.
             Distributes tick calls uniformly over multiple frames to reduce the workload.
-            Optimized for many tick recipients with the same tick interval. 
+            Optimized for many tick recipients with the same tick interval.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.RegisterTickability(System.Action,System.Int32,Verse.Thing)">
+            <summary>
+            Registers a delegate to be called every tickInterval ticks.
+            </summary>
+            <param name="callback">The delegate that will be called</param>
+            <param name="tickInterval">The interval between the calls (for example 30 to have the delegate be called 2 times a second)</param>
+            <param name="owner">The Thing the delegate is attached to. The callback will be automatically unregistered if the owner is found to be despawned at call time.</param>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.UnregisterTickability(Verse.Thing)">
+            <summary>
+            Manually removes a delegate to prevent further calls.
+            </summary>
+            <exception cref="T:System.ArgumentException">Throws if the provided owner is not registered. Use IsRegistered() to check.</exception>
+            <param name="owner">The Thing the delegate was registered with</param>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.IsRegistered(Verse.Thing)">
+            <summary>
+            Returns true if the passed Thing is registered as the owner of a delegate.
+            </summary>
+            <param name="owner"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.GetAllEntries">
+            <summary>
+            Only for debug purposes
             </summary>
         </member>
         <member name="T:HugsLib.Utils.HarmonyUtility">

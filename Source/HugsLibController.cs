@@ -100,7 +100,7 @@ namespace HugsLib {
 
 		public ModSettingsManager Settings { get; private set; }
 		public UpdateFeatureManager UpdateFeatures { get; private set; }
-		public CallbackScheduler CallbackScheduler { get; private set; }
+		public TickDelayScheduler TickDelayScheduler { get; private set; }
 		public DistributedTickScheduler DistributedTicker { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
 
@@ -116,7 +116,7 @@ namespace HugsLib {
 				ApplyHarmonyPatches();
 				Settings = new ModSettingsManager(OnSettingsChanged);
 				UpdateFeatures = new UpdateFeatureManager();
-				CallbackScheduler = new CallbackScheduler();
+				TickDelayScheduler = new TickDelayScheduler();
 				DistributedTicker = new DistributedTickScheduler();
 				LogUploader = new LogPublisher();
 				ReadOwnVersionFile();
@@ -205,7 +205,7 @@ namespace HugsLib {
 						Logger.ReportException(e, childMods[i].ModIdentifier, true);
 					}
 				}
-				CallbackScheduler.Tick(currentTick);
+				TickDelayScheduler.Tick(currentTick);
 				DistributedTicker.Tick(currentTick);
 			} catch (Exception e) {
 				Logger.ReportException(e, null, true);
@@ -257,13 +257,20 @@ namespace HugsLib {
 			}
 		}
 
+		internal void OnGameInitializationStart(Game game) {
+			try {
+				var currentTick = game.tickManager.TicksGame;
+				TickDelayScheduler.Initialize(currentTick);
+				DistributedTicker.Initialize(currentTick);
+				game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy { CreatedByController = true });
+			} catch (Exception e) {
+				Logger.ReportException(e);
+			}
+		}
+
 		internal void OnPlayingStateEntered() {
 			try {
-				var currentTick = Find.TickManager.TicksGame;
-				CallbackScheduler.Initialize(currentTick);
-				DistributedTicker.Initialize(currentTick);
 				UtilityWorldObjectManager.OnWorldLoaded();
-				Current.Game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy { CreatedByController = true });
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
 						childMods[i].WorldLoaded();
