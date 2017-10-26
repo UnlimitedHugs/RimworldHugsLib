@@ -4,7 +4,7 @@ using Verse;
 
 namespace HugsLib.Patches {
 	/// <summary>
-	/// Hooks into the flow of the vanilla MonoBehaviour.Update()
+	/// Hooks into the flow of the vanilla MonoBehavior.Update()
 	/// </summary>
 	[HarmonyPatch(typeof(Root))]
 	[HarmonyPatch("Update")]

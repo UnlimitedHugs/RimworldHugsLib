@@ -64,7 +64,7 @@
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
-    <Compile Include="Source\Core\StaticInitalizer.cs" />
+    <Compile Include="Source\Core\StaticInitializer.cs" />
     <Compile Include="Source\Patches\DebugWindowsOpener_Patch.cs" />
     <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />

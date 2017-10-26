@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace HugsLib.Shell {
 	/// <summary>
-	/// A command to open a directory in the systems defualt file explorer.
+	/// A command to open a directory in the systems default file explorer.
 	/// Since Unity's OpenUrl() is broken on OS X, we can use a shell to do it correctly.
 	/// </summary>
     public static class ShellOpenDirectory {

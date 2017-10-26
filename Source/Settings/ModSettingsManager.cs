@@ -48,7 +48,7 @@ namespace HugsLib.Settings {
 		}
 
 		/// <summary>
-		/// Removes a settings pack for a mod if it exists. Use SaveChanges to apply the change afterwards.
+		/// Removes a settings pack for a mod if it exists. Use SaveChanges to apply the change afterward.
 		/// </summary>
 		/// <param name="modId">The identifier of the mod owning the pack</param>
 		public bool TryRemoveModSettings(string modId) {

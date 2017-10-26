@@ -48,7 +48,7 @@ namespace HugsLib.Utils {
 		}
 
 		/// <summary>
-		/// Returns an enumerable as a string, soined by a separator string. By default null values appear as an empty string.
+		/// Returns an enumerable as a string, joined by a separator string. By default null values appear as an empty string.
 		/// </summary>
 		/// <param name="list">A list of elements to string together</param>
 		/// <param name="separator">A string to inset between elements</param>
@@ -174,7 +174,7 @@ namespace HugsLib.Utils {
 		}
 
 		/// <summary>
-		/// Enumerates all loaded assemblies, inluding stock and enabled mods.
+		/// Enumerates all loaded assemblies, including stock and enabled mods.
 		/// </summary>
 		public static IEnumerable<Assembly> GetAllActiveAssemblies() {
 			var listed = new HashSet<Assembly>();

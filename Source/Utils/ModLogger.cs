@@ -6,7 +6,7 @@ using Verse;
 namespace HugsLib.Utils {
 	//
 	/// <summary>
-	/// A logger that prefixes all mesages with the identifier of the issuing mod.
+	/// A logger that prefixes all messages with the identifier of the issuing mod.
 	/// </summary>
 	public class ModLogger {
 		private const string WarningPrefix = "warn";
@@ -25,24 +25,24 @@ namespace HugsLib.Utils {
 		/// Writes a message to the log, prefixing it with the issuing mod identifier.
 		/// </summary>
 		/// <param name="message">The message to write</param>
-		/// <param name="substitiutions">Optional substitution values for the message</param>
-		public void Message(string message, params object[] substitiutions) {
-			Log.Message(FormatOutput(message, null, substitiutions));
+		/// <param name="substitutions">Optional substitution values for the message</param>
+		public void Message(string message, params object[] substitutions) {
+			Log.Message(FormatOutput(message, null, substitutions));
 		}
 
 		/// <summary>
 		/// Same as Message(), but the console will display the message as a warning.
 		/// </summary>
-		public void Warning(string message, params object[] substitiutions) {
-			Log.Warning(FormatOutput(message, WarningPrefix, substitiutions));
+		public void Warning(string message, params object[] substitutions) {
+			Log.Warning(FormatOutput(message, WarningPrefix, substitutions));
 		}
 
 		/// <summary>
 		/// Same as Message(), but the console will display the message as an error.
 		/// This will open the Log window in in Dev mode.
 		/// </summary>
-		public void Error(string message, params object[] substitiutions) {
-			Log.Error(FormatOutput(message, ErrorPrefix, substitiutions));
+		public void Error(string message, params object[] substitutions) {
+			Log.Error(FormatOutput(message, ErrorPrefix, substitutions));
 		}
 
 		/// <summary>
@@ -64,17 +64,17 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Same as Trace(), but formats the message and replaces substitution variables.
 		/// </summary>
-		public void TraceFormat(string message, params object[] substitiutions) {
+		public void TraceFormat(string message, params object[] substitutions) {
 			if (!Prefs.DevMode) return;
 			message = String.Format("{0} {1}", GetModPrefix(), message);
-			Tracer.TraceFormat(message, substitiutions);
+			Tracer.TraceFormat(message, substitutions);
 		}
 
 		/// <summary>
 		/// Writes an error to the log to report an exception.
 		/// The message will contain the name of the method that caused the exception if a location is not provided.
 		/// </summary>
-		/// <param name="e">The excepton that occurred</param>
+		/// <param name="e">The exception that occurred</param>
 		/// <param name="modIdentifier">Optional identifier of the mod that caused the exception</param>
 		/// <param name="reportOnceOnly">True, if the exception should only be reported once for that specific location. Useful for errors that will trigger each frame or tick.</param>
 		/// <param name="location">Optional name of the location where the exception occurred. Will display as "exception during (location)"</param>
@@ -93,15 +93,15 @@ namespace HugsLib.Utils {
 			Log.Error(message);
 		}
 
-		private string FormatOutput(string message, string extraPrefix, params object[] substitiutions) {
+		private string FormatOutput(string message, string extraPrefix, params object[] substitutions) {
 			builder.Length = 0;
 			builder.Append(GetModPrefix());
 			if (extraPrefix!=null) {
 				builder.AppendFormat("[{0}]", extraPrefix);
 			}
 			builder.Append(" ");
-			if (substitiutions.Length>0) {
-				builder.AppendFormat(message, substitiutions);
+			if (substitutions.Length > 0) {
+				builder.AppendFormat(message, substitutions);
 			} else {
 				builder.Append(message);
 			}

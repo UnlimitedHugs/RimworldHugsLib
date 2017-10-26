@@ -5,9 +5,9 @@ namespace HugsLib.Core {
 	/// Provides an entry point for late controller setup during static constructor initialization.
 	/// </summary>
 	[StaticConstructorOnStartup]
-	internal static class StaticInitalizer {
-		static StaticInitalizer() {
-			HugsLibController.Instance.LateInitalize();
+	internal static class StaticInitializer {
+		static StaticInitializer() {
+			HugsLibController.Instance.LateInitialize();
 		}
 	}
 }

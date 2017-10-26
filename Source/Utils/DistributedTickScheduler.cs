@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace HugsLib.Utils {
 	/// <summary>
 	/// A ticking scheduler for things that require a tick only every so often.
-	/// Distributes tick calls uniformely over multiple frames to reduce the workload.
+	/// Distributes tick calls uniformly over multiple frames to reduce the workload.
 	/// Optimized for many tick recipients with the same tick interval. 
 	/// </summary>
 	public class DistributedTickScheduler {
@@ -20,7 +20,7 @@ namespace HugsLib.Utils {
 		}
 
 		public void Tick(int currentTick) {
-			if (lastProcessedTick < 0) throw new Exception("Ticking not initalized DistributedTickScheduler");
+			if (lastProcessedTick < 0) throw new Exception("Ticking not initialized DistributedTickScheduler");
 			lastProcessedTick = currentTick;
 			for (var i = 0; i < tickers.Count; i++) {
 				tickers[i].Tick(currentTick);

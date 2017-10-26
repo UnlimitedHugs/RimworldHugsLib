@@ -5,7 +5,7 @@ namespace HugsLib.Utils {
 	/// <summary>
 	/// A performance-friendly way to execute code at arbitrary tick intervals.
 	/// Optimized for one-off timed callbacks with variable callback delay. 
-	/// Use DistributedTickScheduler instead if you have many recepients with recurring callbacks & constant time.
+	/// Use DistributedTickScheduler instead if you have many recipients with recurring callbacks & constant time.
 	/// </summary>
 	public class CallbackScheduler {
 		private readonly LinkedList<SchedulerEntry> entries = new LinkedList<SchedulerEntry>();
@@ -21,7 +21,7 @@ namespace HugsLib.Utils {
 
 		public void Tick(int currentTick) {
 
-			if (lastProcessedTick < 0) throw new Exception("Ticking not initalized CallbackScheduler");
+			if (lastProcessedTick < 0) throw new Exception("Ticking not initialized CallbackScheduler");
 			lastProcessedTick = currentTick;
 			while (entries.First != null) {
 				var entry = entries.First.Value;

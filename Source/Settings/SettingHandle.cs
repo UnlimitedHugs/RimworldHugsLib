@@ -14,7 +14,7 @@ namespace HugsLib.Settings {
 		public delegate bool DrawCustomControl(Rect rect);
 
 		/// <summary>
-		/// Unique idenfifier of the setting.
+		/// Unique identifier of the setting.
 		/// </summary>
 		public string Name { get; protected set; }
 		/// <summary>
@@ -166,7 +166,7 @@ namespace HugsLib.Settings {
 		}
 
 		/// <summary>
-		/// Assings the default value to the Value property.
+		/// Assigns the default value to the Value property.
 		/// </summary>
 		public override void ResetToDefault() {
 			Value = DefaultValue;

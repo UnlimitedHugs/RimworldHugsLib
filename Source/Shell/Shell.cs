@@ -49,11 +49,11 @@ namespace HugsLib.Shell {
 
 		[Serializable]
 		public class UnsupportedPlatformException : Exception {
-			private static string ExpandCommadName(string commandName) {
+			private static string ExpandCommandName(string commandName) {
 				return string.Format("{0} is not compatible with {1}", commandName, UnityData.platform);
 			}
-			public UnsupportedPlatformException(string commandName) : base(ExpandCommadName(commandName)) { }
-			public UnsupportedPlatformException(string commandName, Exception inner) : base(ExpandCommadName(commandName), inner) { }
+			public UnsupportedPlatformException(string commandName) : base(ExpandCommandName(commandName)) { }
+			public UnsupportedPlatformException(string commandName, Exception inner) : base(ExpandCommandName(commandName), inner) { }
 			protected UnsupportedPlatformException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 		}
 

@@ -7,7 +7,7 @@ namespace HugsLib.Core {
 	/// Holds references to key binding defs used by the library.
 	/// </summary>
 	[DefOf]
-	public static class HugsLibKeyBingings {
+	public static class HugsLibKeyBindings {
 		public static KeyBindingDef PublishLogs;
 		public static KeyBindingDef OpenLogFile;
 		public static KeyBindingDef RestartRimworld;

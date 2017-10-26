@@ -4,7 +4,7 @@ using Verse;
 
 namespace HugsLib.Patches {
 	/// <summary>
-	/// Hooks into the flow of the vanilla MonoBehaviour.OnGUI()
+	/// Hooks into the flow of the vanilla MonoBehavior.OnGUI()
 	/// This allows to take advantage of automatic UI scaling and prevents GUI updates during a loading screen.
 	/// </summary>
 	[HarmonyPatch(typeof(UIRoot))]
