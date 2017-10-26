@@ -17,7 +17,7 @@
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Mods\HugsLib\Assemblies\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;xTEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;TEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -74,7 +74,7 @@
     <Compile Include="Source\Patches\MapComponentUtility_MapGenerated_Patch.cs" />
     <Compile Include="Source\Patches\Map_ConstructComponents_Patch.cs" />
     <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
-    <Compile Include="Source\Patches\ModsConfig_PostClose_Patch.cs" />
+    <Compile Include="Source\Patches\ModsConfig_RestartFromChangedMods_Patch.cs" />
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
     <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />

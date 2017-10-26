@@ -245,7 +245,7 @@ namespace HugsLib.Logs {
 		}
 
 		private string RedactPlayerConnectInformation(string log) {
-			return RedactString(log, "PlayerConnection ", "\nInitialize engine", "[PlayerConnect information redacted]");
+			return RedactString(log, "PlayerConnection ", "Initialize engine", "[PlayerConnect information redacted]\n");
 		}
 
 		private string GetLogFileContents() {

@@ -42,7 +42,7 @@
         <member name="T:HugsLib.Core.QuickRestarter">
             <summary>
             Checks for Dev mode and bypasses the Restart message box.
-            Holding Ctrl will prevent the automatic restart.
+            Holding Shift will prevent the automatic restart.
             </summary>
         </member>
         <member name="T:HugsLib.Core.StaticInitalizer">
@@ -97,10 +97,10 @@
             Adds a hook to produce the MapLoaded callback for ModBase mods.
             </summary>
         </member>
-        <member name="T:HugsLib.Patches.ModsConfig_PostClose_Patch">
+        <member name="T:HugsLib.Patches.ModsConfig_RestartFromChangedMods_Patch">
             <summary>
             Restarts the game automatically, bypassing the message dialog, if changes in the mod configuration have been made and dev mode is on.
-            Holding Ctrl will prevent the restart, while allowing the config changes to still be saved.
+            Holding Shift will prevent the restart, while allowing the config changes to still be saved.
             </summary>
         </member>
         <member name="T:HugsLib.Patches.PlayDataLoader_Patch">

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -204,7 +205,7 @@ namespace HugsLib.Utils {
 		/// </summary>
 		public static void CopyToClipboard(string data) {
 			GUIUtility.systemCopyBuffer = data;
-			Messages.Message("HugsLib_copiedToClipboard".Translate(), MessageSound.Benefit);
+			Messages.Message("HugsLib_copiedToClipboard".Translate(), MessageTypeDefOf.TaskCompletion);
 		}
 
 		/// <summary>
