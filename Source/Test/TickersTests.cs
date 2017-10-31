@@ -34,10 +34,12 @@ namespace HugsLib.Test {
 		}
 
 		public override void OnGUI() {
-			Find.WindowStack.ImmediateWindow(9999999, new Rect(50, 50, 300, 60), WindowLayer.Super, () => {
-				Widgets.Label(new Rect(0, 0, 300, 30), "DistributedTickScheduler entries: " + HugsLibController.Instance.DistributedTicker.GetAllEntries().Count());
-				Widgets.Label(new Rect(0, 30, 300, 30), "TickDelayScheduler entries: " + HugsLibController.Instance.TickDelayScheduler.GetAllPendingCallbacks().Count());	
-			}, false);
+			Find.WindowStack.ImmediateWindow(9999999, new Rect(50, 50, 280, 120), WindowLayer.Super, () => {
+				Widgets.Label(new Rect(0, 0, 300, 30), "DistributedTickScheduler entries: " + HugsLibController.Instance.DistributedTicker.DebugGetAllEntries().Count());
+				Widgets.Label(new Rect(0, 30, 300, 30), "DistributedTickScheduler calls last tick: " + HugsLibController.Instance.DistributedTicker.DebugCountLastTickCalls());
+				Widgets.Label(new Rect(0, 60, 300, 30), "DistributedTickScheduler active tickers: " + HugsLibController.Instance.DistributedTicker.DebugGetNumTickers());
+				Widgets.Label(new Rect(0, 90, 300, 30), "TickDelayScheduler entries: " + HugsLibController.Instance.TickDelayScheduler.GetAllPendingCallbacks().Count());	
+			}, false, false, 0);
 			
 		}
 
@@ -49,16 +51,24 @@ namespace HugsLib.Test {
 			base.MapLoaded(map);
 			var center = map.Center;
 			for (int i = 0; i < 50; i++) {
-				var testThing = ThingMaker.MakeThing(testDef);
+				var testThing = (TickingTestThing)ThingMaker.MakeThing(testDef);
+				testThing.tickInterval = 30;
 				GenPlace.TryPlaceThing(testThing, center, map, ThingPlaceMode.Near);
+			}
+			for (int i = 0; i < 50; i++) {
+				var testThing = (TickingTestThing)ThingMaker.MakeThing(testDef);
+				testThing.tickInterval = 50;
+				GenPlace.TryPlaceThing(testThing, center+new IntVec3(0, 0, 15), map, ThingPlaceMode.Near);
 			}
 		}
 	}
 
-	public class TickingTestThing : Thing {
+	public class TickingTestThing : ThingWithComps {
+		public int tickInterval;
+
 		public override void SpawnSetup(Map map, bool respawningAfterLoad) {
 			base.SpawnSetup(map, respawningAfterLoad);
-			HugsLibController.Instance.DistributedTicker.RegisterTickability(TickMethod, 30, this);
+			HugsLibController.Instance.DistributedTicker.RegisterTickability(TickMethod, tickInterval, this);
 		}
 
 		public override IEnumerable<Gizmo> GetGizmos() {

@@ -713,9 +713,20 @@
             <param name="owner"></param>
             <returns></returns>
         </member>
-        <member name="M:HugsLib.Utils.DistributedTickScheduler.GetAllEntries">
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.DebugGetAllEntries">
             <summary>
-            Only for debug purposes
+            Returns all registered tick recipients
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.DebugCountLastTickCalls">
+            <summary>
+            Returns the number of calls issued across all intervals during the last tick
+            </summary>
+        </member>
+        <member name="M:HugsLib.Utils.DistributedTickScheduler.DebugGetNumTickers">
+            <summary>
+            Returns the number of active tickers (intervals)
             </summary>
         </member>
         <member name="T:HugsLib.Utils.HarmonyUtility">

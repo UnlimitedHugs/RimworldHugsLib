@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace HugsLib.Utils {
@@ -32,8 +33,8 @@ namespace HugsLib.Utils {
 				HugsLibController.Logger.Warning("DistributedTickScheduler tickability already registered for: " + owner);
 			} else {
 				var entry = new TickableEntry(callback, tickInterval, owner);
-				entries.Add(owner, entry);
 				GetTicker(tickInterval).Register(entry);
+				entries.Add(owner, entry);
 			}
 		}
 
@@ -45,7 +46,11 @@ namespace HugsLib.Utils {
 		public void UnregisterTickability(Thing owner) {
 			if (!IsRegistered(owner)) throw new ArgumentException("Cannot unregister non-registered owner: " + owner);
 			var entry = entries[owner];
-			GetTicker(entry.interval).Unregister(entry);
+			var ticker = GetTicker(entry.interval);
+			ticker.Unregister(entry);
+			if (ticker.EntryCount == 0) {
+				tickers.Remove(ticker);
+			}
 			entries.Remove(owner);
 		}
 
@@ -59,10 +64,25 @@ namespace HugsLib.Utils {
 		}
 
 		/// <summary>
-		/// Only for debug purposes
+		/// Returns all registered tick recipients
 		/// </summary>
-		public IEnumerable<TickableEntry> GetAllEntries() {
+		/// <returns></returns>
+		public IEnumerable<TickableEntry> DebugGetAllEntries() {
 			return entries.Values;
+		}
+
+		/// <summary>
+		/// Returns the number of calls issued across all intervals during the last tick
+		/// </summary>
+		public int DebugCountLastTickCalls() {
+			return tickers.Sum(t => t.NumCallsLastTick);
+		}
+
+		/// <summary>
+		/// Returns the number of active tickers (intervals)
+		/// </summary>
+		public int DebugGetNumTickers() {
+			return tickers.Count;
 		}
 
 		internal void Initialize(int currentTick) {
@@ -119,25 +139,40 @@ namespace HugsLib.Utils {
 			private readonly DistributedTickScheduler scheduler;
 			private readonly List<TickableEntry> tickList = new List<TickableEntry>();
 			private int currentIndex;
+			private float listProgress;
 			private int nextCycleStart;
+			private int numCalls;
+			private bool tickInProgress;
 
+			public int NumCallsLastTick {
+				get { return numCalls; }
+			}
+
+			public int EntryCount {
+				get { return tickList.Count; }
+			}
+			
 			public ListTicker(int tickInterval, DistributedTickScheduler scheduler) {
 				this.tickInterval = tickInterval;
 				this.scheduler = scheduler;
 			}
 
 			public void Tick(int currentTick) {
+				tickInProgress = true;
+				numCalls = 0;
 				if (nextCycleStart <= currentTick) {
 					currentIndex = 0;
+					listProgress = 0;
 					nextCycleStart = currentTick + tickInterval;
 				}
-				var numCallbacksThisTick = Math.Ceiling(tickList.Count/(float) tickInterval);
-				while (numCallbacksThisTick > 0) {
-					if (currentIndex >= tickList.Count) break;
+				listProgress += tickList.Count / (float)tickInterval;
+				var maxIndex = Mathf.Min(tickList.Count, Mathf.CeilToInt(listProgress));
+				for (; currentIndex < maxIndex; currentIndex++) {
 					var entry = tickList[currentIndex];
 					if (entry.owner.Spawned) {
 						try {
 							entry.callback();
+							numCalls++;
 						} catch (Exception e) {
 							HugsLibController.Logger.Error("DistributedTickScheduler caught an exception while calling {0} registered by {1}: {2}",
 								HugsLibUtility.DescribeDelegate(entry.callback), entry.owner, e);
@@ -145,18 +180,22 @@ namespace HugsLib.Utils {
 					} else {
 						scheduler.UnregisterAtEndOfTick(entry.owner);
 					}
-					currentIndex++;
-					numCallbacksThisTick--;
 				}
-
+				tickInProgress = false;
 			}
 
 			public void Register(TickableEntry entry) {
+				AssertNotTicking();
 				tickList.Add(entry);
 			}
 
 			public void Unregister(TickableEntry entry) {
+				AssertNotTicking();
 				tickList.Remove(entry);
+			}
+
+			private void AssertNotTicking() {
+				if (tickInProgress) throw new Exception("Cannot register or unregister a callback while a tick is in progress");
 			}
 		}
 	}
