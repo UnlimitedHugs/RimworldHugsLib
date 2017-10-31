@@ -17,7 +17,7 @@ namespace HugsLib.Core {
 				ShellOpenLog.Execute();
 			}
 			if (HugsLibKeyBindings.RestartRimworld.JustPressed) {
-				LongEventHandler.ExecuteWhenFinished(GenCommandLine.Restart);
+				GenCommandLine.Restart();
 			}
 		}
 	}
