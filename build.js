@@ -13,7 +13,7 @@ Modes of operation:
 4) Release an older revision, overriding the version number in the AssemblyInfo
 - node build release=34a9fe override=1.2.1
 
-This is the Windows only because MSBuild is used.
+This is for Windows only because MSBuild is used.
 */
 
 var fs = require('fs');
@@ -23,6 +23,7 @@ var util = require('util');
 var readline = require('readline');
 
 var MSBuildPath = "C:/Windows/Microsoft.NET/Framework64/v4.0.30319/MSBuild.exe";
+var MSBuildOptions = "/p:Configuration=Release /p:BuildProjectReferences=false /p:PreBuildEvent= /p:PostBuildEvent=";
 var sevenZipPath = "C:/Program Files/7-Zip/7z.exe";
 var assemblyInfoPath = "./Properties/AssemblyInfo.cs";
 var githubTokenPath = "../githubToken.txt";
@@ -248,7 +249,7 @@ function BuildAssembly(){
 	}
 	var stdout;
 	try {
-		stdout = child_process.execSync(quote(MSBuildPath), [quote(process.cwd())]);
+		stdout = child_process.execSync(quote(MSBuildPath) + " " + MSBuildOptions, [quote(process.cwd())]);
 	} catch(err){
 		runner.fail(err.stdout.toString());
 	}
