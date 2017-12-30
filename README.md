@@ -1,6 +1,6 @@
 ![HugsLib logo](http://i.imgur.com/1d35OiC.png)
 
-![Version](https://img.shields.io/badge/Rimworld-A17-brightgreen.svg)
+![Version](https://img.shields.io/badge/Rimworld-B18-brightgreen.svg)
 
 A lightweight shared mod library for Rimworld. Provides a foundation for mods and delivers shared functionality.
 
