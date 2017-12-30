@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>UnlimitedHugs.Rimworld.HugsLib</id>
+		<version>4.0.1</version>
+		<title>HugsLib</title>
+		<authors>UnlimitedHugs</authors>
+		<owners>UnlimitedHugs</owners>
+		<licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+		<projectUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/</projectUrl>
+		<iconUrl>https://i.imgur.com/I8h73KH.png</iconUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>A lightweight shared library for Rimworld modding. Includes the Harmony library by Andreas Pardeike.</description>
+		<summary>A lightweight shared library for Rimworld modding.</summary>
+		<releaseNotes>Switched to main workshop item</releaseNotes>
+		<copyright>Copyright 2017</copyright>
+		<tags>Rimworld Mod</tags>
+	</metadata>
+	<files>
+		<file src=".\Mods\HugsLib\Assemblies\0Harmony.dll" target="lib/net35" />
+	</files>
+</package>
