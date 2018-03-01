@@ -294,7 +294,7 @@ namespace HugsLib.Utils {
 			return pollingThread;
 		}
 
-		internal static void BlameCallbackException(string schedulerName, Action callback, Exception e) {
+		internal static void BlameCallbackException(string schedulerName, Delegate callback, Exception e) {
 			string exceptionCause = null;
 			if (callback != null) {
 				var methodName = DescribeDelegate(callback);
