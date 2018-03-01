@@ -3,11 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using RimWorld;
 using UnityEngine;
+using UnityEngine.Networking;
 using Verse;
 
 namespace HugsLib.Utils {
@@ -249,6 +252,46 @@ namespace HugsLib.Utils {
 				default:
 					return null;
 			}
+		}
+
+		/// <summary>
+		/// Sends a constructed UnityWebRequest, waits for the result, and returns the data via callbacks.
+		/// </summary>
+		/// <param name="request">Use UnityWebRequest or WWW to construct a request. Do not call Send().</param>
+		/// <param name="onSuccess">Called with the response body if server replied with status 200.</param>
+		/// <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
+		/// <param name="timeout">How long to wait before timing out the request</param>
+		/// <returns>Returns the thread created to poll for results.</returns>
+		public static Thread AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
+			var asyncOp = request.Send();
+			var timeoutTime = Time.unscaledTime + timeout;
+			var pollingThread = new Thread(() => {
+				try {
+					while (!asyncOp.isDone && Time.unscaledTime < timeoutTime) {
+						Thread.Sleep(15);
+					}
+					if (!asyncOp.isDone) {
+						throw new Exception("timed out");
+					}
+					if (request.isError) {
+						throw new Exception(request.error);
+					}
+					var status = (HttpStatusCode)request.responseCode;
+					if (status != successStatus) {
+						throw new Exception(string.Format("{0} replied with {1}: {2}", request.url, status, request.downloadHandler.text));
+					} else {
+						if (onSuccess != null) onSuccess(request.downloadHandler.text);
+					}
+				} catch (Exception e) {
+					if (onFailure != null) {
+						onFailure(e);
+					} else {
+						HugsLibController.Logger.Warning("UnityWebRequest failed: " + e);	
+					}
+				}
+			});
+			pollingThread.Start();
+			return pollingThread;
 		}
 
 		internal static void BlameCallbackException(string schedulerName, Action callback, Exception e) {
