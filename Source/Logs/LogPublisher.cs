@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,6 +20,7 @@ namespace HugsLib.Logs {
 		private const string RequestUserAgent = "HugsLib_log_uploader";
 		private const string OutputLogFilename = "output_log.txt";
 		private const string GistApiUrl = "https://api.github.com/gists";
+		private const string ShortenerUrl = "https://git.io/";
 		private const string GistPayloadJson = "{{\"description\":\"{0}\",\"public\":true,\"files\":{{\"{1}\":{{\"content\":\"{2}\"}}}}}}";
 		private const string GistDescription = "Rimworld output log published using HugsLib";
 		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
@@ -27,6 +29,7 @@ namespace HugsLib.Logs {
 		public enum PublisherStatus {
 			Ready,
 			Uploading,
+			Shortening,
 			Done,
 			Error
 		}
@@ -49,7 +52,7 @@ namespace HugsLib.Logs {
 		}
 
 		public void AbortUpload() {
-			if(Status != PublisherStatus.Uploading) return;
+			if(Status != PublisherStatus.Uploading && Status != PublisherStatus.Shortening) return;
 			userAborted = true;
 			if (activeRequest != null && !activeRequest.isDone) {
 				activeRequest.Abort();
@@ -58,8 +61,12 @@ namespace HugsLib.Logs {
 			if (pollingThread != null && pollingThread.IsAlive) {
 				pollingThread.Interrupt();
 			}
-			ErrorMessage = "Aborted by user";
-			Status = PublisherStatus.Error;
+			if (Status == PublisherStatus.Shortening) {
+				Status = PublisherStatus.Done;
+			} else {
+				ErrorMessage = "Aborted by user";
+				Status = PublisherStatus.Error;
+			}
 		}
 
 		public void BeginUpload() {
@@ -104,6 +111,8 @@ namespace HugsLib.Logs {
 		private void MockUpload() {
 			pollingThread = new Thread(() => {
 				Thread.Sleep(1500);
+				Status = PublisherStatus.Shortening;
+				Thread.Sleep(1500);
 				Status = PublisherStatus.Done;
 				ResultUrl = Rand.Int.ToString();
 			});
@@ -123,6 +132,7 @@ namespace HugsLib.Logs {
 			ErrorMessage = errorMessage;
 			Status = PublisherStatus.Error;
 			activeRequest = null;
+			pollingThread = null;
 		}
 
 		private void OnUploadComplete(string response) {
@@ -132,8 +142,34 @@ namespace HugsLib.Logs {
 				return;
 			}
 			ResultUrl = matchedUrl;
+			HugsLibController.Instance.DoLater.DoNextUpdate(BeginUrlShortening);
+		}
+
+		private void BeginUrlShortening() {
+			Status = PublisherStatus.Shortening;
+
+			Action<Exception> onRequestFailed = ex => {
+				if (userAborted) return;
+				Status = PublisherStatus.Done;
+				HugsLibController.Logger.Warning("Exception during log publishing (url shortening): " + ex);
+			};
+			try {
+				var formData = new Dictionary<string, string> {
+					{"url", ResultUrl}
+				};
+				activeRequest = UnityWebRequest.Post(ShortenerUrl,  formData);
+				activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
+				pollingThread = HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUrlShorteningComplete, onRequestFailed, HttpStatusCode.Created);
+			} catch (Exception e) {
+				onRequestFailed(e);
+			}
+		}
+
+		private void OnUrlShorteningComplete(string shortUrl) {
+			ResultUrl = activeRequest.GetResponseHeader("Location");
 			Status = PublisherStatus.Done;
 			activeRequest = null;
+			pollingThread = null;
 		}
 
 		private string TryExtractGistUrlFromUploadResponse(string response) {
@@ -361,7 +397,7 @@ namespace HugsLib.Logs {
 						break;
 					default:
 						if (c < ' ') {
-							var t = "000" + String.Format("X");
+							var t = "000" + "X";
 							sb.Append("\\u" + t.Substring(t.Length - 4));
 						} else {
 							sb.Append(c);

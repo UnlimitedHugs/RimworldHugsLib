@@ -9,10 +9,10 @@ namespace HugsLib.Utils {
 	/// Access via HugsLibController.Instance.DoLater
 	/// </summary>
 	public class DoLaterScheduler {
-		private Queue<Action> nextTick = new Queue<Action>(0);
-		private Queue<Action> nextUpdate = new Queue<Action>(0);
-		private Queue<Action> nextOnGUI = new Queue<Action>(0);
-		private Queue<Action<Map>> nextMapLoaded = new Queue<Action<Map>>(0);
+		private readonly Queue<Action> nextTick = new Queue<Action>(0);
+		private readonly Queue<Action> nextUpdate = new Queue<Action>(0);
+		private readonly Queue<Action> nextOnGUI = new Queue<Action>(0);
+		private readonly Queue<Action<Map>> nextMapLoaded = new Queue<Action<Map>>(0);
 
 		internal DoLaterScheduler() {
 		}
