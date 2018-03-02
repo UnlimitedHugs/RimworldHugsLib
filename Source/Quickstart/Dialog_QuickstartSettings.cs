@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using HugsLib.Utils;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -80,6 +81,7 @@ namespace HugsLib.Quickstart {
 				Text.Anchor = TextAnchor.MiddleLeft;
 				var rect = sub.GetRect(subListingRowHeight);
 				Widgets.Label(rect, "Scenario:");
+				sub.Gap(subListingSpacing);
 				rect = sub.GetRect(subListingRowHeight);
 				Widgets.Label(rect, "Map size:");
 				Text.Anchor = TextAnchor.UpperLeft;
@@ -99,10 +101,6 @@ namespace HugsLib.Quickstart {
 
 			var btnSize = new Vector2(180f, 40f);
 			var buttonYStart = inRect.height - btnSize.y;
-			if (Widgets.ButtonText(new Rect(inRect.x, buttonYStart, btnSize.x, btnSize.y), "Generate map now")) {
-				Close();
-				QuickstartController.InitateMapGeneration();
-			}
 			if (Widgets.ButtonText(new Rect(inRect.width - btnSize.x, buttonYStart, btnSize.x, btnSize.y), "Close")) {
 				Close();
 			}
@@ -147,8 +145,14 @@ namespace HugsLib.Quickstart {
 
 		private void MakeSelectSaveButton(Listing_Standard sub, QuickstartSettings settings) {
 			const float VersionLabelOffset = 10f;
+			const float LoadNowWidth = 120f;
+			const float HorizontalSpacing = 6f;
+			const float ButtonHeight = 30f;
 			var selected = settings.SaveFileToLoad;
-			if (sub.ButtonText(selected ?? "Select a save file")) {
+			var buttonRect = sub.GetRect(ButtonHeight);
+			var leftHalf = new Rect(buttonRect) {xMax = buttonRect.xMax - (LoadNowWidth + HorizontalSpacing)};
+			var rightHalf = new Rect(buttonRect) { xMin = buttonRect.xMin + leftHalf.width + HorizontalSpacing };
+			if (Widgets.ButtonText(leftHalf, selected ?? "Select a save file")) {
 				var menu = new FloatMenu(saveFiles.Select(s => {
 					return new FloatMenuOption(s.Label, () => { settings.SaveFileToLoad = s.Name; }, MenuOptionPriority.Default, null, null, Text.CalcSize(s.VersionLabel).x + VersionLabelOffset,
 						rect => {
@@ -164,16 +168,38 @@ namespace HugsLib.Quickstart {
 				}).ToList());
 				Find.WindowStack.Add(menu);
 			}
+			if (Widgets.ButtonText(rightHalf, "Load now")) {
+				if (!HugsLibUtility.ShiftIsHeld) {
+					settings.OperationMode = QuickstartSettings.QuickstartMode.LoadMap;
+				}
+				QuickstartController.InitateSaveLoading();
+				Close();
+			}
+			sub.Gap(sub.verticalSpacing);
 		}
 
 		private void MakeSelectScenarioButton(Listing_Standard sub, QuickstartSettings settings) {
+			const float GenerateNowWidth = 120f;
+			const float HorizontalSpacing = 6f;
+			const float ButtonHeight = 30f;
+			var buttonRect = sub.GetRect(ButtonHeight);
+			var leftHalf = new Rect(buttonRect) { xMax = buttonRect.xMax - (GenerateNowWidth + HorizontalSpacing) };
+			var rightHalf = new Rect(buttonRect) { xMin = buttonRect.xMin + leftHalf.width + HorizontalSpacing };
 			var selected = settings.ScenarioToGen;
-			if (sub.ButtonText(selected ?? "Select a scenario")) {
+			if (Widgets.ButtonText(leftHalf, selected ?? "Select a scenario")) {
 				var menu = new FloatMenu(ScenarioLister.AllScenarios().Select(s => {
 					return new FloatMenuOption(s.name, () => { settings.ScenarioToGen = s.name; });
 				}).ToList());
 				Find.WindowStack.Add(menu);
 			}
+			if (Widgets.ButtonText(rightHalf, "Generate now")) {
+				if (!HugsLibUtility.ShiftIsHeld) {
+					settings.OperationMode = QuickstartSettings.QuickstartMode.GenerateMap;
+				}
+				QuickstartController.InitateMapGeneration();
+				Close();
+			}
+			sub.Gap(sub.verticalSpacing);
 		}
 
 		private void MakeSelectMapSizeButton(Listing_Standard sub, QuickstartSettings settings) {

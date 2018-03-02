@@ -34,6 +34,10 @@ namespace HugsLib.Test {
 
 		public override void Initialize() {
 			Logger.Message("Initialized");
+			HugsLibController.Instance.DoLater.DoNextTick(() => Logger.Message("DoLater: tick"));
+			HugsLibController.Instance.DoLater.DoNextUpdate(() => Logger.Message("DoLater: update"));
+			HugsLibController.Instance.DoLater.DoNextOnGUI(() => Logger.Message("DoLater: OnGUI "+Event.current.type));
+			HugsLibController.Instance.DoLater.DoNextMapLoaded(map => Logger.Message("DoLater: MapLoaded "+map));
 		}
 
 		public override void Tick(int currentTick) {
@@ -115,7 +119,7 @@ namespace HugsLib.Test {
 
 		private void TestGiveShortHash() {
 			var def = new Def{defName = "randomDefForTesting"};
-			InjectedDefHasher.GiveShortHasToDef(def, typeof(Def));
+			InjectedDefHasher.GiveShortHashToDef(def, typeof(Def));
 			if (def.shortHash == 0) {
 				Logger.Error("GiveShortHasToDef has failed");
 			} else {

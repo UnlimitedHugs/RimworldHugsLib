@@ -115,6 +115,7 @@
     <Compile Include="Source\Test\TestUWO.cs" />
     <Compile Include="Source\Test\TickersTests.cs" />
     <Compile Include="Source\Test\VanillaMod.cs" />
+    <Compile Include="Source\Utils\DoLaterScheduler.cs" />
     <Compile Include="Source\Utils\TickDelayScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\Dialog_Message.cs" />

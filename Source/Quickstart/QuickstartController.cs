@@ -44,6 +44,28 @@ namespace HugsLib.Quickstart {
 			}, "Play", "GeneratingMap", true, null);
 		}
 
+		public static void InitateSaveLoading() {
+			var saveName = Settings.SaveFileToLoad;
+			if (saveName == null) {
+				throw new WarningException("save filename not set");
+			}
+			var filePath = GenFilePaths.FilePathForSavedGame(saveName);
+			if (!File.Exists(filePath)) {
+				throw new WarningException("save file not found: " + Settings.SaveFileToLoad);
+			}
+			HugsLibController.Logger.Message("Quickstarter is loading saved game: " + saveName);
+			Action loadAction = () => {
+				LongEventHandler.QueueLongEvent(delegate {
+					Current.Game = new Game { InitData = new GameInitData { gameToLoad = saveName } };
+				}, "Play", "LoadingLongEvent", true, null);
+			};
+			if (Settings.BypassSafetyDialog) {
+				loadAction();
+			} else {
+				PreLoadUtility.CheckVersionAndLoad(filePath, ScribeMetaHeaderUtility.ScribeHeaderMode.Map, loadAction);
+			}
+		}
+
 		internal static void PrepareReflection() {
 			quickStarterType = typeof(Root).Assembly.GetType("Verse.QuickStarter");
 			if (quickStarterType == null) HugsLibController.Logger.Error("Verse.QuickStarter type not found");
@@ -108,25 +130,7 @@ namespace HugsLib.Quickstart {
 						InitateMapGeneration();
 					}
 				} else if(Settings.OperationMode == QuickstartSettings.QuickstartMode.LoadMap) {
-					var saveName = Settings.SaveFileToLoad;
-					if (saveName == null) {
-						throw new WarningException("save filename not set");
-					}
-					var filePath = GenFilePaths.FilePathForSavedGame(saveName);
-					if (!File.Exists(filePath)) {
-						throw new WarningException("save file not found: "+Settings.SaveFileToLoad);
-					}
-					HugsLibController.Logger.Message("Quickstarter is loading saved game: "+saveName);
-					Action loadAction = () => {
-						LongEventHandler.QueueLongEvent(delegate {
-							Current.Game = new Game {InitData = new GameInitData {gameToLoad = saveName}};
-						}, "Play", "LoadingLongEvent", true, null);
-					};
-					if (Settings.BypassSafetyDialog) {
-						loadAction();
-					} else {
-						PreLoadUtility.CheckVersionAndLoad(filePath, ScribeMetaHeaderUtility.ScribeHeaderMode.Map, loadAction);
-					}
+					InitateSaveLoading();
 				}
 			} catch (WarningException e) {
 				HugsLibController.Logger.Error("Quickstart aborted: "+e.Message);
