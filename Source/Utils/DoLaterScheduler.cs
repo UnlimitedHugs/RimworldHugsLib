@@ -9,10 +9,10 @@ namespace HugsLib.Utils {
 	/// Access via HugsLibController.Instance.DoLater
 	/// </summary>
 	public class DoLaterScheduler {
-		private readonly Queue<Action> nextTick = new Queue<Action>(0);
-		private readonly Queue<Action> nextUpdate = new Queue<Action>(0);
-		private readonly Queue<Action> nextOnGUI = new Queue<Action>(0);
-		private readonly Queue<Action<Map>> nextMapLoaded = new Queue<Action<Map>>(0);
+		private readonly Queue<Action> nextTick = new Queue<Action>(1);
+		private readonly Queue<Action> nextUpdate = new Queue<Action>(1);
+		private readonly Queue<Action> nextOnGUI = new Queue<Action>(1);
+		private readonly Queue<Action<Map>> nextMapLoaded = new Queue<Action<Map>>(1);
 
 		internal DoLaterScheduler() {
 		}
@@ -60,7 +60,8 @@ namespace HugsLib.Utils {
 		}
 
 		internal void OnMapLoaded(Map map) {
-			while (nextMapLoaded.Count > 0) {
+			var numCalls = nextMapLoaded.Count;
+			while (numCalls-- > 0) {
 				var callback = nextMapLoaded.Dequeue();
 				try {
 					callback(map);
@@ -71,7 +72,9 @@ namespace HugsLib.Utils {
 		}
 
 		private void InvokeCallbacks(Queue<Action> queue) {
-			while (queue.Count>0) {
+			// allows for re-scheduling callbacks while they are being invoked
+			var numCalls = queue.Count;
+			while (numCalls-->0) {
 				var callback = queue.Dequeue();
 				try {
 					callback();

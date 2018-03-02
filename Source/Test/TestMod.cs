@@ -34,10 +34,36 @@ namespace HugsLib.Test {
 
 		public override void Initialize() {
 			Logger.Message("Initialized");
-			HugsLibController.Instance.DoLater.DoNextTick(() => Logger.Message("DoLater: tick"));
-			HugsLibController.Instance.DoLater.DoNextUpdate(() => Logger.Message("DoLater: update"));
-			HugsLibController.Instance.DoLater.DoNextOnGUI(() => Logger.Message("DoLater: OnGUI "+Event.current.type));
-			HugsLibController.Instance.DoLater.DoNextMapLoaded(map => Logger.Message("DoLater: MapLoaded "+map));
+			TestDoLaterScheduler();
+		}
+
+		private void TestDoLaterScheduler() {
+			var doLater = HugsLibController.Instance.DoLater;
+			doLater.DoNextTick(() => Logger.Message("DoLater: tick"));
+			doLater.DoNextUpdate(() => Logger.Message("DoLater: update"));
+			doLater.DoNextOnGUI(() => Logger.Message("DoLater: OnGUI " + Event.current.type));
+			doLater.DoNextMapLoaded(map => Logger.Message("DoLater: MapLoaded " + map));
+
+			Logger.Message("Testing recurring doLater...");
+			var numCalls = 0;
+			Action everyFrame = null;
+			everyFrame = () => {
+				if (numCalls < 60) {
+					HugsLibController.Instance.DoLater.DoNextUpdate(everyFrame);
+					numCalls++;
+					Logger.Message("Recurring doLater progress");
+				} else {
+					Logger.Message("Recurring doLater success");
+				}
+			};
+			everyFrame();
+
+			Action<Map> everyMapLoaded = null;
+			everyMapLoaded = map => {
+				HugsLibController.Instance.DoLater.DoNextMapLoaded(everyMapLoaded);
+				Logger.Message("Recurring doLater: map loaded: " + map);
+			};
+			HugsLibController.Instance.DoLater.DoNextMapLoaded(everyMapLoaded);
 		}
 
 		public override void Tick(int currentTick) {
