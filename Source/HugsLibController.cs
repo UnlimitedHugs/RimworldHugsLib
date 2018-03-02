@@ -31,15 +31,17 @@ namespace HugsLib {
 		private static bool lateInitializationCompleted;
 
 		private static HugsLibController instance;
+
 		public static HugsLibController Instance {
 			get { return instance ?? (instance = new HugsLibController()); }
 		}
 
 		private static VersionFile libraryVersionFile;
+
 		public static VersionShort LibraryVersion {
 			get {
 				if (libraryVersionFile == null) libraryVersionFile = ReadOwnVersionFile();
-				return libraryVersionFile!=null ? libraryVersionFile.OverrideVersion : new VersionShort();
+				return libraryVersionFile != null ? libraryVersionFile.OverrideVersion : new VersionShort();
 			}
 		}
 
@@ -59,10 +61,10 @@ namespace HugsLib {
 				CreateSceneObject();
 				Instance.InitializeController();
 			} catch (Exception e) {
-				Log.Message("[HugsLib][ERR] An exception occurred during early initialization: "+e);
+				Log.Message("[HugsLib][ERR] An exception occurred during early initialization: " + e);
 			}
 		}
-		
+
 		internal static ModLogger Logger { get; private set; }
 
 		private static void CreateSceneObject() {
@@ -102,10 +104,11 @@ namespace HugsLib {
 		public UpdateFeatureManager UpdateFeatures { get; private set; }
 		public TickDelayScheduler TickDelayScheduler { get; private set; }
 		public DistributedTickScheduler DistributedTicker { get; private set; }
+		public DoLaterScheduler DoLater { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
 
 		internal HarmonyInstance HarmonyInst { get; private set; }
-		
+
 		private HugsLibController() {
 		}
 
@@ -118,6 +121,7 @@ namespace HugsLib {
 				UpdateFeatures = new UpdateFeatureManager();
 				TickDelayScheduler = new TickDelayScheduler();
 				DistributedTicker = new DistributedTickScheduler();
+				DoLater = new DoLaterScheduler();
 				LogUploader = new LogPublisher();
 				ReadOwnVersionFile();
 				LoadOrderChecker.ValidateLoadOrder();
@@ -130,7 +134,7 @@ namespace HugsLib {
 		internal void LateInitialize() {
 			try {
 				if (!earlyInitializationCompleted) {
-					Logger.Error("Attempted late initialization before early initialization: "+ Environment.StackTrace);
+					Logger.Error("Attempted late initialization before early initialization: " + Environment.StackTrace);
 					return;
 				}
 				if (lateInitializationCompleted) {
@@ -182,6 +186,7 @@ namespace HugsLib {
 		internal void OnUpdate() {
 			if (initializationInProgress) return;
 			try {
+				if (DoLater != null) DoLater.OnUpdate();
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
 						childMods[i].Update();
@@ -197,6 +202,7 @@ namespace HugsLib {
 		public void OnTick() {
 			if (initializationInProgress) return;
 			try {
+				DoLater.OnTick();
 				var currentTick = Find.TickManager.TicksGame;
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
@@ -230,6 +236,7 @@ namespace HugsLib {
 		internal void OnGUI() {
 			if (initializationInProgress) return;
 			try {
+				if (DoLater != null) DoLater.OnGUI();
 				KeyBindingHandler.OnGUI();
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
@@ -262,7 +269,7 @@ namespace HugsLib {
 				var currentTick = game.tickManager.TicksGame;
 				TickDelayScheduler.Initialize(currentTick);
 				DistributedTicker.Initialize(currentTick);
-				game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy { CreatedByController = true });
+				game.tickManager.RegisterAllTickabilityFor(new HugsTickProxy {CreatedByController = true});
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
@@ -326,8 +333,9 @@ namespace HugsLib {
 			}
 		}
 
-		private void OnMapLoaded(Map map){
+		private void OnMapLoaded(Map map) {
 			try {
+				DoLater.OnMapLoaded(map);
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
 						childMods[i].MapLoaded(map);
@@ -394,14 +402,14 @@ namespace HugsLib {
 
 		// will run on startup and on reload. On reload it will add newly loaded mods
 		private void EnumerateChildMods() {
-			foreach (var subclass in typeof (ModBase).InstantiableDescendantsAndSelf()) {
+			foreach (var subclass in typeof(ModBase).InstantiableDescendantsAndSelf()) {
 				if (childMods.Find(cm => cm.GetType() == subclass) != null) continue; // skip duplicate types present in multiple assemblies
 				ModContentPack pack;
 				assemblyContentPacks.TryGetValue(subclass.Assembly, out pack);
 				if (pack == null) continue; // mod is disabled
 				ModBase modbase = null;
 				try {
-					modbase = (ModBase) Activator.CreateInstance(subclass, true);
+					modbase = (ModBase)Activator.CreateInstance(subclass, true);
 					modbase.ApplyHarmonyPatches();
 					modbase.ModContentPack = pack;
 					if (childMods.Find(m => m.ModIdentifier == modbase.ModIdentifier) != null) {
@@ -441,10 +449,10 @@ namespace HugsLib {
 
 		private void ApplyHarmonyPatches() {
 			try {
-				if (ShouldHarmonyAutoPatch(typeof (HugsLibController).Assembly, ModIdentifier)) {
+				if (ShouldHarmonyAutoPatch(typeof(HugsLibController).Assembly, ModIdentifier)) {
 					HarmonyInstance.DEBUG = GenCommandLine.CommandLineArgPassed(HarmonyDebugCommandLineArg);
 					HarmonyInst = HarmonyInstance.Create(HarmonyInstanceIdentifier);
-					HarmonyInst.PatchAll(typeof (HugsLibController).Assembly);
+					HarmonyInst.PatchAll(typeof(HugsLibController).Assembly);
 				}
 			} catch (Exception e) {
 				Logger.ReportException(e);
