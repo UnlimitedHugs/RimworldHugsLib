@@ -56,6 +56,11 @@
             The infix is necessary to catch the WidgetRow that the stock buttons are drawn to.
             </summary>
         </member>
+        <member name="T:HugsLib.Patches.DevToolStarterOnGUI_Patch">
+            <summary>
+            Extends the width of the immediate window the dev toolbar buttons are drawn to to accommodate an additional button
+            </summary>
+        </member>
         <member name="T:HugsLib.Patches.Game_FillComponents_Patch">
             <summary>
             Adds a hook for the early initialization of a Game.
@@ -393,7 +398,7 @@
         </member>
         <member name="P:HugsLib.ModBase.ModIdentifier">
             <summary>
-            A unique identifier fo your mod.
+            A unique identifier for your mod.
             Valid characters are A-z, 0-9, -, no spaces.
             </summary>
         </member>
@@ -711,6 +716,7 @@
             <param name="title">A title to display in the dialog</param>
             <param name="message">A message to display in the dialog</param>
             <param name="closeButtonText">A custom label to the close button. Optional- when null, the default label will be used instead.</param>
+            <param name="postCloseAction">A callback to call when the dialog is closed</param>
         </member>
         <member name="T:HugsLib.Utils.DistributedTickScheduler">
             <summary>
@@ -887,6 +893,7 @@
             <param name="request">Use UnityWebRequest or WWW to construct a request. Do not call Send().</param>
             <param name="onSuccess">Called with the response body if server replied with status 200.</param>
             <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
+            <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
             <param name="timeout">How long to wait before timing out the request</param>
             <returns>Returns the thread created to poll for results.</returns>
         </member>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using HugsLib.Utils;
 using UnityEngine;
 using Verse;
@@ -31,7 +30,7 @@ namespace HugsLib.Logs {
 		private readonly LogPublisher publisher;
 
 		public Dialog_PublishLogs() {
-			closeOnEscapeKey = true;
+			closeOnCancel = true;
 			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;

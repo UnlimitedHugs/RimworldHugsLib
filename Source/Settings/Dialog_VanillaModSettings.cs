@@ -24,7 +24,7 @@ namespace RimWorld {
 			selectedMod = mod;
 			forcePause = true;
 			doCloseX = true;
-			closeOnEscapeKey = true;
+			closeOnCancel = true;
 			doCloseButton = true;
 			closeOnClickedOutside = true;
 			absorbInputAroundWindow = true;

@@ -40,8 +40,8 @@
     <Reference Include="0Harmony">
       <HintPath>..\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp-1.0">
+      <HintPath>..\Assembly-CSharp-1.0.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

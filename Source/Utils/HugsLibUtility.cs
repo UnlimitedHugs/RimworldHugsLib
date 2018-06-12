@@ -112,7 +112,7 @@ namespace HugsLib.Utils {
 		/// <param name="map">The map to look on. When null, defaults to VisibleMap.</param>
 		public static bool HasDesignation(this IntVec3 pos, DesignationDef def, Map map = null) {
 			if (map == null) {
-				map = Find.VisibleMap;
+				map = Find.CurrentMap;
 			}
 			if (map == null || map.designationManager == null) return false;
 			return map.designationManager.DesignationAt(pos, def) != null;
@@ -127,7 +127,7 @@ namespace HugsLib.Utils {
 		/// <param name="map">The map to operate on. When null, defaults to VisibleMap.</param>
 		public static void ToggleDesignation(this IntVec3 pos, DesignationDef def, bool enable, Map map = null) {
 			if (map == null) {
-				map = Find.VisibleMap;
+				map = Find.CurrentMap;
 			}
 			if (map == null || map.designationManager == null) throw new Exception("ToggleDesignation requires a map argument or VisibleMap must be set");
 			var des = map.designationManager.DesignationAt(pos, def);
@@ -260,6 +260,7 @@ namespace HugsLib.Utils {
 		/// <param name="request">Use UnityWebRequest or WWW to construct a request. Do not call Send().</param>
 		/// <param name="onSuccess">Called with the response body if server replied with status 200.</param>
 		/// <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
+		/// <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
 		/// <param name="timeout">How long to wait before timing out the request</param>
 		/// <returns>Returns the thread created to poll for results.</returns>
 		public static Thread AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {

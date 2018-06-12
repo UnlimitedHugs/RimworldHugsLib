@@ -40,7 +40,7 @@ namespace HugsLib.Settings {
 		}
 
 		public Dialog_ModSettings() {
-			closeOnEscapeKey = true;
+			closeOnCancel = true;
 			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;

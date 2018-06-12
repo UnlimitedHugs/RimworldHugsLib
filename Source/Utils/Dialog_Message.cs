@@ -19,12 +19,13 @@ namespace HugsLib.Utils {
 		/// <param name="title">A title to display in the dialog</param>
 		/// <param name="message">A message to display in the dialog</param>
 		/// <param name="closeButtonText">A custom label to the close button. Optional- when null, the default label will be used instead.</param>
+		/// <param name="postCloseAction">A callback to call when the dialog is closed</param>
 		public Dialog_Message(string title, string message, string closeButtonText = null, Action postCloseAction = null) {
 			this.title = title;
 			this.message = message;
 			this.closeButtonText = closeButtonText;
 			this.postCloseAction = postCloseAction;
-			closeOnEscapeKey = true;
+			closeOnCancel = true;
 			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;

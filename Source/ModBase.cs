@@ -39,7 +39,7 @@ namespace HugsLib {
 		protected HarmonyInstance HarmonyInst { get; set; }
 
 		/// <summary>
-		/// A unique identifier fo your mod.
+		/// A unique identifier for your mod.
 		/// Valid characters are A-z, 0-9, -, no spaces.
 		/// </summary>
 		public abstract string ModIdentifier { get; }
