@@ -22,14 +22,17 @@ namespace HugsLib.Settings {
 		private const float HandleEntryHeight = 34f;
 		private const float ScrollBarWidthMargin = 18f;
 
-		private readonly List<ModEntry> listedMods = new List<ModEntry>();
+		// made static to preserve values between dialog openings
+		private static readonly List<ModEntry> listedMods = new List<ModEntry>();
+		private static readonly HashSet<ModEntry> expandedModEntries = new HashSet<ModEntry>();
+		private static Vector2 scrollPosition;
+		
 		private readonly Color ModEntryLineColor = new Color(0.3f, 0.3f, 0.3f);
 		private readonly Color BadValueOutlineColor = new Color(.9f, .1f, .1f, 1f);
 		private readonly Dictionary<SettingHandle, HandleControlInfo> handleControlInfo = new Dictionary<SettingHandle, HandleControlInfo>();
 		private readonly SettingsHandleDrawer defaultHandleDrawer;
 		private readonly Dictionary<Type, SettingsHandleDrawer> handleDrawers;
 
-		private Vector2 scrollPosition;
 		private float totalContentHeight;
 		private bool settingsHaveChanged;
 		private string currentlyDrawnEntry;
@@ -49,16 +52,19 @@ namespace HugsLib.Settings {
 			defaultHandleDrawer = DrawHandleInputText;
 			// these pairs specify which type of input field will be drawn for handles of this type. defaults to the string input
 			handleDrawers = new Dictionary<Type, SettingsHandleDrawer> {
-				{typeof (int), DrawHandleInputSpinner},
-				{typeof (bool), DrawHandleInputCheckbox},
-				{typeof (Enum), DrawHandleInputEnum}
+				{typeof(int), DrawHandleInputSpinner},
+				{typeof(bool), DrawHandleInputCheckbox},
+				{typeof(Enum), DrawHandleInputEnum}
 			};
 		}
 
 		public override void PreOpen() {
 			base.PreOpen();
 			settingsHaveChanged = false;
-			EnumerateSettings();
+			if (listedMods.Count == 0) {
+				EnumerateModsWithSettings();
+			}
+			RefreshSettingsHandles();
 			PopulateControlInfo();
 		}
 
@@ -85,21 +91,21 @@ namespace HugsLib.Settings {
 				var curY = 0f;
 				for (int i = 0; i < listedMods.Count; i++) {
 					var entry = listedMods[i];
+					if (!entry.Visible) continue;
 					currentlyDrawnEntry = entry.ModName;
 					DrawModEntryHeader(entry, scrollViewTotal.width, ref curY);
-					if (entry.VanillaMod!=null) {
-						DrawVanillaModEntry(entry, scrollViewTotal.width, ref curY);
-					}
-					for (int j = 0; j < entry.Handles.Count; j++) {
-						var handle = entry.Handles[j];
-						if (handle.VisibilityPredicate != null) {
-							try {
-								if (!handle.VisibilityPredicate()) continue;
-							} catch (Exception e) {
-								HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.VisibilityPredicate");
+					if (expandedModEntries.Contains(entry)) {
+						for (int j = 0; j < entry.Handles.Count; j++) {
+							var handle = entry.Handles[j];
+							if (handle.VisibilityPredicate != null) {
+								try {
+									if (!handle.VisibilityPredicate()) continue;
+								} catch (Exception e) {
+									HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.VisibilityPredicate");
+								}
 							}
+							DrawHandleEntry(handle, scrollViewTotal, ref curY, scrollViewVisible.height);
 						}
-						DrawHandleEntry(handle, scrollViewTotal, ref curY, scrollViewVisible.height);
 					}
 					currentlyDrawnEntry = null;
 				}
@@ -132,6 +138,30 @@ namespace HugsLib.Settings {
 			Text.Font = GameFont.Medium;
 			Widgets.Label(labelRect, entry.ModName);
 			Text.Font = GameFont.Small;
+			// draw open setting or expand handle listing button
+			var isVanillaEntry = entry.SettingsPack == null;
+			var isExpanded = expandedModEntries.Contains(entry);
+			string buttonLabel;
+			if (isVanillaEntry) {
+				buttonLabel = "HugsLib_setting_show_settings";
+			} else {
+				buttonLabel = isExpanded ? "HugsLib_setting_collapse_mod" : "HugsLib_setting_expand_mod";
+			}
+			buttonLabel = buttonLabel.Translate();
+			var buttonWidth = Text.CalcSize(buttonLabel).x + 20f;
+			var buttonRect = new Rect(width - (buttonWidth + HandleEntryPadding), curY + (ModEntryLabelHeight-ModEntryShowSettingsButtonHeight)/2f, buttonWidth, ModEntryShowSettingsButtonHeight);
+			if (Widgets.ButtonText(buttonRect, buttonLabel)) {
+				if (isVanillaEntry) {
+					Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
+				} else {
+					if (isExpanded) {
+						expandedModEntries.Remove(entry);
+					} else {
+						expandedModEntries.Add(entry);
+					}
+				}
+			}
+
 			curY += ModEntryLabelHeight;
 			var color = GUI.color;
 			GUI.color = ModEntryLineColor;
@@ -140,30 +170,20 @@ namespace HugsLib.Settings {
 			curY += ModEntryLabelPadding;
 		}
 
-		// draws the "show settings" button for vanilla mod settings
-		private void DrawVanillaModEntry(ModEntry entry, float scrollViewWidth, ref float curY) {
-			var buttonText = "HugsLib_setting_show_settings".Translate();
-			var buttonWidth = Text.CalcSize(buttonText).x + 20f;
-			var buttonRect = new Rect(scrollViewWidth - (buttonWidth+HandleEntryPadding), (curY - ModEntryHeight) + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f, buttonWidth, ModEntryShowSettingsButtonHeight);
-			if (Widgets.ButtonText(buttonRect, buttonText)) {
-				Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
-			}
-		}
-
 		// draws the label and appropriate input for a single setting
 		private void DrawHandleEntry(SettingHandle handle, Rect parentRect, ref float curY, float scrollViewHeight) {
 			var entryHeight = HandleEntryHeight;
 			if (handle.CustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
-				entryHeight = handle.CustomDrawerHeight + HandleEntryPadding*2;
+				entryHeight = handle.CustomDrawerHeight + HandleEntryPadding * 2;
 			}
 			var skipDrawing = curY - scrollPosition.y + entryHeight < 0f || curY - scrollPosition.y > scrollViewHeight;
 			if (!skipDrawing) {
 				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight).ContractedBy(HandleEntryPadding);
 				var mouseOver = Mouse.IsOver(entryRect);
 				if (mouseOver) Widgets.DrawHighlight(entryRect);
-				var controlRect = new Rect(entryRect.x + entryRect.width/2f, entryRect.y, entryRect.width/2f, entryRect.height);
+				var controlRect = new Rect(entryRect.x + entryRect.width / 2f, entryRect.y, entryRect.width / 2f, entryRect.height);
 				GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-				var leftHalfRect = new Rect(entryRect.x, entryRect.y, entryRect.width/2f - HandleEntryPadding, entryRect.height);
+				var leftHalfRect = new Rect(entryRect.x, entryRect.y, entryRect.width / 2f - HandleEntryPadding, entryRect.height);
 				// give full width to the label if custom control drawer is used- this allows handle titles to be used as section titles
 				var labelRect = handle.CustomDrawer == null ? leftHalfRect : entryRect;
 				// reduce text size if label is long and wraps over to he second line
@@ -184,7 +204,7 @@ namespace HugsLib.Settings {
 				if (handle.CustomDrawer == null) {
 					SettingsHandleDrawer drawer;
 					var handleType = handle.ValueType;
-					if (handleType.IsEnum) handleType = typeof (Enum);
+					if (handleType.IsEnum) handleType = typeof(Enum);
 					handleDrawers.TryGetValue(handleType, out drawer);
 					if (drawer == null) drawer = defaultHandleDrawer;
 					valueChanged = drawer(handle, controlRect, handleControlInfo[handle]);
@@ -267,7 +287,7 @@ namespace HugsLib.Settings {
 				info.validationScheduled = true;
 				changed = true;
 			}
-			var textRect = new Rect(controlRect.x + buttonSize + 1, controlRect.y, controlRect.width - buttonSize*2 - 2f, controlRect.height);
+			var textRect = new Rect(controlRect.x + buttonSize + 1, controlRect.y, controlRect.width - buttonSize * 2 - 2f, controlRect.height);
 			if (DrawHandleInputText(handle, textRect, info)) {
 				changed = true;
 			}
@@ -278,7 +298,7 @@ namespace HugsLib.Settings {
 		private bool DrawHandleInputCheckbox(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			const float defaultCheckboxHeight = 24f;
 			var checkOn = bool.Parse(info.inputValue);
-			Widgets.Checkbox(controlRect.x, controlRect.y + (controlRect.height - defaultCheckboxHeight)/2, ref checkOn);
+			Widgets.Checkbox(controlRect.x, controlRect.y + (controlRect.height - defaultCheckboxHeight) / 2, ref checkOn);
 			if (checkOn != bool.Parse(info.inputValue)) {
 				handle.StringValue = info.inputValue = checkOn.ToString();
 				return true;
@@ -333,18 +353,16 @@ namespace HugsLib.Settings {
 		}
 
 		// pulls all available mods with settings to display
-		private void EnumerateSettings() {
+		private void EnumerateModsWithSettings() {
 			try {
 				listedMods.Clear();
+				expandedModEntries.Clear();
 				totalContentHeight = 0;
 
 				// get HugsLib settings packs
 				foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
 					try {
-						var handles = pack.Handles.Where(h => !h.NeverVisible).OrderBy(h => h.DisplayOrder).ToList();
-						if (handles.Count == 0) continue;
-						totalContentHeight += ModEntryHeight + handles.Count*HandleEntryHeight;
-						var entry = new ModEntry(pack.EntryName, handles, null);
+						var entry = new ModEntry(pack.EntryName, pack, null);
 						entry.DisplayPriority = pack.DisplayPriority;
 						listedMods.Add(entry);
 					} catch (Exception e) {
@@ -355,9 +373,9 @@ namespace HugsLib.Settings {
 				foreach (var mod in LoadedModManager.ModHandles) {
 					if (mod == null) continue;
 					try {
-						if (mod.SettingsCategory().NullOrEmpty()) continue;
-						totalContentHeight += ModEntryHeight;
-						listedMods.Add(new ModEntry(mod.SettingsCategory(), new List<SettingHandle>(0), mod));
+						if (!mod.SettingsCategory().NullOrEmpty()) {
+							listedMods.Add(new ModEntry(mod.SettingsCategory(), null, mod));
+						}
 					} catch (Exception e) {
 						HugsLibController.Logger.Error("Exception while enumerating vanilla settings for {0}: {1}", mod.GetType(), e);
 					}
@@ -378,7 +396,17 @@ namespace HugsLib.Settings {
 				HugsLibController.Logger.ReportException(e);
 			}
 		}
-		
+
+		// updated the settings handles for all HugsLib mods
+		private void RefreshSettingsHandles() {
+			foreach (var mod in listedMods) {
+				if (mod.SettingsPack != null) {
+					mod.Handles.Clear();
+					mod.Handles.AddRange(mod.SettingsPack.Handles.Where(h => !h.NeverVisible).OrderBy(h => h.DisplayOrder));
+				}
+			}
+		}
+
 		// prepares support objects to store data for settings handle controls
 		private void PopulateControlInfo() {
 			handleControlInfo.Clear();
@@ -394,12 +422,17 @@ namespace HugsLib.Settings {
 		private class ModEntry {
 			public string ModName;
 			public ModSettingsPack.ListPriority DisplayPriority;
-			public readonly List<SettingHandle> Handles;
+			public List<SettingHandle> Handles = new List<SettingHandle>();
+			public readonly ModSettingsPack SettingsPack;
 			public readonly Mod VanillaMod;
 
-			public ModEntry(string modName, List<SettingHandle> handles, Mod vanillaMod) {
+			public bool Visible {
+				get { return VanillaMod != null || Handles.Count > 0; }
+			}
+
+			public ModEntry(string modName, ModSettingsPack settingsPack, Mod vanillaMod) {
 				ModName = modName;
-				Handles = handles;
+				SettingsPack = settingsPack;
 				VanillaMod = vanillaMod;
 			}
 		}
