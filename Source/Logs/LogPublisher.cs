@@ -78,7 +78,8 @@ namespace HugsLib.Logs {
 			var collatedData = PrepareLogData();
 
 #if TEST_MOCK_UPLOAD
-			Log.Message(collatedData);			
+			Log.Message(collatedData);
+			HugsLibUtility.CopyToClipboard(collatedData);
 			MockUpload();
 			return;
 #endif
@@ -114,7 +115,7 @@ namespace HugsLib.Logs {
 				Status = PublisherStatus.Shortening;
 				Thread.Sleep(1500);
 				Status = PublisherStatus.Done;
-				ResultUrl = Rand.Int.ToString();
+				ResultUrl = "copied to clipboard";
 			});
 			pollingThread.Start();
 		}
