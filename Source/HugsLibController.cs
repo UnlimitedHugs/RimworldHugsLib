@@ -199,7 +199,7 @@ namespace HugsLib {
 			}
 		}
 
-		public void OnTick() {
+		internal void OnTick() {
 			if (initializationInProgress) return;
 			try {
 				DoLater.OnTick();
