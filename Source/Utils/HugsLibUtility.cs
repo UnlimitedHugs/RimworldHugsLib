@@ -7,7 +7,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -261,38 +260,42 @@ namespace HugsLib.Utils {
 		/// <param name="onSuccess">Called with the response body if server replied with status 200.</param>
 		/// <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
 		/// <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
-		/// <param name="timeout">How long to wait before timing out the request</param>
-		/// <returns>Returns the thread created to poll for results.</returns>
-		public static Thread AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
-			var asyncOp = request.Send();
+		/// <param name="timeout">How long to wait before aborting the request</param>
+		public static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
+			request.Send();
 			var timeoutTime = Time.unscaledTime + timeout;
-			var pollingThread = new Thread(() => {
+			Action pollingAction = null;
+			pollingAction = () => {
+				var timedOut = Time.unscaledTime > timeoutTime;
 				try {
-					while (!asyncOp.isDone && Time.unscaledTime < timeoutTime) {
-						Thread.Sleep(15);
-					}
-					if (!asyncOp.isDone) {
-						throw new Exception("timed out");
-					}
-					if (request.isError) {
-						throw new Exception(request.error);
-					}
-					var status = (HttpStatusCode)request.responseCode;
-					if (status != successStatus) {
-						throw new Exception(string.Format("{0} replied with {1}: {2}", request.url, status, request.downloadHandler.text));
+					if (!request.isDone && !timedOut) {
+						HugsLibController.Instance.DoLater.DoNextUpdate(pollingAction);
 					} else {
-						if (onSuccess != null) onSuccess(request.downloadHandler.text);
+						if (timedOut) {
+							if (!request.isDone) {
+								request.Abort();
+							}
+							throw new Exception("timed out");
+						}
+						if (request.isError) {
+							throw new Exception(request.error);
+						}
+						var status = (HttpStatusCode)request.responseCode;
+						if (status != successStatus) {
+							throw new Exception(string.Format("{0} replied with {1}: {2}", request.url, status, request.downloadHandler.text));
+						} else {
+							if (onSuccess != null) onSuccess(request.downloadHandler.text);
+						}
 					}
 				} catch (Exception e) {
 					if (onFailure != null) {
 						onFailure(e);
 					} else {
-						HugsLibController.Logger.Warning("UnityWebRequest failed: " + e);	
+						HugsLibController.Logger.Warning("UnityWebRequest failed: " + e);
 					}
 				}
-			});
-			pollingThread.Start();
-			return pollingThread;
+			};
+			pollingAction();
 		}
 
 		internal static void BlameCallbackException(string schedulerName, Delegate callback, Exception e) {

@@ -894,8 +894,7 @@
             <param name="onSuccess">Called with the response body if server replied with status 200.</param>
             <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
             <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
-            <param name="timeout">How long to wait before timing out the request</param>
-            <returns>Returns the thread created to poll for results.</returns>
+            <param name="timeout">How long to wait before aborting the request</param>
         </member>
         <member name="P:HugsLib.Utils.HugsLibUtility.ShiftIsHeld">
             <summary>
