@@ -38,10 +38,10 @@ namespace HugsLib {
 
 		private static VersionFile libraryVersionFile;
 
-		public static VersionShort LibraryVersion {
+		public static Version LibraryVersion {
 			get {
 				if (libraryVersionFile == null) libraryVersionFile = ReadOwnVersionFile();
-				return libraryVersionFile != null ? libraryVersionFile.OverrideVersion : new VersionShort();
+				return libraryVersionFile != null ? libraryVersionFile.OverrideVersion : new Version();
 			}
 		}
 

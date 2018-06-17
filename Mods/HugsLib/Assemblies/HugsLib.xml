@@ -237,7 +237,9 @@
         <member name="T:HugsLib.Core.VersionShort">
             <summary>
             A shorter, invariable alternative to System.Version in the format of major.minor.patch
+            Also known as a semantic version number.
             System.Version can be implicitly cast to this type.
+            VersionShort is no longer used by HugsLib internally, and the type is retained for backwards compatibility.
             </summary>
         </member>
         <member name="T:HugsLib.HugsLibController">
