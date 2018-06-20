@@ -24,8 +24,8 @@ namespace HugsLib.Core {
 			return null;
 		}
 
-		public VersionShort OverrideVersion { get; private set; }
-		public VersionShort RequiredLibraryVersion { get; private set; }
+		public Version OverrideVersion { get; private set; }
+		public Version RequiredLibraryVersion { get; private set; }
 
 		private VersionFile(XDocument doc) {
 			ParseXmlDocument(doc);
@@ -35,11 +35,11 @@ namespace HugsLib.Core {
 			if (doc.Root == null) throw new Exception("Missing root node");
 			var overrideVersionElement = doc.Root.Element("overrideVersion");
 			if (overrideVersionElement != null) {
-				OverrideVersion = VersionShort.Parse(overrideVersionElement.Value);
+				OverrideVersion = new Version(overrideVersionElement.Value);
 			}
 			var requiredLibraryVersionElement = doc.Root.Element("requiredLibraryVersion");
 			if (requiredLibraryVersionElement != null) {
-				RequiredLibraryVersion = VersionShort.Parse(requiredLibraryVersionElement.Value);
+				RequiredLibraryVersion = new Version(requiredLibraryVersionElement.Value);
 			}
 		}
 	}

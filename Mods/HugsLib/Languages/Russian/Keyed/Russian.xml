@@ -18,7 +18,9 @@
 	<HugsLib_setting_unnamed_mod>(мод без названия)</HugsLib_setting_unnamed_mod>
 	<HugsLib_setting_show_settings>Показать настройки</HugsLib_setting_show_settings>
 	<HugsLib_setting_mod_name_title>Настройки мода {0}</HugsLib_setting_mod_name_title>
-
+	<HugsLib_setting_expand_mod>Открыть</HugsLib_setting_expand_mod>
+	<HugsLib_setting_collapse_mod>Закрыть</HugsLib_setting_collapse_mod>
+	
 	<HugsLib_features_title>Новости обновлений модов</HugsLib_features_title>
 	<HugsLib_features_description>Здесь показаны недавно установленные версии модов и новый функционал, который они добавили в игру.\nЭто окно можно отключить в меню Настройки &gt; Настройки модификаций</HugsLib_features_description>
 	<HugsLib_features_update>{0} v{1}</HugsLib_features_update>

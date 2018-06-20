@@ -39,7 +39,7 @@ namespace HugsLib {
 		protected HarmonyInstance HarmonyInst { get; set; }
 
 		/// <summary>
-		/// A unique identifier fo your mod.
+		/// A unique identifier for your mod.
 		/// Valid characters are A-z, 0-9, -, no spaces.
 		/// </summary>
 		public abstract string ModIdentifier { get; }
@@ -61,7 +61,7 @@ namespace HugsLib {
 		/// <summary>
 		/// Return the override version from the Version.xml file if specified, or the assembly version otherwise
 		/// </summary>
-		public virtual VersionShort GetVersion() {
+		public virtual Version GetVersion() {
 			var file = VersionFile.TryParseVersionFile(ModContentPack);
 			if (file != null && file.OverrideVersion != null) return file.OverrideVersion;
 			return GetType().Assembly.GetName().Version;

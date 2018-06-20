@@ -26,6 +26,7 @@ namespace HugsLib.Patches {
 
 		[HarmonyTranspiler]
 		public static IEnumerable<CodeInstruction> InjectCustomQuickstartSettings(IEnumerable<CodeInstruction> instructions) {
+			patchedScenario = patchedSize = false;
 			var gameSetScenarioMethod = AccessTools.Method(typeof(Game), "set_Scenario");
 			var gameInitDataMapSizeField = AccessTools.Field(typeof(GameInitData), "mapSize");
 			if (gameSetScenarioMethod == null || gameInitDataMapSizeField == null) {

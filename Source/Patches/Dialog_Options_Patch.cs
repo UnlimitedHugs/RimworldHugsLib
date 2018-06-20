@@ -20,17 +20,26 @@ namespace HugsLib.Patches {
 
 		private const string ButtonLabelToKill = "ModSettings";
 		private static readonly MethodInfo ExpectedButtonMethod = Traverse.Create<Listing_Standard>().Method("ButtonText", new[] {typeof(Listing_Standard), typeof (string), typeof (string)}).GetValue<MethodInfo>();
-		
+
+		private static bool patched;
+
+		[HarmonyPrepare]
+		public static void Prepare() {
+			LongEventHandler.ExecuteWhenFinished(() => {
+				if (!patched) HugsLibController.Logger.Error("Dialog_Options_Patch could not be applied.");
+			});
+		}
+
 		[HarmonyTranspiler]
 		public static IEnumerable<CodeInstruction> ReplaceModOptionsButton(this IEnumerable<CodeInstruction> instructions) {
+			patched = false;
 			var expectedButtonMethod = AccessTools.Method(typeof (Listing_Standard), "ButtonText", new[] {typeof (string), typeof (string)});
 			if (expectedButtonMethod == null || expectedButtonMethod.ReturnType != typeof(bool)) {
 				HugsLibController.Logger.Error("Failed to reflect required method for transpiler: "+Environment.StackTrace);
 			}
 			var labelFound = false;
-			var buttonInjectCompleted = false;
 			foreach (var instruction in instructions) {
-				if (expectedButtonMethod != null && !buttonInjectCompleted) {
+				if (expectedButtonMethod != null && !patched) {
 					// find the right button by its untranslated label
 					if (instruction.opcode == OpCodes.Ldstr && instruction.operand as string == ButtonLabelToKill) {
 						labelFound = true;
@@ -40,7 +49,7 @@ namespace HugsLib.Patches {
 							OptionsDialogInjection.DrawModSettingsButton(_this);
 							return false;
 						})).Method;
-						buttonInjectCompleted = true;
+						patched = true;
 					}
 				}
 

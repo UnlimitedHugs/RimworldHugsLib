@@ -35,7 +35,7 @@ namespace HugsLib.News {
 		}
 
 		public Dialog_UpdateFeatures(List<UpdateFeatureDef> featureDefs) {
-			closeOnEscapeKey = true;
+			closeOnCancel = true;
 			doCloseButton = true;
 			doCloseX = true;
 			forcePause = true;

@@ -30,7 +30,7 @@ namespace HugsLib {
 		// optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.
 		public string linkUrl;
 
-		public VersionShort Version { get; set; }
+		public Version Version { get; set; }
 
 		public override void ResolveReferences() {
 			base.ResolveReferences();
@@ -42,9 +42,9 @@ namespace HugsLib {
 			Exception versionFailure = null;
 			try {
 				if (assemblyVersion == null) throw new Exception("UpdateFeatureDef.assemblyVersion must be defined");
-				Version = VersionShort.Parse(assemblyVersion);
+				Version = new Version(assemblyVersion);
 			} catch (Exception e) {
-				Version = new VersionShort();
+				Version = new Version();
 				versionFailure = e;
 			}
 			if (versionFailure != null) ReportError("UpdateFeatureDef.version parsing failed: " + versionFailure);

@@ -44,7 +44,7 @@ namespace HugsLib.Test {
 			doLater.DoNextOnGUI(() => Logger.Message("DoLater: OnGUI " + Event.current.type));
 			doLater.DoNextMapLoaded(map => Logger.Message("DoLater: MapLoaded " + map));
 
-			Logger.Message("Testing recurring doLater...");
+			/*Logger.Message("Testing recurring doLater...");
 			var numCalls = 0;
 			Action everyFrame = null;
 			everyFrame = () => {
@@ -56,7 +56,7 @@ namespace HugsLib.Test {
 					Logger.Message("Recurring doLater success");
 				}
 			};
-			everyFrame();
+			everyFrame();*/
 
 			Action<Map> everyMapLoaded = null;
 			everyMapLoaded = map => {

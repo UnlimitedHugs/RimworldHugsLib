@@ -41,7 +41,7 @@ namespace HugsLib.Utils {
 					return "No patches have been reported.";
 				}
 				// sort patches by patched method name
-				namedMethodList.Sort((m1, m2) => String.Compare(m1.MethodName, m2.MethodName, StringComparison.Ordinal));
+				namedMethodList.Sort((m1, m2) => string.Compare(m1.MethodName, m2.MethodName, StringComparison.Ordinal));
 
 				var builder = new StringBuilder();
 				foreach (var pair in namedMethodList) {
@@ -49,7 +49,7 @@ namespace HugsLib.Utils {
 					builder.Append(pair.MethodName);
 					builder.Append(": ");
 					// write patches
-					var patches = instance.IsPatched(pair.Method);
+					var patches = instance.GetPatchInfo(pair.Method);
 					if (HasActivePatches(patches)) {
 						// write prefixes
 						if (patches.Prefixes != null && patches.Prefixes.Count > 0) {
@@ -87,19 +87,10 @@ namespace HugsLib.Utils {
 		public static string DescribeHarmonyVersions(HarmonyInstance instance) {
 			try {
 				Version currentVersion;
-				var allVersions = instance.VersionInfo(out currentVersion);
-				var builder = new StringBuilder("Harmony versions present: ");
-				var firstElement = true;
-				foreach (var pair in allVersions) {
-					if (!firstElement) {
-						builder.Append(", ");
-					}
-					firstElement = false;
-					builder.Append(pair.Key);
-					builder.Append(':');
-					builder.Append(pair.Value);
-				}
-				return builder.ToString();
+				var modVersionPairs = instance.VersionInfo(out currentVersion);
+				return "Harmony versions present: " + 
+					modVersionPairs.GroupBy(kv => kv.Value, kv => kv.Key).OrderByDescending(grp => grp.Key)
+					.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");
 			} catch (Exception e) {
 				return "An exception occurred while collating Harmony version data:\n" + e;
 			}

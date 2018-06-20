@@ -11,7 +11,11 @@ namespace HugsLib.Core {
 		public static void OnGUI() {
 			if (Event.current.type != EventType.KeyDown) return;
 			if (HugsLibKeyBindings.PublishLogs.JustPressed && HugsLibUtility.ControlIsHeld) {
-				HugsLibController.Instance.LogUploader.ShowPublishPrompt();
+				if (HugsLibUtility.AltIsHeld) {
+					HugsLibController.Instance.LogUploader.CopyToClipboard();
+				} else {
+					HugsLibController.Instance.LogUploader.ShowPublishPrompt();
+				}
 			}
 			if (HugsLibKeyBindings.OpenLogFile.JustPressed) {
 				ShellOpenLog.Execute();

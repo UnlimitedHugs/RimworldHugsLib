@@ -14,15 +14,15 @@ namespace HugsLib.News {
 			get { return "LastSeenNews.xml"; }
 		}
 		// highest version that has displayed features
-		private readonly Dictionary<string, VersionShort> knownVersions = new Dictionary<string, VersionShort>();
+		private readonly Dictionary<string, Version> knownVersions = new Dictionary<string, Version>();
 		// current version if higher than last featured
-		private readonly Dictionary<string, VersionShort> freshVersions = new Dictionary<string, VersionShort>(); 
+		private readonly Dictionary<string, Version> freshVersions = new Dictionary<string, Version>(); 
 
 		public UpdateFeatureManager() {
 			LoadData();
 		}
 
-		public void InspectActiveMod(string modId, VersionShort currentVersion) {
+		public void InspectActiveMod(string modId, Version currentVersion) {
 			var knownVersion = TryGetKnownVersion(modId);
 			if (knownVersion == null || currentVersion > knownVersion) {
 				freshVersions.Add(modId, currentVersion);
@@ -40,8 +40,8 @@ namespace HugsLib.News {
 				foreach (var freshVersionPair in freshVersions) {
 					var modId = freshVersionPair.Key;
 					var freshVersion = freshVersionPair.Value;
-					var knownVersion = TryGetKnownVersion(modId) ?? new VersionShort();
-					VersionShort highestVersionWithFeature = null;
+					var knownVersion = TryGetKnownVersion(modId) ?? new Version();
+					Version highestVersionWithFeature = null;
 					foreach (var def in DefDatabase<UpdateFeatureDef>.AllDefs) {
 						if (def.modIdentifier != modId) continue;
 						if (def.Version <= knownVersion || def.Version > freshVersion) continue;
@@ -73,7 +73,7 @@ namespace HugsLib.News {
 			knownVersions.Clear();
 			if(xml.Root == null) throw new Exception("missing root node");
 			foreach (var element in xml.Root.Elements()) {
-				knownVersions.Add(element.Name.ToString(), VersionShort.Parse(element.Value));
+				knownVersions.Add(element.Name.ToString(), new Version(element.Value));
 			}
 		}
 
@@ -85,8 +85,8 @@ namespace HugsLib.News {
 			}
 		}
 
-		private VersionShort TryGetKnownVersion(string modId) {
-			VersionShort knownVersion;
+		private Version TryGetKnownVersion(string modId) {
+			Version knownVersion;
 			knownVersions.TryGetValue(modId, out knownVersion);
 			return knownVersion;
 		}

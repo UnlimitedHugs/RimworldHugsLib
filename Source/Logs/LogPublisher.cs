@@ -40,7 +40,7 @@ namespace HugsLib.Logs {
 		private bool userAborted;
 		private bool extendedLogScheduled;
 		private UnityWebRequest activeRequest;
-		private Thread pollingThread;
+		private Thread mockThread;
 
 		public void ShowPublishPrompt() {
 			if (PublisherIsReady()) {
@@ -56,10 +56,10 @@ namespace HugsLib.Logs {
 			userAborted = true;
 			if (activeRequest != null && !activeRequest.isDone) {
 				activeRequest.Abort();
-				activeRequest = null;
 			}
-			if (pollingThread != null && pollingThread.IsAlive) {
-				pollingThread.Interrupt();
+			activeRequest = null;
+			if (mockThread != null && mockThread.IsAlive) {
+				mockThread.Interrupt();
 			}
 			if (Status == PublisherStatus.Shortening) {
 				Status = PublisherStatus.Done;
@@ -78,7 +78,8 @@ namespace HugsLib.Logs {
 			var collatedData = PrepareLogData();
 
 #if TEST_MOCK_UPLOAD
-			Log.Message(collatedData);			
+			HugsLibController.Logger.Message(collatedData);
+			HugsLibUtility.CopyToClipboard(collatedData);
 			MockUpload();
 			return;
 #endif
@@ -101,22 +102,26 @@ namespace HugsLib.Logs {
 				activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
 				activeRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload)) {contentType = "application/json"};
 				activeRequest.downloadHandler = new DownloadHandlerBuffer();
-				pollingThread = HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUploadComplete, onRequestFailed, HttpStatusCode.Created);
+				HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUploadComplete, onRequestFailed, HttpStatusCode.Created);
 			} catch (Exception e) {
 				onRequestFailed(e);
 			}
 		}
 
+		public void CopyToClipboard() {
+			HugsLibUtility.CopyToClipboard(PrepareLogData());
+		}
+
 		// this is for testing the uploader gui without making requests	
 		private void MockUpload() {
-			pollingThread = new Thread(() => {
+			mockThread = new Thread(() => {
 				Thread.Sleep(1500);
 				Status = PublisherStatus.Shortening;
 				Thread.Sleep(1500);
 				Status = PublisherStatus.Done;
-				ResultUrl = Rand.Int.ToString();
+				ResultUrl = "copied to clipboard";
 			});
-			pollingThread.Start();
+			mockThread.Start();
 		}
 
 		private void OnPublishConfirmed() {
@@ -132,7 +137,7 @@ namespace HugsLib.Logs {
 			ErrorMessage = errorMessage;
 			Status = PublisherStatus.Error;
 			activeRequest = null;
-			pollingThread = null;
+			mockThread = null;
 		}
 
 		private void OnUploadComplete(string response) {
@@ -142,7 +147,7 @@ namespace HugsLib.Logs {
 				return;
 			}
 			ResultUrl = matchedUrl;
-			HugsLibController.Instance.DoLater.DoNextUpdate(BeginUrlShortening);
+			BeginUrlShortening();
 		}
 
 		private void BeginUrlShortening() {
@@ -159,7 +164,7 @@ namespace HugsLib.Logs {
 				};
 				activeRequest = UnityWebRequest.Post(ShortenerUrl,  formData);
 				activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
-				pollingThread = HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUrlShorteningComplete, onRequestFailed, HttpStatusCode.Created);
+				HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUrlShorteningComplete, onRequestFailed, HttpStatusCode.Created);
 			} catch (Exception e) {
 				onRequestFailed(e);
 			}
@@ -169,7 +174,7 @@ namespace HugsLib.Logs {
 			ResultUrl = activeRequest.GetResponseHeader("Location");
 			Status = PublisherStatus.Done;
 			activeRequest = null;
-			pollingThread = null;
+			mockThread = null;
 		}
 
 		private string TryExtractGistUrlFromUploadResponse(string response) {

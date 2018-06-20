@@ -3,7 +3,9 @@
 namespace HugsLib.Core {
 	/// <summary>
 	/// A shorter, invariable alternative to System.Version in the format of major.minor.patch
+	/// Also known as a semantic version number.
 	/// System.Version can be implicitly cast to this type.
+	/// VersionShort is no longer used by HugsLib internally, and the type is retained for backwards compatibility.
 	/// </summary>
 	public class VersionShort : IComparable, IComparable<VersionShort>, IEquatable<VersionShort> {
 		public const char Separator = '.';

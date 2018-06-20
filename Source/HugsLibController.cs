@@ -38,10 +38,10 @@ namespace HugsLib {
 
 		private static VersionFile libraryVersionFile;
 
-		public static VersionShort LibraryVersion {
+		public static Version LibraryVersion {
 			get {
 				if (libraryVersionFile == null) libraryVersionFile = ReadOwnVersionFile();
-				return libraryVersionFile != null ? libraryVersionFile.OverrideVersion : new VersionShort();
+				return libraryVersionFile != null ? libraryVersionFile.OverrideVersion : new Version();
 			}
 		}
 
@@ -199,7 +199,7 @@ namespace HugsLib {
 			}
 		}
 
-		public void OnTick() {
+		internal void OnTick() {
 			if (initializationInProgress) return;
 			try {
 				DoLater.OnTick();
@@ -470,6 +470,7 @@ namespace HugsLib {
 				var pack = Settings.GetModSettings(ModIdentifier);
 				pack.EntryName = "HugsLib_ownSettingsName".Translate();
 				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
+				pack.AlwaysExpandEntry = true;
 				updateNewsSetting = pack.GetHandle("modUpdateNews", "HugsLib_setting_showNews_label".Translate(), "HugsLib_setting_showNews_desc".Translate(), true);
 				var allNewsHandle = pack.GetHandle("showAllNews", "HugsLib_setting_allNews_label".Translate(), "HugsLib_setting_allNews_desc".Translate(), false);
 				allNewsHandle.Unsaved = true;
