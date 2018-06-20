@@ -22,6 +22,7 @@ namespace HugsLib.Quickstart {
 
 		public Dialog_QuickstartSettings() {
 			closeOnCancel = true;
+			closeOnAccept = false;
 			doCloseButton = false;
 			doCloseX = true;
 			resizeable = false;

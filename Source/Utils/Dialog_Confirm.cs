@@ -21,6 +21,8 @@ namespace HugsLib.Utils {
 
 		public Dialog_Confirm(string text, Action confirmedAct = null, bool destructive = false, string title = null)
 			: base(text, "Confirm".Translate(), confirmedAct, "GoBack".Translate(), null, title, destructive) {
+			closeOnCancel = false;
+			closeOnAccept = false;
 		}
 
 		public override void DoWindowContents(Rect inRect) {

@@ -44,6 +44,7 @@ namespace HugsLib.Settings {
 
 		public Dialog_ModSettings() {
 			closeOnCancel = true;
+			closeOnAccept = false;
 			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;

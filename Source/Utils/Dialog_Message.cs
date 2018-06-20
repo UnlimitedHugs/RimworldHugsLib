@@ -26,6 +26,7 @@ namespace HugsLib.Utils {
 			this.closeButtonText = closeButtonText;
 			this.postCloseAction = postCloseAction;
 			closeOnCancel = true;
+			closeOnAccept = false;
 			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;

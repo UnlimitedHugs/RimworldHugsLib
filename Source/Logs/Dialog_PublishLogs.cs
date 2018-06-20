@@ -31,6 +31,7 @@ namespace HugsLib.Logs {
 
 		public Dialog_PublishLogs() {
 			closeOnCancel = true;
+			closeOnAccept = false;
 			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;
