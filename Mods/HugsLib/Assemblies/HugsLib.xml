@@ -460,9 +460,9 @@
             Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
             </summary>
         </member>
-        <member name="F:HugsLib.Settings.ModSettingsPack.CanCollapseEntry">
+        <member name="F:HugsLib.Settings.ModSettingsPack.AlwaysExpandEntry">
             <summary>
-            
+            Set to true to disable the collapsing of setting handles in the Mod Settings dialog.
             </summary>
         </member>
         <member name="M:HugsLib.Settings.ModSettingsPack.GetHandle``1(System.String,System.String,System.String,``0,HugsLib.Settings.SettingHandle.ValueIsValid,System.String)">
