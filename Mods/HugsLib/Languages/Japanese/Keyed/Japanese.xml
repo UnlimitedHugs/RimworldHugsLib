@@ -18,6 +18,8 @@
   <HugsLib_setting_unnamed_mod>(無名MOD)</HugsLib_setting_unnamed_mod>
   <HugsLib_setting_show_settings>設定を表示する</HugsLib_setting_show_settings>
   <HugsLib_setting_mod_name_title>{0}のMod設定</HugsLib_setting_mod_name_title>
+  <HugsLib_setting_expand_mod>開く</HugsLib_setting_expand_mod>
+  <HugsLib_setting_collapse_mod>閉じる</HugsLib_setting_collapse_mod>
 
   <HugsLib_features_title>新しいMod機能</HugsLib_features_title>
   <HugsLib_features_description>以下のMODアップデートがインストールされており、これらは新しい機能と改良版です。\nこのダイアログはオプションからMod設定を開いて無効にできます</HugsLib_features_description>
@@ -53,6 +55,5 @@
   <test_enumSetting_DefaultValue>初期値</test_enumSetting_DefaultValue>
   <test_enumSetting_ValueOne>初期値 1</test_enumSetting_ValueOne>
   <test_enumSetting_ValueTwo>初期値 2</test_enumSetting_ValueTwo>
-
 
 </LanguageData>
