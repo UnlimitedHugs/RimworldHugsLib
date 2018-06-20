@@ -1,5 +1,5 @@
 {
-	"title": "HugsLib",
-	"description": "This is a library that provides shared functionality for other mods.\nFor best results, make sure that HugsLib comes right after Core in your mod load order.\n\nAlso includes the Log Publisher: press [b]Ctrl+F12[/b] to upload your Rimworld logs and get a link to easily share them with others.\n\nCan be safely added to existing games.\n\nFor more info on what this mod does or to report issues, check out the official forum post: https://ludeon.com/forums/index.php?topic=28066\n\nThe A17 version is still available, and can be found here: [url=http://steamcommunity.com/sharedfiles/filedetails/?id=1204577461]HugsLib (A17)[/url]",
+	"title": "HugsLib for 1.0 testing branch",
+	"description": "This is the latest version of HugsLib for the testing branch of Rimworld (1.0).\nOnce 1.0 is officially released, the main HugsLib workshop item will be updated to this version.\n\nThe latest version of HugsLib for Rimworld B18 can be found here: [url=https://steamcommunity.com/sharedfiles/filedetails/?id=818773962]link[/url]",
 	"visibility": 0
 }
