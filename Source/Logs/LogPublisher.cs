@@ -108,6 +108,10 @@ namespace HugsLib.Logs {
 			}
 		}
 
+		public void CopyToClipboard() {
+			HugsLibUtility.CopyToClipboard(PrepareLogData());
+		}
+
 		// this is for testing the uploader gui without making requests	
 		private void MockUpload() {
 			mockThread = new Thread(() => {
