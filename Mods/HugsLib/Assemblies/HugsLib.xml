@@ -460,6 +460,11 @@
             Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
             </summary>
         </member>
+        <member name="F:HugsLib.Settings.ModSettingsPack.CanCollapseEntry">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="M:HugsLib.Settings.ModSettingsPack.GetHandle``1(System.String,System.String,System.String,``0,HugsLib.Settings.SettingHandle.ValueIsValid,System.String)">
             <summary>
             Retrieves an existing SettingHandle from the pack, or creates a new one.

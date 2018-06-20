@@ -28,6 +28,10 @@ namespace HugsLib.Settings {
 		/// Mods are generally ordered by name. Please leave this at Normal unless you have a good reason to change it.
 		/// </summary>
 		public ListPriority DisplayPriority { get; set; }
+		/// <summary>
+		/// Set to true to disable the collapsing of setting handles in the Mod Settings dialog.
+		/// </summary>
+		internal bool AlwaysExpandEntry;
 
 		private readonly Dictionary<string, string> loadedValues = new Dictionary<string, string>();
 		private readonly List<SettingHandle> handles = new List<SettingHandle>();

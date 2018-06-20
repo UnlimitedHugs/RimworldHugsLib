@@ -470,6 +470,7 @@ namespace HugsLib {
 				var pack = Settings.GetModSettings(ModIdentifier);
 				pack.EntryName = "HugsLib_ownSettingsName".Translate();
 				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
+				pack.AlwaysExpandEntry = true;
 				updateNewsSetting = pack.GetHandle("modUpdateNews", "HugsLib_setting_showNews_label".Translate(), "HugsLib_setting_showNews_desc".Translate(), true);
 				var allNewsHandle = pack.GetHandle("showAllNews", "HugsLib_setting_allNews_label".Translate(), "HugsLib_setting_allNews_desc".Translate(), false);
 				allNewsHandle.Unsaved = true;

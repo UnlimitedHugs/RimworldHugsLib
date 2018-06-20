@@ -94,7 +94,7 @@ namespace HugsLib.Settings {
 					if (!entry.Visible) continue;
 					currentlyDrawnEntry = entry.ModName;
 					DrawModEntryHeader(entry, scrollViewTotal.width, ref curY);
-					if (expandedModEntries.Contains(entry)) {
+					if ((entry.SettingsPack != null && entry.SettingsPack.AlwaysExpandEntry) || expandedModEntries.Contains(entry)) {
 						for (int j = 0; j < entry.Handles.Count; j++) {
 							var handle = entry.Handles[j];
 							if (handle.VisibilityPredicate != null) {
@@ -139,25 +139,28 @@ namespace HugsLib.Settings {
 			Widgets.Label(labelRect, entry.ModName);
 			Text.Font = GameFont.Small;
 			// draw open setting or expand handle listing button
-			var isVanillaEntry = entry.SettingsPack == null;
-			var isExpanded = expandedModEntries.Contains(entry);
-			string buttonLabel;
-			if (isVanillaEntry) {
-				buttonLabel = "HugsLib_setting_show_settings";
-			} else {
-				buttonLabel = isExpanded ? "HugsLib_setting_collapse_mod" : "HugsLib_setting_expand_mod";
-			}
-			buttonLabel = buttonLabel.Translate();
-			var buttonWidth = Text.CalcSize(buttonLabel).x + 20f;
-			var buttonRect = new Rect(width - (buttonWidth + HandleEntryPadding), curY + (ModEntryLabelHeight-ModEntryShowSettingsButtonHeight)/2f, buttonWidth, ModEntryShowSettingsButtonHeight);
-			if (Widgets.ButtonText(buttonRect, buttonLabel)) {
+			if (entry.SettingsPack == null || !entry.SettingsPack.AlwaysExpandEntry) {
+				var isVanillaEntry = entry.SettingsPack == null;
+				var isExpanded = expandedModEntries.Contains(entry);
+				string buttonLabel;
 				if (isVanillaEntry) {
-					Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
+					buttonLabel = "HugsLib_setting_show_settings";
 				} else {
-					if (isExpanded) {
-						expandedModEntries.Remove(entry);
+					buttonLabel = isExpanded ? "HugsLib_setting_collapse_mod" : "HugsLib_setting_expand_mod";
+				}
+				buttonLabel = buttonLabel.Translate();
+				var buttonWidth = Text.CalcSize(buttonLabel).x + 20f;
+				var buttonRect = new Rect(width - (buttonWidth + HandleEntryPadding), curY + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f, buttonWidth,
+					ModEntryShowSettingsButtonHeight);
+				if (Widgets.ButtonText(buttonRect, buttonLabel)) {
+					if (isVanillaEntry) {
+						Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
 					} else {
-						expandedModEntries.Add(entry);
+						if (isExpanded) {
+							expandedModEntries.Remove(entry);
+						} else {
+							expandedModEntries.Add(entry);
+						}
 					}
 				}
 			}
