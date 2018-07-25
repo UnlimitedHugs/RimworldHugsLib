@@ -44,17 +44,19 @@ namespace HugsLib.Patches {
 					if (instruction.opcode == OpCodes.Ldstr && instruction.operand as string == ButtonLabelToKill) {
 						labelFound = true;
 					} else if (labelFound && instruction.opcode == OpCodes.Callvirt && expectedButtonMethod.Equals(instruction.operand)) {
-						// replace the button call with out own method
-						instruction.operand = ((ModSettingsButtonReplacementMethod) ((_this, label, highlightTag) => {
-							OptionsDialogInjection.DrawModSettingsButton(_this);
-							return false;
-						})).Method;
+						// replace the button call with our own method
+						instruction.operand = ((Func<Listing_Standard, string, string, bool>)DrawReplacementButton).Method;
 						patched = true;
 					}
 				}
 
 				yield return instruction;
 			}
+		}
+
+		private static bool DrawReplacementButton(Listing_Standard _this, string label, string highlightTag) {
+			OptionsDialogInjection.DrawModSettingsButton(_this);
+			return false;
 		}
 	}
 }
