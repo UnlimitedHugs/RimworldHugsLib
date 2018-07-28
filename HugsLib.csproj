@@ -37,8 +37,8 @@
     <DocumentationFile>Mods\HugsLib\Assemblies\HugsLib.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony_1.1.1">
-      <HintPath>..\0Harmony_1.1.1.dll</HintPath>
+    <Reference Include="0Harmony">
+      <HintPath>..\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-1.0">
       <HintPath>..\Assembly-CSharp-1.0.dll</HintPath>
