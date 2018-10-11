@@ -1,5 +1,5 @@
 {
-	"title": "HugsLib",
-	"description": "This is a library that provides shared functionality for other mods.\nFor best results, make sure that HugsLib comes right after Core in your mod load order.\n\nAlso includes the Log Publisher: press [b]Ctrl+F12[/b] to upload your Rimworld logs and get a link to easily share them with others.\n\nCan be safely added to existing games.\n\nFor more info on what this mod does or to report issues, check out the official forum post: https://ludeon.com/forums/index.php?topic=28066\n\nThe B18 version is still available, and can be found here: [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1495940024]HugsLib (B18)[/url]",
+	"title": "HugsLib (B19)",
+	"description": "Legacy version of HugsLib for B19.\nThe latest version for 1.0 is available here: [url=https://steamcommunity.com/sharedfiles/filedetails/?id=818773962]HugsLib (1.0)[/url]",
 	"visibility": 0
 }
