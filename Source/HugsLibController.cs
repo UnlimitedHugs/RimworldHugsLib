@@ -53,19 +53,23 @@ namespace HugsLib {
 		internal static void EarlyInitialize() {
 			try {
 				if (earlyInitializationCompleted) {
-					Log.Warning("[HugsLib][warn] Attempted repeated early initialization of controller: " + Environment.StackTrace);
+					Logger.Warning("Attempted repeated early initialization of controller: " + Environment.StackTrace);
 					return;
 				}
 				earlyInitializationCompleted = true;
-				Logger = new ModLogger(ModIdentifier);
 				CreateSceneObject();
 				Instance.InitializeController();
 			} catch (Exception e) {
-				Log.Message("[HugsLib][ERR] An exception occurred during early initialization: " + e);
+				Logger.Error("An exception occurred during early initialization: " + e);
 			}
 		}
 
-		internal static ModLogger Logger { get; private set; }
+		private static ModLogger _logger;
+		internal static ModLogger Logger {
+			get {
+				return _logger ?? (_logger = new ModLogger(ModIdentifier));
+			}
+		}
 
 		private static void CreateSceneObject() {
 			// this must execute in the main thread

@@ -66,20 +66,29 @@ namespace HugsLib.Test {
 			HugsLibController.Instance.DoLater.DoNextMapLoaded(everyMapLoaded);
 		}
 
+		#pragma warning disable 649 // unassigned field
+		[TweakValue("HugsLibTesting")]
+		private static bool TraceTick;
 		public override void Tick(int currentTick) {
-			//Logger.Message("Tick:"+currentTick);
+			if(TraceTick) Logger.Message("Tick:"+currentTick);
 		}
 
+		[TweakValue("HugsLibTesting")]
+		private static bool TraceUpdate;
 		public override void Update() {
-			//Logger.Message("Update");
+			if(TraceUpdate) Logger.Message("Update: "+Time.frameCount);
 		}
 
+		[TweakValue("HugsLibTesting")]
+		private static bool TraceFixedUpdate;
 		public override void FixedUpdate() {
-			//Logger.Message("FixedUpdate");
+			if(TraceFixedUpdate) Logger.Message("FixedUpdate");
 		}
 
+		[TweakValue("HugsLibTesting")]
+		private static bool TraceOnGUI;
 		public override void OnGUI() {
-			//Logger.Message("OnGUI");
+			if(TraceOnGUI) Logger.Message("OnGUI: "+Event.current.type);
 		}
 
 		public override void WorldLoaded() {
@@ -89,7 +98,7 @@ namespace HugsLib.Test {
 		}
 
 		public override void MapComponentsInitializing(Map map) {
-			Logger.Message("MapComponentsInitializing on map:" + map);
+			Logger.Message("MapComponentsInitializing on map:" + map.Index);
 		}
 
 		public override void MapGenerated(Map map) {
@@ -125,11 +134,11 @@ namespace HugsLib.Test {
 
 		public override void DefsLoaded() {
 			Logger.Message("DefsLoaded");
-			var str = Settings.GetHandle("str", "String value", "", "value");
+			Settings.GetHandle("str", "String value", "", "value");
 			var spinner = Settings.GetHandle("intSpinner", "Spinner", "desc", 5, Validators.IntRangeValidator(0, 30));
 			spinner.SpinnerIncrement = 2;
-			var enumHandle = Settings.GetHandle("enumThing", "Enum setting", "", HandleEnum.DefaultValue, null, "test_enumSetting_");
-			var toggle = Settings.GetHandle("toggle", "Toggle setting extra long title that would not fit into one line", "Toggle setting", false);
+			Settings.GetHandle("enumThing", "Enum setting", "", HandleEnum.DefaultValue, null, "test_enumSetting_");
+			Settings.GetHandle("toggle", "Toggle setting extra long title that would not fit into one line", "Toggle setting", false);
 			var custom = Settings.GetHandle("custom", "custom setting", "custom setting desc", false);
 			custom.CustomDrawerHeight = 30f;
 			custom.CustomDrawer = rect => {
