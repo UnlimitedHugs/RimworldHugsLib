@@ -153,11 +153,11 @@ namespace HugsLib.Settings {
 			if (loadedValues.Count == 0 && handles.Count(h => !h.Unsaved && !h.HasDefaultValue()) == 0) return; // no values, no saving
 			var packElem = new XElement(ModId);
 			xml.Add(packElem);
-			foreach (var loadedValue in loadedValues) { // loaded values may remain uncalimed, so we put em back where they came from
+			foreach (var loadedValue in loadedValues) { // loaded values may remain unclaimed, so we put em back where they came from
 				packElem.Add(new XElement(loadedValue.Key, new XText(loadedValue.Value)));
 			}
 			foreach (var handle in handles) {
-				if(handle.Unsaved || handle.HasDefaultValue()) continue;
+				if(!handle.ShouldBeSaved) continue;
 				packElem.Add(new XElement(handle.Name, new XText(handle.StringValue)));
 			}
 		}

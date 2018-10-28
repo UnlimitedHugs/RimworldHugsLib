@@ -65,6 +65,9 @@ namespace HugsLib.Settings {
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
+
+		internal abstract bool ShouldBeSaved { get; }
+
 		public abstract void ResetToDefault();
 		public abstract bool HasDefaultValue();
 
@@ -159,6 +162,13 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public override Type ValueType {
 			get { return typeof (T); }
+		}
+
+		internal override bool ShouldBeSaved {
+			get {
+				var convertible = Value as SettingHandleConvertible;
+				return !(Unsaved || HasDefaultValue() || (convertible != null && !convertible.ShouldBeSaved));
+			}
 		}
 
 		internal SettingHandle(string name) {

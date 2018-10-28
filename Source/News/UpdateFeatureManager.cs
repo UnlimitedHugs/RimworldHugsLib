@@ -129,7 +129,11 @@ namespace HugsLib.News {
 				var changed = ignore ? ignoredModIds.Add(modId) : ignoredModIds.Remove(modId);
 				if(changed) HugsLibController.SettingsManager.SaveChanges();
 			}
-			
+
+			public override bool ShouldBeSaved {
+				get { return ignoredModIds.Count > 0; }
+			}
+
 			public override void FromString(string settingValue) {
 				if (string.IsNullOrEmpty(settingValue)) return;
 				ignoredModIds = new HashSet<string>(settingValue.Split(SerializationSeparator));

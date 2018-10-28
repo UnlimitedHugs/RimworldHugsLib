@@ -479,6 +479,23 @@
             Allows complex data structures to be stored in setting values by converting them to and from their string representation.
             </summary>
         </member>
+        <member name="P:HugsLib.Settings.SettingHandleConvertible.ShouldBeSaved">
+            <summary>
+            Return false to prevent this object from serializing and being written to file.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Settings.SettingHandleConvertible.FromString(System.String)">
+            <summary>
+            Called when settings handles of this type load an existing value.
+            Should deserialize and restore the state of the object using the provided string.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Settings.SettingHandleConvertible.ToString">
+            <summary>
+            Called when handles of this type are being saved, and only if <see cref="P:HugsLib.Settings.SettingHandleConvertible.ShouldBeSaved"/> return true.
+            Should serialize the state of the object into a string so it can be restored later.
+            </summary>
+        </member>
         <member name="T:HugsLib.Settings.Validators">
             <summary>
             A set of useful value constraints for use with SettingHandle
