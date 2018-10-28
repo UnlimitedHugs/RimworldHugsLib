@@ -416,6 +416,7 @@ namespace HugsLib {
 					modbase = (ModBase)Activator.CreateInstance(subclass, true);
 					modbase.ApplyHarmonyPatches();
 					modbase.ModContentPack = pack;
+					modbase.VersionInfo = AssemblyVersionInfo.ReadModAssembly(subclass.Assembly, pack);
 					if (childMods.Find(m => m.ModIdentifier == modbase.ModIdentifier) != null) {
 						Logger.Error("Duplicate mod identifier: " + modbase.ModIdentifier);
 						continue;

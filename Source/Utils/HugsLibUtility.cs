@@ -298,6 +298,34 @@ namespace HugsLib.Utils {
 			pollingAction();
 		}
 
+		/// <summary>
+		/// Tries to find the file handle for a given mod assembly name.
+		/// </summary>
+		/// <remarks>This is a replacement for <see cref="Assembly.Location"/> mod assemblies are loaded from byte arrays.</remarks>
+		/// <param name="assemblyName">The <see cref="AssemblyName.Name"/> of the assembly</param>
+		/// <param name="contentPack">The content pack the assembly was presumably loaded from</param>
+		/// <returns>Returns null if the file is not found</returns>
+		public static FileInfo GetModAssemblyFileInfo(string assemblyName, ModContentPack contentPack) {
+			const string AssembliesFolderName = "Assemblies", AssemblyFileExtension = ".dll";
+			var directory = new DirectoryInfo(Path.Combine(
+				GenFilePaths.CoreModsFolderPath, Path.Combine(contentPack.RootDir, AssembliesFolderName)));
+			if (directory.Exists) {
+				return directory.GetFiles(assemblyName + AssemblyFileExtension, SearchOption.AllDirectories).FirstOrDefault();
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Same as <see cref="GetModAssemblyFileInfo"/> but suppresses all exceptions.
+		/// </summary>
+		public static FileInfo TryGetModAssemblyFileInfo(string assemblyName, ModContentPack modPack) {
+			try {
+				return GetModAssemblyFileInfo(assemblyName, modPack);
+			} catch (Exception) {
+				return null;
+			}
+		}
+
 		internal static void BlameCallbackException(string schedulerName, Delegate callback, Exception e) {
 			string exceptionCause = null;
 			if (callback != null) {
