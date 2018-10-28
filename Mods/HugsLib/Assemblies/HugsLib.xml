@@ -410,7 +410,7 @@
         </member>
         <member name="T:HugsLib.News.Dialog_UpdateFeatures">
             <summary>
-            Displays a list to update feature defs with basic image and formatting support. See UpdateFeatureDef for proper syntax.
+            Displays a list to update feature defs with basic image and formatting support. See <see cref="T:HugsLib.UpdateFeatureDef"/> for proper syntax.
             </summary>
         </member>
         <member name="T:HugsLib.News.UpdateFeatureManager">

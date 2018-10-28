@@ -26,6 +26,9 @@
 	<HugsLib_features_update>{0} v{1}</HugsLib_features_update>
 	<HugsLib_features_link>Link</HugsLib_features_link>
 	<HugsLib_features_linkDesc>Opens your browser on a page where you can learn more about this update.\nAddress: {0}</HugsLib_features_linkDesc>
+	<HugsLib_features_ignoreTooltip>Notify about future updates from this mod</HugsLib_features_ignoreTooltip>
+	<HugsLib_features_confirmIgnoreTitle>Confirm</HugsLib_features_confirmIgnoreTitle>
+	<HugsLib_features_confirmIgnore>Ignore future update news from {0}?\n\nCan be re-enabled in Mod Options &gt; All mod update news</HugsLib_features_confirmIgnore>
 
 	<HugsLib_copiedToClipboard>Copied to clipboard.</HugsLib_copiedToClipboard>
 	

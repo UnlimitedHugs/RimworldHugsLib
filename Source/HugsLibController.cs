@@ -101,7 +101,6 @@ namespace HugsLib {
 		private readonly List<ModBase> initializedMods = new List<ModBase>();
 		private readonly HashSet<Assembly> autoHarmonyPatchedAssemblies = new HashSet<Assembly>();
 		private Dictionary<Assembly, ModContentPack> assemblyContentPacks;
-		private SettingHandle<bool> updateNewsSetting;
 		private bool initializationInProgress;
 
 		public ModSettingsManager Settings { get; private set; }
@@ -349,9 +348,7 @@ namespace HugsLib {
 					}
 				}
 				// show update news dialog
-				if (updateNewsSetting.Value) {
-					UpdateFeatures.TryShowDialog();
-				}
+				UpdateFeatures.TryShowDialog(false);
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
@@ -491,17 +488,7 @@ namespace HugsLib {
 				pack.EntryName = "HugsLib_ownSettingsName".Translate();
 				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
 				pack.AlwaysExpandEntry = true;
-				updateNewsSetting = pack.GetHandle("modUpdateNews", "HugsLib_setting_showNews_label".Translate(), "HugsLib_setting_showNews_desc".Translate(), true);
-				var allNewsHandle = pack.GetHandle("showAllNews", "HugsLib_setting_allNews_label".Translate(), "HugsLib_setting_allNews_desc".Translate(), false);
-				allNewsHandle.Unsaved = true;
-				allNewsHandle.CustomDrawer = rect => {
-					if (Widgets.ButtonText(rect, "HugsLib_setting_allNews_button".Translate())) {
-						if (!UpdateFeatures.TryShowDialog(true)) {
-							Find.WindowStack.Add(new Dialog_MessageBox("HugsLib_setting_allNews_fail".Translate()));
-						}
-					}
-					return false;
-				};
+				UpdateFeatures.RegisterSettings(pack);
 				QuickstartController.RegisterSettings(pack);
 			} catch (Exception e) {
 				Logger.ReportException(e);
