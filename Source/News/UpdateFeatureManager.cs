@@ -25,7 +25,9 @@ namespace HugsLib.News {
 		public void InspectActiveMod(string modId, Version currentVersion) {
 			var knownVersion = TryGetKnownVersion(modId);
 			if (knownVersion == null || currentVersion > knownVersion) {
-				freshVersions.Add(modId, currentVersion);
+				var existingFreshVersion = freshVersions.TryGetValue(modId);
+				freshVersions[modId] = existingFreshVersion == null || currentVersion > existingFreshVersion ? 
+					currentVersion : existingFreshVersion;
 			}
 		}
 

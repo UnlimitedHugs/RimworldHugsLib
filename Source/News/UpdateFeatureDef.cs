@@ -8,7 +8,8 @@ namespace HugsLib {
 	/// </summary>
 	public class UpdateFeatureDef : Def {
 		/// <summary>
-		/// The ModBase.ModIdentifier of the mod that this def belongs to
+		/// The <see cref="ModBase.ModIdentifier"/> of the mod which will cause this news item to be displayed.
+		/// Alternatively, the name of the folder the mod is loaded from can also be used.
 		/// </summary>
 		public string modIdentifier;
 		/// <summary>

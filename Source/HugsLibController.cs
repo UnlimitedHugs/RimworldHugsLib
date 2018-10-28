@@ -162,6 +162,7 @@ namespace HugsLib {
 				CheckForIncludedHugsLibAssembly();
 				ProcessAttributes(); // do detours and other attribute work for (newly) loaded mods
 				EnumerateChildMods();
+				InspectUpdateNewsByOverrideVersion();
 				var initializationsThisRun = new List<string>();
 				for (int i = 0; i < childMods.Count; i++) {
 					var childMod = childMods[i];
@@ -425,10 +426,24 @@ namespace HugsLib {
 				} catch (Exception e) {
 					Logger.ReportException(e, subclass.ToString(), false, "child mod instantiation");
 				}
-				if (modbase != null) UpdateFeatures.InspectActiveMod(modbase.ModIdentifier, modbase.GetVersion());
+				if (modbase != null) {
+					var version = modbase.GetVersion();
+					UpdateFeatures.InspectActiveMod(modbase.ModIdentifier, version);
+					UpdateFeatures.InspectActiveMod(pack.Identifier, version);
+				}
 			}
 			// sort by load order
 			childMods.Sort((cm1, cm2) => cm1.ModContentPack.loadOrder.CompareTo(cm2.ModContentPack.loadOrder));
+		}
+
+		private void InspectUpdateNewsByOverrideVersion() {
+			// allow non-library mods to take advantage of the update news feature (uses folder name as identifier)
+			foreach (var contentPack in LoadedModManager.RunningMods) {
+				var versionFile = VersionFile.TryParseVersionFile(contentPack);
+				if (versionFile != null && versionFile.OverrideVersion != null) {
+					UpdateFeatures.InspectActiveMod(contentPack.Identifier, versionFile.OverrideVersion);
+				}
+			}
 		}
 
 		private void EnumerateModAssemblies() {
