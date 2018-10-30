@@ -342,7 +342,7 @@ namespace HugsLib.Logs {
 				builder.Append(modContentPack.Name);
 				var versionFile = VersionFile.TryParseVersionFile(modContentPack);
 				if (versionFile != null && versionFile.OverrideVersion != null) {
-					builder.AppendFormat("[{0}]: ", versionFile.OverrideVersion);
+					builder.AppendFormat("[ov:{0}]: ", versionFile.OverrideVersion);
 				} else {
 					builder.Append(": ");
 				}
@@ -354,7 +354,7 @@ namespace HugsLib.Logs {
 					}
 					firstAssembly = false;
 					builder.Append(loadedAssembly.GetName().Name);
-					builder.AppendFormat("({0})", loadedAssembly.GetName().Version);
+					builder.AppendFormat("({0})", AssemblyVersionInfo.ReadModAssembly(loadedAssembly, modContentPack));
 					anyAssemblies = true;
 				}
 				if (!anyAssemblies) {

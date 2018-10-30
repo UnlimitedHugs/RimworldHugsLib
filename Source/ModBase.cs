@@ -57,21 +57,17 @@ namespace HugsLib {
 				modContentPackInt = value;
 			}
 		}
-
-		/// <summary>
-		/// Return the override version from the Version.xml file if specified, or the assembly version otherwise
-		/// </summary>
-		public virtual Version GetVersion() {
-			var file = VersionFile.TryParseVersionFile(ModContentPack);
-			if (file != null && file.OverrideVersion != null) return file.OverrideVersion;
-			return GetType().Assembly.GetName().Version;
-		}
-
+		
 		/// <summary>
 		/// Can be false if the mod was enabled at game start and then disabled in the mods menu
 		/// </summary>
 		public bool ModIsActive { get; internal set; }
 		
+		/// <summary>
+		/// Contains the AssemblyVersion and AssemblyFileVersion of the mod. Used by <see cref="GetVersion"/>.
+		/// </summary>
+		public AssemblyVersionInfo VersionInfo { get; internal set; }
+
 		protected ModBase() {
 			var modId = ModIdentifier;
 			if (!PersistentDataManager.IsValidElementName(modId)) throw new FormatException("Invalid mod identifier: " + modId);
@@ -91,6 +87,23 @@ namespace HugsLib {
 					HugsLibController.Logger.Error("Failed to apply Harmony patches for {0}. Exception was: {1}", harmonyId, e);
 				}
 			}
+		}
+
+		/// <summary>
+		/// Return the override version from the Version.xml file if specified, 
+		/// or the higher one between AssemblyVersion and AssemblyFileVersion
+		/// </summary>
+		public virtual Version GetVersion() {
+			var file = VersionFile.TryParseVersionFile(ModContentPack);
+			if (file != null && file.OverrideVersion != null) return file.OverrideVersion;
+			return VersionInfo.HighestVersion;
+		}
+
+		/// <summary>
+		/// Called during <see cref="Mod"/> instantiation, 
+		/// and only if the implementing class is annotated with <see cref="EarlyInitAttribute"/>
+		/// </summary>
+		public virtual void EarlyInitalize() {
 		}
 
 		/// <summary>
@@ -187,6 +200,5 @@ namespace HugsLib {
 		/// </summary>
 		public virtual void DefsLoaded() {
 		}
-
 	}
 }

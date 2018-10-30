@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HugsLib.Utils;
 using UnityEngine;
 using Verse;
 
 namespace HugsLib.News {
 	/// <summary>
-	/// Displays a list to update feature defs with basic image and formatting support. See UpdateFeatureDef for proper syntax.
+	/// Displays a list to update feature defs with basic image and formatting support. See <see cref="UpdateFeatureDef"/> for proper syntax.
 	/// </summary>
 	public class Dialog_UpdateFeatures : Window {
 		private const float HeaderLabelHeight = 40f; 
@@ -21,7 +22,7 @@ namespace HugsLib.News {
 		private const float SegmentImageMargin = 6f;
 		private const float SegmentTextMargin = 2f;
 
-
+		private readonly UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders;
 		private readonly Color TitleLineColor = new Color(0.3f, 0.3f, 0.3f);
 		private readonly Color LinkTextColor = new Color(.7f, .7f, 1f);
 		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>(); 
@@ -29,12 +30,14 @@ namespace HugsLib.News {
 		private float totalContentHeight = -1;
 		private Vector2 scrollPosition;
 		private List<string> pendingImages;
+		private string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
 		}
 
-		public Dialog_UpdateFeatures(List<UpdateFeatureDef> featureDefs) {
+		public Dialog_UpdateFeatures(List<UpdateFeatureDef> featureDefs, UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) {
+			this.ignoredNewsProviders = ignoredNewsProviders;
 			closeOnCancel = true;
 			doCloseButton = true;
 			doCloseX = true;
@@ -91,7 +94,11 @@ namespace HugsLib.News {
 
 		private void DrawEntryTitle(FeatureEntry entry, float width, ref float curY, bool skipDrawing) {
 			if (!skipDrawing) {
-				var labelRect = new Rect(0f, curY, width - EntryTitleLinkWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
+				const float toggleSize = Widgets.CheckboxSize;
+				var togglePos = new Vector2(EntryTitleLabelPadding, curY + (EntryTitleLabelHeight / 2f - toggleSize / 2f));
+				DoIgnoreNewsProviderToggle(togglePos, entry);
+				var labelRect = new Rect(togglePos.x + toggleSize, curY,
+					width - EntryTitleLinkWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
 				Text.Font = GameFont.Medium;
 				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.assemblyVersion);
 				Widgets.Label(labelRect, string.Format("<size={0}>{1}</size>", EntryTitleFontSize, titleText));
@@ -123,6 +130,21 @@ namespace HugsLib.News {
 			curY += EntryTitleLabelPadding;
 		}
 
+		private void DoIgnoreNewsProviderToggle(Vector2 togglePos, FeatureEntry entry) {
+			bool wasOn = !ignoredNewsProviders.Contains(entry.def.modIdentifier), isOn = wasOn;
+			Widgets.Checkbox(togglePos, ref isOn);
+			if (wasOn != isOn) {
+				Action toggleAction = () => ignoredNewsProviders.SetIgnored(entry.def.modIdentifier, !isOn);
+				if (isOn || HugsLibUtility.ShiftIsHeld) {
+					toggleAction();
+				} else {
+					Find.WindowStack.Add(new Dialog_Confirm("HugsLib_features_confirmIgnore".Translate(entry.def.modNameReadable), 
+						toggleAction, false,"HugsLib_features_confirmIgnoreTitle".Translate()));
+				}
+			}
+			var tooltipRect = new Rect(togglePos.x, togglePos.y, Widgets.CheckboxSize, Widgets.CheckboxSize);
+			TooltipHandler.TipRegion(tooltipRect, ignoreToggleTip);
+		}
 
 		// After writing and testing this whole thing it occurs to me that calculating the height is optional- we could just draw everything once and store curY as totalContentHeight
 		private void CalculateContentHeight(float textWidth) {

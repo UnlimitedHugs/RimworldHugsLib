@@ -26,7 +26,10 @@
 	<HugsLib_features_update>{0} v{1}</HugsLib_features_update>
 	<HugsLib_features_link>Ссылка</HugsLib_features_link>
 	<HugsLib_features_linkDesc>Открывает в браузере страницу с информацией об этом обновлении.\nСсылка: {0}</HugsLib_features_linkDesc>
-
+<HugsLib_features_ignoreTooltip>Показывать новости от этого мода и в будущем</HugsLib_features_ignoreTooltip>
+	<HugsLib_features_confirmIgnoreTitle>Подтвердить</HugsLib_features_confirmIgnoreTitle>
+	<HugsLib_features_confirmIgnore>Больше не показывать новости обновлений мода {0}?\n\nМожно повторно включить в меню Настройки модификаций &gt; Все новости обновлений</HugsLib_features_confirmIgnore>
+	
 	<HugsLib_copiedToClipboard>Скопировано в буфер обмена.</HugsLib_copiedToClipboard>
 
 	<HugsLib_logs_copy>Скопировать</HugsLib_logs_copy>
