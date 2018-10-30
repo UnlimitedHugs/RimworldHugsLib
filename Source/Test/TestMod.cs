@@ -13,6 +13,7 @@ namespace HugsLib.Test {
 	/// <summary>
 	/// This mod is for testing the various facilities of the library
 	/// </summary>
+	[EarlyInit]
 	public class TestMod : ModBase {
 		public static TestMod Instance { get; private set; }
 
@@ -30,6 +31,10 @@ namespace HugsLib.Test {
 
 		protected override bool HarmonyAutoPatch {
 			get { return false; }
+		}
+
+		public override void EarlyInitalize() {
+			Logger.Message("Early-initialized");
 		}
 
 		public override void Initialize() {

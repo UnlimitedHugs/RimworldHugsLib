@@ -100,6 +100,13 @@ namespace HugsLib {
 		}
 
 		/// <summary>
+		/// Called during <see cref="Mod"/> instantiation, 
+		/// and only if the implementing class is annotated with <see cref="EarlyInitAttribute"/>
+		/// </summary>
+		public virtual void EarlyInitalize() {
+		}
+
+		/// <summary>
 		/// Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
 		/// </summary>
 		public virtual void Initialize() {
@@ -193,6 +200,5 @@ namespace HugsLib {
 		/// </summary>
 		public virtual void DefsLoaded() {
 		}
-
 	}
 }

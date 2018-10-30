@@ -44,6 +44,13 @@
             </summary>
             <param name="targetObject">The object to serialize</param>
         </member>
+        <member name="T:HugsLib.EarlyInitAttribute">
+            <summary>
+            Used to indicate that a <see cref="T:HugsLib.ModBase"/> type should be instantiated at the earliest moment possible.
+            Specifically, when <see cref="T:Verse.Mod"/> classes are instantiated (see <see cref="T:Verse.PlayDataLoader"/>.DoPlayLoad()).
+            If <see cref="P:HugsLib.ModBase.HarmonyAutoPatch"/> is true, Harmony patching will also happen at that time.
+            </summary>
+        </member>
         <member name="T:HugsLib.Core.HugsLibMod">
             <summary>
             Entry point for the library.
@@ -233,7 +240,7 @@
         <member name="T:HugsLib.HugsLibController">
             <summary>
             The hub of the library. Instantiates classes that extend ModBase and forwards some of the more useful events to them.
-            The minor version of the assembly should reflect the current major Rimworld version, just like CCL.
+            The assembly version of the library should reflect the current major Rimworld version, i.e.: 0.18.0.0 for B18.
             This gives us the ability to release updates to the library without breaking compatibility with the mods that implement it.
             See Core.HugsLibMod for the entry point.
             </summary>
@@ -327,6 +334,12 @@
             <summary>
             Return the override version from the Version.xml file if specified, 
             or the higher one between AssemblyVersion and AssemblyFileVersion
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.EarlyInitalize">
+            <summary>
+            Called during <see cref="T:Verse.Mod"/> instantiation, 
+            and only if the implementing class is annotated with <see cref="T:HugsLib.EarlyInitAttribute"/>
             </summary>
         </member>
         <member name="M:HugsLib.ModBase.Initialize">
@@ -477,6 +490,7 @@
             <summary>
             Base type for all custom SettingHandle types.
             Allows complex data structures to be stored in setting values by converting them to and from their string representation.
+            See <see cref="T:HugsLib.Source.Settings.SettingHandleConvertibleUtility"/> for an easy way to serialize complex types to XML.
             </summary>
         </member>
         <member name="P:HugsLib.Settings.SettingHandleConvertible.ShouldBeSaved">
