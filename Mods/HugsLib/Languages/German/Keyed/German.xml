@@ -18,12 +18,17 @@
 	<HugsLib_setting_unnamed_mod>(Unbenannter Mod)</HugsLib_setting_unnamed_mod>
 	<HugsLib_setting_show_settings>Einstellungen anzeigen</HugsLib_setting_show_settings>
 	<HugsLib_setting_mod_name_title>Einstellungen für {0}</HugsLib_setting_mod_name_title>
+	<HugsLib_setting_expand_mod>Öffnen</HugsLib_setting_expand_mod>
+	<HugsLib_setting_collapse_mod>Schließen</HugsLib_setting_collapse_mod>
 
 	<HugsLib_features_title>Neue Mod-Merkmale</HugsLib_features_title>
 	<HugsLib_features_description>Die folgenden Mod-Updates wurden installiert, es gibt Neuigkeiten und Verbesserungen.  \nDu kannst dieses Fenster in den Optionen ausstellen &gt; Mod-Einstellungen</HugsLib_features_description>
 	<HugsLib_features_update>{0} v{1}</HugsLib_features_update>
 	<HugsLib_features_link>Link</HugsLib_features_link>
 	<HugsLib_features_linkDesc>Öffnet ein Browserfenster mit Neuigkeiten zu diesem update.\nAddress: {0}</HugsLib_features_linkDesc>
+	<HugsLib_features_ignoreTooltip>Benachrichtige über zukünftige Updates von diesem Mod</HugsLib_features_ignoreTooltip>
+	<HugsLib_features_confirmIgnoreTitle>Bestätige</HugsLib_features_confirmIgnoreTitle>
+	<HugsLib_features_confirmIgnore>Ignoriere zukünftige Updatenews von {0}?\n\nKann in den Mod-Optionen wieder aktiviert werden &gt; Alle Mod-Updatenews</HugsLib_features_confirmIgnore>
 
 	<HugsLib_copiedToClipboard>In Zwischenablage kopiert.</HugsLib_copiedToClipboard>
 	
