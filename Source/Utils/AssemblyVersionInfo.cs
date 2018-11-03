@@ -37,7 +37,8 @@ namespace HugsLib.Utils {
 		public static AssemblyVersionInfo ReadModAssembly(Assembly assembly, ModContentPack contentPack) {
 			if (assembly == null) throw new ArgumentNullException("assembly");
 			var fileHandle = HugsLibUtility.TryGetModAssemblyFileInfo(assembly.GetName().Name, contentPack);
-			return ReadAssembly(assembly, fileHandle.FullName);
+			var fullFilePath = fileHandle != null ? fileHandle.FullName : null;
+			return ReadAssembly(assembly, fullFilePath);
 		}
 
 		private static Version TryParseVersionString(string version) {
