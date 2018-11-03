@@ -463,20 +463,11 @@ namespace HugsLib {
 
 		private void InspectUpdateNews() {
 			foreach (var modBase in childMods) {
-				if (modBase == null) continue;
 				try {
 					var version = modBase.GetVersion();
 					UpdateFeatures.InspectActiveMod(modBase.ModIdentifier, version);
-					UpdateFeatures.InspectActiveMod(modBase.ModContentPack.Identifier, version);
 				} catch (Exception e) {
 					Logger.ReportException(e, modBase.ModIdentifier);
-				}
-			}
-			// allow non-library mods to take advantage of the update news feature (uses folder name as identifier)
-			foreach (var contentPack in LoadedModManager.RunningMods) {
-				var versionFile = VersionFile.TryParseVersionFile(contentPack);
-				if (versionFile != null && versionFile.OverrideVersion != null) {
-					UpdateFeatures.InspectActiveMod(contentPack.Identifier, versionFile.OverrideVersion);
 				}
 			}
 		}
