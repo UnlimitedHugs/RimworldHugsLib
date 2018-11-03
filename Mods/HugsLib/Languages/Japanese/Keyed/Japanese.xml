@@ -26,6 +26,9 @@
   <HugsLib_features_update>{0} v{1}</HugsLib_features_update>
   <HugsLib_features_link>詳細</HugsLib_features_link>
   <HugsLib_features_linkDesc>この更新プログラムについて詳しく知ることができるページでブラウザを開きます。\nAddress：{0}</HugsLib_features_linkDesc>
+  <HugsLib_features_ignoreTooltip>このModからの更新情報を今後も通知する</HugsLib_features_ignoreTooltip>
+  <HugsLib_features_confirmIgnoreTitle>確認</HugsLib_features_confirmIgnoreTitle>
+  <HugsLib_features_confirmIgnore>今後{0}の更新情報を無視しますか？\n\nModオプションで再度有効に切替えることが可能です&gt;すべての更新情報</HugsLib_features_confirmIgnore>
 
   <HugsLib_copiedToClipboard>クリップボードにコピーされました。</HugsLib_copiedToClipboard>
 
