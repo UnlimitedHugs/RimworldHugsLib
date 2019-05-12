@@ -62,10 +62,10 @@ namespace HugsLib.Logs {
 				mockThread.Interrupt();
 			}
 			if (Status == PublisherStatus.Shortening) {
-				Status = PublisherStatus.Done;
+				FinalizeUpload(true);
 			} else {
 				ErrorMessage = "Aborted by user";
-				Status = PublisherStatus.Error;
+				FinalizeUpload(false);
 			}
 		}
 
@@ -86,7 +86,7 @@ namespace HugsLib.Logs {
 
 			if (collatedData == null) {
 				ErrorMessage = "Failed to collect data";
-				Status = PublisherStatus.Error;
+				FinalizeUpload(false);
 				return;
 			}
 			Action<Exception> onRequestFailed = ex => {
@@ -118,8 +118,8 @@ namespace HugsLib.Logs {
 				Thread.Sleep(1500);
 				Status = PublisherStatus.Shortening;
 				Thread.Sleep(1500);
-				Status = PublisherStatus.Done;
 				ResultUrl = "copied to clipboard";
+				FinalizeUpload(true);
 			});
 			mockThread.Start();
 		}
@@ -135,9 +135,7 @@ namespace HugsLib.Logs {
 
 		private void OnRequestError(string errorMessage) {
 			ErrorMessage = errorMessage;
-			Status = PublisherStatus.Error;
-			activeRequest = null;
-			mockThread = null;
+			FinalizeUpload(false);
 		}
 
 		private void OnUploadComplete(string response) {
@@ -147,7 +145,11 @@ namespace HugsLib.Logs {
 				return;
 			}
 			ResultUrl = matchedUrl;
-			BeginUrlShortening();
+			if (HugsLibUtility.ControlIsHeld) {
+				BeginUrlShortening();
+			} else {
+				FinalizeUpload(true);
+			}
 		}
 
 		private void BeginUrlShortening() {
@@ -155,7 +157,7 @@ namespace HugsLib.Logs {
 
 			Action<Exception> onRequestFailed = ex => {
 				if (userAborted) return;
-				Status = PublisherStatus.Done;
+				FinalizeUpload(true);
 				HugsLibController.Logger.Warning("Exception during log publishing (url shortening): " + ex);
 			};
 			try {
@@ -172,7 +174,11 @@ namespace HugsLib.Logs {
 
 		private void OnUrlShorteningComplete(string shortUrl) {
 			ResultUrl = activeRequest.GetResponseHeader("Location");
-			Status = PublisherStatus.Done;
+			FinalizeUpload(true);
+		}
+
+		private void FinalizeUpload(bool success) {
+			Status = success ? PublisherStatus.Done : PublisherStatus.Error;
 			activeRequest = null;
 			mockThread = null;
 		}
