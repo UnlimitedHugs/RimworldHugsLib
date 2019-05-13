@@ -23,6 +23,7 @@ namespace HugsLib.Logs {
 		private const string ShortenerUrl = "https://git.io/";
 		private const string GistPayloadJson = "{{\"description\":\"{0}\",\"public\":true,\"files\":{{\"{1}\":{{\"content\":\"{2}\"}}}}}}";
 		private const string GistDescription = "Rimworld output log published using HugsLib";
+		private const int MaxLogLineCount = 10;
 		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
 		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
 
@@ -204,6 +205,7 @@ namespace HugsLib.Logs {
 				logSection = RedactHomeDirectoryPaths(logSection);
 				logSection = RedactSteamId(logSection);
 				logSection = RedactUselessLines(logSection);
+				logSection = TrimExcessLines(logSection);
 				var collatedData = String.Concat(MakeLogTimestamp(), 
 					ListActiveMods(), "\n", 
 					ListHarmonyPatches(), "\n", 
@@ -219,6 +221,24 @@ namespace HugsLib.Logs {
 
 		private string NormalizeLineEndings(string logSection) {
 			return logSection.Replace("\r\n", "\n");
+		}
+
+		private string TrimExcessLines(string logSection) {
+			var indexOfLastNewline = IndexOfOccurence(logSection, '\n', MaxLogLineCount);
+			if (indexOfLastNewline >= 0) {
+				logSection = $"{logSection.Substring(0, indexOfLastNewline + 1)}(log trimmed to {MaxLogLineCount:N0} lines)";
+			}
+			return logSection;
+		}
+		
+		private int IndexOfOccurence(string s, char match, int occurence) {
+			int currentOccurence = 1;
+			int curentIndex = 0;
+			while (currentOccurence <= occurence && (curentIndex = s.IndexOf(match, curentIndex + 1)) != -1) {
+				if (currentOccurence == occurence) return curentIndex;
+				currentOccurence++;
+			}
+			return -1;
 		}
 
 		private string RedactUselessLines(string logSection) {
