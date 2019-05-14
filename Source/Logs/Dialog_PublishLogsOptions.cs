@@ -15,7 +15,7 @@ namespace HugsLib.Logs {
 
 		public override Vector2 InitialSize {
 			get {
-				return new Vector2(500f, 320f);
+				return new Vector2(550f, 320f);
 			}
 		}
 
