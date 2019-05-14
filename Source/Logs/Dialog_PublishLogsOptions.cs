@@ -4,6 +4,8 @@ using Verse;
 
 namespace HugsLib.Logs {
 	public class Dialog_PublishLogsOptions : Window {
+		private const float ToggleVerticalSpacing = 4f;
+
 		public Action OnUpload { get; set; }
 		public Action OnCopy { get; set; }
 		public Action OnOptionsToggled { get; set; }
@@ -98,6 +100,7 @@ namespace HugsLib.Logs {
 		private bool AddOptionCheckbox(Listing_Standard listing, string labelKey, string tooltipKey, bool value, out bool changed, float indent = 0f) {
 			bool valueAfter = value;
 			var checkRect = listing.GetRect(Text.LineHeight).LeftHalf();
+			listing.Gap(ToggleVerticalSpacing);
 			checkRect.x += indent;
 			if (tooltipKey != null && Mouse.IsOver(checkRect)) {
 				Widgets.DrawHighlight(checkRect);
@@ -110,7 +113,7 @@ namespace HugsLib.Logs {
 
 		private void UpdateWindowSize() {
 			const int numHiddenOptions = 3;
-			float extraWindowHeight = options.UseCustomOptions ? Text.LineHeight * numHiddenOptions : 0;
+			float extraWindowHeight = options.UseCustomOptions ? (Text.LineHeight + ToggleVerticalSpacing) * numHiddenOptions : 0;
 			windowRect = new Rect(windowRect.x, windowRect.y, InitialSize.x, InitialSize.y + extraWindowHeight);
 		}
 	}
