@@ -112,6 +112,43 @@
             VersionShort is no longer used by HugsLib internally, and the type is retained for backwards compatibility.
             </summary>
         </member>
+        <member name="T:HugsLib.Logs.Dialog_PublishLogs">
+            <summary>
+            The front-end for LogPublisher.
+            Shows the status of the upload operation, provides controls and shows the produced URL.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogPublisher">
+            <summary>
+            Collects the game logs and loaded mods and posts the information on GitHub as a gist.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogWindowExtensions">
+            <summary>
+            Allows adding custom buttons to the EditWindow_Log window.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetAlignMode">
+            <summary>
+            Alignment side for custom widgets.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetDrawer">
+            <summary>
+            Callback to draw log window widgets in.
+            </summary>
+            <param name="logWindow">The log window being dawn.</param>
+            <param name="widgetArea">Window area for custom widgets.</param>
+            <param name="selectedLogMessage">The currently selected log message, or null.</param>
+            <param name="widgetRow">Draw your widget using this to automatically align it with the others.</param>
+        </member>
+        <member name="M:HugsLib.Logs.LogWindowExtensions.AddLogWindowWidget(HugsLib.Logs.LogWindowExtensions.WidgetDrawer,HugsLib.Logs.LogWindowExtensions.WidgetAlignMode)">
+            <summary>
+            Adds a new drawing callback to the log window widget drawer.
+            </summary>
+            <param name="drawerDelegate">The delegate called each OnGUI to draw the widget.</param>
+            <param name="align">The side of the WidgetRow this widget should be drawn into.</param>
+        </member>
         <member name="T:HugsLib.Patches.DebugWindowsOpener_Patch">
             <summary>
             Adds an entry point to draw and additional debug button on the toolbar.
@@ -244,43 +281,6 @@
             This gives us the ability to release updates to the library without breaking compatibility with the mods that implement it.
             See Core.HugsLibMod for the entry point.
             </summary>
-        </member>
-        <member name="T:HugsLib.Logs.Dialog_PublishLogs">
-            <summary>
-            The front-end for LogPublisher.
-            Shows the status of the upload operation, provides controls and shows the produced URL.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogPublisher">
-            <summary>
-            Collects the game logs and loaded mods and posts the information on GitHub as a gist.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogWindowExtensions">
-            <summary>
-            Allows adding custom buttons to the EditWindow_Log window.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetAlignMode">
-            <summary>
-            Alignment side for custom widgets.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetDrawer">
-            <summary>
-            Callback to draw log window widgets in.
-            </summary>
-            <param name="logWindow">The log window being dawn.</param>
-            <param name="widgetArea">Window area for custom widgets.</param>
-            <param name="selectedLogMessage">The currently selected log message, or null.</param>
-            <param name="widgetRow">Draw your widget using this to automatically align it with the others.</param>
-        </member>
-        <member name="M:HugsLib.Logs.LogWindowExtensions.AddLogWindowWidget(HugsLib.Logs.LogWindowExtensions.WidgetDrawer,HugsLib.Logs.LogWindowExtensions.WidgetAlignMode)">
-            <summary>
-            Adds a new drawing callback to the log window widget drawer.
-            </summary>
-            <param name="drawerDelegate">The delegate called each OnGUI to draw the widget.</param>
-            <param name="align">The side of the WidgetRow this widget should be drawn into.</param>
         </member>
         <member name="T:HugsLib.ModBase">
             <summary>

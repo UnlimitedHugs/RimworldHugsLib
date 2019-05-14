@@ -519,6 +519,7 @@ namespace HugsLib {
 				pack.AlwaysExpandEntry = true;
 				UpdateFeatures.RegisterSettings(pack);
 				QuickstartController.RegisterSettings(pack);
+				LogPublisher.RegisterSettings(pack);
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}

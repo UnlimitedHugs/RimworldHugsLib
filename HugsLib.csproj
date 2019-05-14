@@ -68,6 +68,8 @@
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
+    <Compile Include="Source\Logs\Dialog_PublishLogsOptions.cs" />
+    <Compile Include="Source\Logs\LogPublisherOptions.cs" />
     <Compile Include="Source\Patches\DebugWindowsOpener_Patch.cs" />
     <Compile Include="Source\Patches\Game_FillComponents_Patch.cs" />
     <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />

@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using HugsLib.Core;
+using HugsLib.Settings;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -23,7 +24,7 @@ namespace HugsLib.Logs {
 		private const string ShortenerUrl = "https://git.io/";
 		private const string GistPayloadJson = "{{\"description\":\"{0}\",\"public\":true,\"files\":{{\"{1}\":{{\"content\":\"{2}\"}}}}}}";
 		private const string GistDescription = "Rimworld output log published using HugsLib";
-		private const int MaxLogLineCount = 10;
+		private const int MaxLogLineCount = 10000;
 		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
 		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
 
@@ -38,22 +39,36 @@ namespace HugsLib.Logs {
 		public PublisherStatus Status { get; private set; }
 		public string ErrorMessage { get; private set; }
 		public string ResultUrl { get; private set; }
+		private static SettingHandle<LogPublisherOptions> optionsHandle;
+		private LogPublisherOptions publishOptions;
 		private bool userAborted;
-		private bool extendedLogScheduled;
 		private UnityWebRequest activeRequest;
 		private Thread mockThread;
 
 		public void ShowPublishPrompt() {
 			if (PublisherIsReady()) {
-				if (HugsLibUtility.ShiftIsHeld) extendedLogScheduled = true;
-				Find.WindowStack.Add(new Dialog_Confirm("HugsLib_logs_shareConfirmMessage".Translate(), OnPublishConfirmed, false, "HugsLib_logs_shareConfirmTitle".Translate()));
+				UpdateCustomOptionsUsage();
+				Find.WindowStack.Add(new Dialog_PublishLogsOptions(
+					"HugsLib_logs_shareConfirmTitle".Translate(),
+					"HugsLib_logs_shareConfirmMessage".Translate(),
+					optionsHandle.Value
+				) {
+					OnUpload = OnPublishConfirmed,
+					OnCopy = CopyToClipboard,
+					OnOptionsToggled = UpdateCustomOptionsUsage,
+					OnPostClose = () => HugsLibController.Instance.Settings.SaveChanges()
+				});
 			} else {
 				ShowPublishDialog();
 			}
 		}
 
+		private void UpdateCustomOptionsUsage() {
+			publishOptions = optionsHandle.Value.UseCustomOptions ? optionsHandle.Value : new LogPublisherOptions();
+		}
+
 		public void AbortUpload() {
-			if(Status != PublisherStatus.Uploading && Status != PublisherStatus.Shortening) return;
+			if (Status != PublisherStatus.Uploading && Status != PublisherStatus.Shortening) return;
 			userAborted = true;
 			if (activeRequest != null && !activeRequest.isDone) {
 				activeRequest.Abort();
@@ -71,7 +86,7 @@ namespace HugsLib.Logs {
 		}
 
 		public void BeginUpload() {
-			if(!PublisherIsReady()) return;
+			if (!PublisherIsReady()) return;
 			Status = PublisherStatus.Uploading;
 			ErrorMessage = null;
 			userAborted = false;
@@ -110,6 +125,7 @@ namespace HugsLib.Logs {
 		}
 
 		public void CopyToClipboard() {
+			UpdateCustomOptionsUsage();
 			HugsLibUtility.CopyToClipboard(PrepareLogData());
 		}
 
@@ -146,7 +162,7 @@ namespace HugsLib.Logs {
 				return;
 			}
 			ResultUrl = matchedUrl;
-			if (HugsLibUtility.ControlIsHeld) {
+			if (publishOptions.UseUrlShortener) {
 				BeginUrlShortening();
 			} else {
 				FinalizeUpload(true);
@@ -165,7 +181,7 @@ namespace HugsLib.Logs {
 				var formData = new Dictionary<string, string> {
 					{"url", ResultUrl}
 				};
-				activeRequest = UnityWebRequest.Post(ShortenerUrl,  formData);
+				activeRequest = UnityWebRequest.Post(ShortenerUrl, formData);
 				activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
 				HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUrlShorteningComplete, onRequestFailed, HttpStatusCode.Created);
 			} catch (Exception e) {
@@ -206,12 +222,11 @@ namespace HugsLib.Logs {
 				logSection = RedactSteamId(logSection);
 				logSection = RedactUselessLines(logSection);
 				logSection = TrimExcessLines(logSection);
-				var collatedData = String.Concat(MakeLogTimestamp(), 
-					ListActiveMods(), "\n", 
-					ListHarmonyPatches(), "\n", 
-					ListPlatformInfo(), "\n", 
+				var collatedData = string.Concat(MakeLogTimestamp(),
+					ListActiveMods(), "\n",
+					ListHarmonyPatches(), "\n",
+					ListPlatformInfo(), "\n",
 					logSection);
-				extendedLogScheduled = false;
 				return collatedData;
 			} catch (Exception e) {
 				HugsLibController.Logger.ReportException(e);
@@ -219,18 +234,19 @@ namespace HugsLib.Logs {
 			return null;
 		}
 
-		private string NormalizeLineEndings(string logSection) {
-			return logSection.Replace("\r\n", "\n");
+		private string NormalizeLineEndings(string log) {
+			return log.Replace("\r\n", "\n");
 		}
 
-		private string TrimExcessLines(string logSection) {
-			var indexOfLastNewline = IndexOfOccurence(logSection, '\n', MaxLogLineCount);
+		private string TrimExcessLines(string log) {
+			if (publishOptions.AllowUnlimitedLogSize) return log;
+			var indexOfLastNewline = IndexOfOccurence(log, '\n', MaxLogLineCount);
 			if (indexOfLastNewline >= 0) {
-				logSection = $"{logSection.Substring(0, indexOfLastNewline + 1)}(log trimmed to {MaxLogLineCount:N0} lines)";
+				log = $"{log.Substring(0, indexOfLastNewline + 1)}(log trimmed to {MaxLogLineCount:N0} lines. Use publishing options to upload the full log)";
 			}
-			return logSection;
+			return log;
 		}
-		
+
 		private int IndexOfOccurence(string s, char match, int occurence) {
 			int currentOccurence = 1;
 			int curentIndex = 0;
@@ -241,18 +257,18 @@ namespace HugsLib.Logs {
 			return -1;
 		}
 
-		private string RedactUselessLines(string logSection) {
-			logSection = Regex.Replace(logSection, "Non platform assembly:.+\n", "");
-			logSection = Regex.Replace(logSection, "Platform assembly: .+\n", "");
-			logSection = Regex.Replace(logSection, "Fallback handler could not load library.+\n", "");
-			logSection = Regex.Replace(logSection, "- Completed reload, in [\\d\\. ]+ seconds\n", "");
-			logSection = Regex.Replace(logSection, "UnloadTime: [\\d\\. ]+ ms\n", "");
-			logSection = Regex.Replace(logSection, "<RI> Initializing input\\.\r\n", "");
-			logSection = Regex.Replace(logSection, "<RI> Input initialized\\.\r\n", "");
-			logSection = Regex.Replace(logSection, "<RI> Initialized touch support\\.\r\n", "");
-			logSection = Regex.Replace(logSection, "\\(Filename: C:/buildslave.+\n", "");
-			logSection = Regex.Replace(logSection, "\n \n", "\n");
-			return logSection;
+		private string RedactUselessLines(string log) {
+			log = Regex.Replace(log, "Non platform assembly:.+\n", "");
+			log = Regex.Replace(log, "Platform assembly: .+\n", "");
+			log = Regex.Replace(log, "Fallback handler could not load library.+\n", "");
+			log = Regex.Replace(log, "- Completed reload, in [\\d\\. ]+ seconds\n", "");
+			log = Regex.Replace(log, "UnloadTime: [\\d\\. ]+ ms\n", "");
+			log = Regex.Replace(log, "<RI> Initializing input\\.\r\n", "");
+			log = Regex.Replace(log, "<RI> Input initialized\\.\r\n", "");
+			log = Regex.Replace(log, "<RI> Initialized touch support\\.\r\n", "");
+			log = Regex.Replace(log, "\\(Filename: C:/buildslave.+\n", "");
+			log = Regex.Replace(log, "\n \n", "\n");
+			return log;
 		}
 
 		// only relevant on linux
@@ -260,7 +276,7 @@ namespace HugsLib.Logs {
 			const string IdReplacement = "[Steam Id redacted]";
 			return Regex.Replace(log, "Steam_SetMinidumpSteamID.+", IdReplacement);
 		}
-		
+
 		private string RedactHomeDirectoryPaths(string log) {
 			// not necessary for windows logs
 			if (PlatformUtility.GetCurrentPlatform() == PlatformType.Windows) {
@@ -279,7 +295,7 @@ namespace HugsLib.Logs {
 			// easiest way to get the game folder is one level up from dataPath
 			var appPath = Path.GetFullPath(Application.dataPath);
 			var pathParts = appPath.Split(Path.DirectorySeparatorChar).ToList();
-			pathParts.RemoveAt(pathParts.Count-1);
+			pathParts.RemoveAt(pathParts.Count - 1);
 			appPath = pathParts.Join(Path.DirectorySeparatorChar.ToString());
 			log = log.Replace(appPath, pathReplacement);
 			if (Path.DirectorySeparatorChar != '/') {
@@ -291,6 +307,7 @@ namespace HugsLib.Logs {
 		}
 
 		private string RedactRendererInformation(string log) {
+			if (publishOptions.IncludePlatformInfo) return log;
 			// apparently renderer information can appear multiple times in the log
 			for (int i = 0; i < 5; i++) {
 				var redacted = RedactString(log, "GfxDevice: ", "\nBegin MonoManager", "[Renderer information redacted]");
@@ -307,7 +324,7 @@ namespace HugsLib.Logs {
 		private string GetLogFileContents() {
 			var filePath = HugsLibUtility.TryGetLogFilePath();
 			if (filePath.NullOrEmpty() || !File.Exists(filePath)) {
-				throw new FileNotFoundException("Log file not found:"+filePath);
+				throw new FileNotFoundException("Log file not found:" + filePath);
 			}
 			var tempPath = Path.GetTempFileName();
 			File.Delete(tempPath);
@@ -319,7 +336,7 @@ namespace HugsLib.Logs {
 		}
 
 		private string MakeLogTimestamp() {
-			return String.Concat("Log uploaded on ", DateTime.Now.ToLongDateString(), ", ", DateTime.Now.ToLongTimeString(), "\n");
+			return string.Concat("Log uploaded on ", DateTime.Now.ToLongDateString(), ", ", DateTime.Now.ToLongTimeString(), "\n");
 		}
 
 		private string RedactString(string original, string redactStart, string redactEnd, string replacement) {
@@ -339,25 +356,25 @@ namespace HugsLib.Logs {
 			var harmonyInstance = HugsLibController.Instance.HarmonyInst;
 			var patchListing = HarmonyUtility.DescribePatchedMethods(harmonyInstance);
 
-			return String.Concat("Active Harmony patches:\n", 
-				patchListing, 
-				patchListing.EndsWith("\n")?"":"\n",
+			return string.Concat("Active Harmony patches:\n",
+				patchListing,
+				patchListing.EndsWith("\n") ? "" : "\n",
 				HarmonyUtility.DescribeHarmonyVersions(harmonyInstance), "\n");
 		}
 
 		private string ListPlatformInfo() {
 			const string sectionTitle = "Platform information: ";
-			if (extendedLogScheduled || HugsLibUtility.ShiftIsHeld) {
-				return String.Concat(sectionTitle, "\nCPU: ",
-				SystemInfo.processorType,
-				"\nOS: ",
-				SystemInfo.operatingSystem,
-				"\nMemory: ",
-				SystemInfo.systemMemorySize,
-				" MB",
-				"\n");
+			if (publishOptions.IncludePlatformInfo) {
+				return string.Concat(sectionTitle, "\nCPU: ",
+					SystemInfo.processorType,
+					"\nOS: ",
+					SystemInfo.operatingSystem,
+					"\nMemory: ",
+					SystemInfo.systemMemorySize,
+					" MB",
+					"\n");
 			} else {
-				return sectionTitle + "(hidden, hold Shift while publishing to include)\n";
+				return sectionTitle + "(hidden, use publishing options to include)\n";
 			}
 		}
 
@@ -393,7 +410,7 @@ namespace HugsLib.Logs {
 
 		// sanitizes a string for valid inclusion in JSON
 		private static string CleanForJSON(string s) {
-			if (String.IsNullOrEmpty(s)) {
+			if (string.IsNullOrEmpty(s)) {
 				return "";
 			}
 			int i;
@@ -437,6 +454,12 @@ namespace HugsLib.Logs {
 				}
 			}
 			return sb.ToString();
+		}
+
+		internal static void RegisterSettings(ModSettingsPack pack) {
+			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", null, null);
+			if (optionsHandle.Value == null) optionsHandle.Value = new LogPublisherOptions();
+			optionsHandle.VisibilityPredicate = () => false; // invisible, but can be reset by "Reset all settings"
 		}
 	}
 }
