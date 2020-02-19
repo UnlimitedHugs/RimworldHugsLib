@@ -15,7 +15,7 @@ namespace HugsLib.News {
 	/// </summary>
 	public class UpdateFeatureManager : PersistentDataManager
     {
-        private const string UpdateFeatureDefFolder = "/News";
+        private const string UpdateFeatureDefFolder = "News/";
 
         protected override string FileName {
 			get { return "LastSeenNews.xml"; }
@@ -49,6 +49,7 @@ namespace HugsLib.News {
 				var existingFreshVersion = freshVersions.TryGetValue(identifier);
 				freshVersions[identifier] = existingFreshVersion == null || currentVersion > existingFreshVersion ? 
 					currentVersion : existingFreshVersion;
+                HugsLibController.Logger.Trace( $"New version {currentVersion} of {identifier} detected.");
                 relevantMods.Add( pack );
             }
 		}
@@ -103,7 +104,10 @@ namespace HugsLib.News {
             var newsAssets = new List<LoadableXmlAsset>();
             foreach ( var mod in relevantMods )
                 // this also handles versioned folder shenanigans.
-                newsAssets.AddRange(DirectXmlLoader.XmlAssetsInModFolder( mod, UpdateFeatureDefFolder ) ); 
+                newsAssets.AddRange( DirectXmlLoader.XmlAssetsInModFolder( mod, UpdateFeatureDefFolder ) );
+
+            foreach ( var asset in newsAssets )
+                HugsLibController.Logger.Trace($"News asset found at {asset.FullFilePath} in mod {asset.mod}");
 
             // create a single doc
             var news = LoadedModManager.CombineIntoUnifiedXML( newsAssets, new Dictionary<XmlNode, LoadableXmlAsset>() );
@@ -131,6 +135,11 @@ namespace HugsLib.News {
             // resolve them references
             foreach ( var updateFeatureDef in _updateFeatureDefs )
                 updateFeatureDef.ResolveReferences();
+
+#if DEBUG
+            foreach ( var updateFeatureDef in _updateFeatureDefs )
+                HugsLibController.Logger.Message( $"Feature def {updateFeatureDef.defName} loaded, version {updateFeatureDef.Version}");
+#endif
         }
 
 		public void ClearSavedData() {
