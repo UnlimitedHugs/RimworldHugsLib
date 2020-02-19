@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using Harmony;
+using HarmonyLib;
 using HugsLib.Settings;
 using RimWorld;
 using UnityEngine;
@@ -19,15 +19,16 @@ namespace HugsLib.Patches {
 		private delegate bool ModSettingsButtonReplacementMethod(Listing_Standard _this, string label, string highlightTag);
 
 		private const string ButtonLabelToKill = "ModSettings";
-		private static readonly MethodInfo ExpectedButtonMethod = Traverse.Create<Listing_Standard>().Method("ButtonText", new[] {typeof(Listing_Standard), typeof (string), typeof (string)}).GetValue<MethodInfo>();
+		//private static readonly MethodInfo ExpectedButtonMethod = Traverse.Create<Listing_Standard>().Method("ButtonText", new[] {typeof(Listing_Standard), typeof (string), typeof (string)}).GetValue<MethodInfo>();
 
 		private static bool patched;
 
 		[HarmonyPrepare]
-		public static void Prepare() {
+		public static bool Prepare() {
 			LongEventHandler.ExecuteWhenFinished(() => {
 				if (!patched) HugsLibController.Logger.Error("Dialog_Options_Patch could not be applied.");
 			});
+			return true;
 		}
 
 		[HarmonyTranspiler]

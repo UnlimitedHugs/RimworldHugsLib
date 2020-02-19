@@ -1,5 +1,5 @@
 ﻿using System;
-using Harmony;
+using HarmonyLib;
 using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
@@ -36,7 +36,7 @@ namespace HugsLib {
 		/// <summary>
 		/// The reference to HarmonyInstance that applied the patches in your assembly.
 		/// </summary>
-		protected HarmonyInstance HarmonyInst { get; set; }
+		protected Harmony HarmonyInst { get; set; }
 
 		/// <summary>
 		/// A unique identifier for your mod.
@@ -80,7 +80,7 @@ namespace HugsLib {
 				var harmonyId = HarmonyInstancePrefix + ModIdentifier;
 				try {
 					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, ModIdentifier)) {
-						HarmonyInst = HarmonyInstance.Create(harmonyId);
+						HarmonyInst = new Harmony(harmonyId);
 						HarmonyInst.PatchAll(GetType().Assembly);
 					}
 				} catch (Exception e) {
