@@ -258,7 +258,7 @@ namespace HugsLib.Utils {
 		/// <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
 		/// <param name="timeout">How long to wait before aborting the request</param>
 		public static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
-			request.Send();
+			request.SendWebRequest();
 			var timeoutTime = Time.unscaledTime + timeout;
 			Action pollingAction = null;
 			pollingAction = () => {

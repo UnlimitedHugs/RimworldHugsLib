@@ -18,3 +18,4 @@ Version.h
 Version.cpp
 *.sln
 *.tmp
+/.vs
