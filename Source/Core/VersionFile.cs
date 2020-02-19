@@ -12,7 +12,7 @@ namespace HugsLib.Core {
 		public const string VersionFileDir = "About";
 		public const string VersionFileName = "Version.xml";
 
-		public static VersionFile TryParseVersionFile(ModContentPack pack) {
+		public static VersionFile TryParse(ModContentPack pack) {
 			var filePath = Path.Combine(pack.RootDir, Path.Combine(VersionFileDir, VersionFileName));
 			if (!File.Exists(filePath)) return null;
 			try {

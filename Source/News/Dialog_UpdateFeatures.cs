@@ -147,6 +147,7 @@ namespace HugsLib.News {
 		}
 
 		// After writing and testing this whole thing it occurs to me that calculating the height is optional- we could just draw everything once and store curY as totalContentHeight
+        // yes. Yes you could.
 		private void CalculateContentHeight(float textWidth) {
 			var labelStyle = GetLabelStyle();
 			totalContentHeight = 0;

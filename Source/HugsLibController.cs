@@ -93,7 +93,7 @@ namespace HugsLib {
 			var ownContentPack = LoadedModManager.RunningMods
 				.FirstOrDefault(p => p.assemblies != null && p.assemblies.loadedAssemblies.Contains(ownAssembly));
 			if (ownContentPack != null) {
-				libraryVersionFile = VersionFile.TryParseVersionFile(ownContentPack);
+				libraryVersionFile = VersionFile.TryParse(ownContentPack);
 				libraryVersionInfo = AssemblyVersionInfo.ReadModAssembly(ownAssembly, ownContentPack);
 			} else {
 				Logger.Error("Failed to identify own ModContentPack");
@@ -438,7 +438,7 @@ namespace HugsLib {
 				var pack = pair.Second;
 				var hasEarlyInit = subclass.HasAttribute<EarlyInitAttribute>();
 				if (hasEarlyInit != earlyInitMode) continue;
-				if (childMods.Find(cm => cm.GetType() == subclass) != null) continue; // skip duplicate types present in multiple assemblies
+				if (childMods.Any(cm => cm.GetType() == subclass)) continue; // skip duplicate types present in multiple assemblies
 				ModBase modbase;
 				try {
 					modbase = (ModBase)Activator.CreateInstance(subclass, true);
@@ -462,14 +462,27 @@ namespace HugsLib {
 		}
 
 		private void InspectUpdateNews() {
+            // try to get news from modBases first
 			foreach (var modBase in childMods) {
 				try {
-					var version = modBase.GetVersion();
-					UpdateFeatures.InspectActiveMod(modBase.ModIdentifier, version);
+					UpdateFeatures.InspectActiveMod( modBase );
 				} catch (Exception e) {
 					Logger.ReportException(e, modBase.ModIdentifier);
 				}
 			}
+
+            // then try any mods other mods, skipping those already covered with modbases
+            foreach ( var pack in LoadedModManager.RunningMods.Except( childMods.Select( m => m.ModContentPack ) ) )
+            {
+                try
+                {
+                    UpdateFeatures.InspectActiveMod( pack );
+                }
+                catch ( Exception e )
+                {
+                    Logger.ReportException( e, pack.PackageId );
+                }
+            }
 		}
 		
 		private void EnumerateModAssemblies() {

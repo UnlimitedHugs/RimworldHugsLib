@@ -42,39 +42,39 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.0.3, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\0Harmony.dll</HintPath>
+      <HintPath>packages\Lib.Harmony.2.0.0.3\lib\net472\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\managed\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>..\managed\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\managed\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
-      <HintPath>..\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <HintPath>..\managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -143,6 +143,8 @@
     <Compile Include="Source\Test\VanillaMod.cs" />
     <Compile Include="Source\Utils\AssemblyVersionInfo.cs" />
     <Compile Include="Source\Utils\DoLaterScheduler.cs" />
+    <Compile Include="Source\Utils\ManifestFile.cs" />
+    <Compile Include="Source\Utils\ModContentPackUtility.cs" />
     <Compile Include="Source\Utils\TickDelayScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\Dialog_Message.cs" />
@@ -157,9 +159,12 @@
     <Compile Include="Source\Utils\UtilityWorldObject.cs" />
     <Compile Include="Source\Utils\UtilityWorldObjectManager.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>RimWorldWin64.exe</PostBuildEvent>
+    <PostBuildEvent>REM RimWorldWin64.exe</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
