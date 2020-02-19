@@ -17,11 +17,10 @@ namespace HugsLib.Patches {
 		private static bool patched;
 
 		[HarmonyPrepare]
-		public static bool Prepare() {
+		public static void Prepare() {
 			LongEventHandler.ExecuteWhenFinished(() => {
 				if (!patched) HugsLibController.Logger.Warning("DebugWindowsOpener_Patch could not be applied.");
 			});
-			return true;
 		}
 
 		[HarmonyTranspiler]
@@ -51,11 +50,10 @@ namespace HugsLib.Patches {
 		private static bool patched;
 
 		[HarmonyPrepare]
-		public static bool Prepare() {
+		public static void Prepare() {
 			LongEventHandler.ExecuteWhenFinished(() => {
 				if (!patched) HugsLibController.Logger.Error("DevToolStarterOnGUI_Patch could not be applied.");
 			});
-			return true;
 		}
 
 		[HarmonyTranspiler]

@@ -222,13 +222,6 @@
              <param name="patch">The patch method</param>
             
         </member>
-        <member name="M:HarmonyLib.PatchFunctions.GetInstructions(System.Reflection.Emit.ILGenerator,System.Reflection.MethodBase)">
-             <summary>Gets all instructions from a method</summary>
-             <param name="generator">The generator (for defining labels)</param>
-             <param name="method">The original method</param>
-             <returns>The instructions</returns>
-            
-        </member>
         <member name="M:HarmonyLib.PatchFunctions.GetSortedPatchMethods(System.Reflection.MethodBase,HarmonyLib.Patch[],System.Boolean)">
              <summary>Gets sorted patch methods</summary>
              <param name="original">The original method</param>
@@ -1392,6 +1385,12 @@
             <param name="original">The original method/constructor</param>
             <param name="generator">A new generator that now contains all local variables and labels contained in the result</param>
             <returns>A list containing all the original <see cref="T:HarmonyLib.CodeInstruction"/></returns>
+            
+        </member>
+        <member name="M:HarmonyLib.PatchProcessor.ReadMethodBody(System.Reflection.MethodBase)">
+             <summary>A low level way to read the body of a method. Used for quick searching in methods</summary>
+             <param name="method">The original method</param>
+             <returns>All instructions as opcode/operand pairs</returns>
             
         </member>
         <member name="T:HarmonyLib.Priority">
