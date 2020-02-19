@@ -39,7 +39,7 @@ namespace HugsLib.Utils
                 return AssemblyVersionInfo.ReadModAssembly( pack.assemblies.loadedAssemblies.Last(), pack ).HighestVersion;
 
             // fail.
-            return new Version( int.MinValue, int.MinValue );
+            return new Version( 0, 0 );
         }
     }
 }
