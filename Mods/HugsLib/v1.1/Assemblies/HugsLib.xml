@@ -301,12 +301,12 @@
         </member>
         <member name="P:HugsLib.ModBase.HarmonyAutoPatch">
             <summary>
-            Override this and return false to prevent a HarmonyInstance from being automatically created and scanning your assembly for patches.
+            Override this and return false to prevent a Harmony instance from being automatically created and scanning your assembly for patches.
             </summary>
         </member>
         <member name="P:HugsLib.ModBase.HarmonyInst">
             <summary>
-            The reference to HarmonyInstance that applied the patches in your assembly.
+            The reference to Harmony instance that applied the patches in your assembly.
             </summary>
         </member>
         <member name="P:HugsLib.ModBase.ModIdentifier">

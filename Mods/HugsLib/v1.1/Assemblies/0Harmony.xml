@@ -720,7 +720,7 @@
             
         </member>
         <member name="F:HarmonyLib.Harmony.DEBUG">
-            <summary>Set to true before instantiating Harmony to debug Harmony</summary>
+            <summary>Set to true before instantiating Harmony to debug Harmony or use an environment variable to set HARMONY_DEBUG to '1' like this: cmd /C "set HARMONY_DEBUG=1 &amp;&amp; game.exe"</summary>
             <remarks>This is for full debugging. To debug only specific patches, use the <see cref="T:HarmonyLib.HarmonyDebug"/> attribute</remarks>
             
         </member>

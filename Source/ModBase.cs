@@ -27,14 +27,14 @@ namespace HugsLib {
 		protected ModSettingsPack Settings { get; private set; }
 
 		/// <summary>
-		/// Override this and return false to prevent a HarmonyInstance from being automatically created and scanning your assembly for patches.
+		/// Override this and return false to prevent a Harmony instance from being automatically created and scanning your assembly for patches.
 		/// </summary>
 		protected virtual bool HarmonyAutoPatch {
 			get { return true; }
 		}
 		
 		/// <summary>
-		/// The reference to HarmonyInstance that applied the patches in your assembly.
+		/// The reference to Harmony instance that applied the patches in your assembly.
 		/// </summary>
 		protected Harmony HarmonyInst { get; set; }
 
