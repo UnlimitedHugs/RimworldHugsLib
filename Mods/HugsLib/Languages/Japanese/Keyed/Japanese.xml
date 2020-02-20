@@ -44,6 +44,15 @@
   <HugsLib_logs_abortBtn>中止</HugsLib_logs_abortBtn>
   <HugsLib_logs_retryBtn>リトライ</HugsLib_logs_retryBtn>
   <HugsLib_logs_browseBtn>ブラウザで開く</HugsLib_logs_browseBtn>
+  <HugsLib_logs_useRecommendedSettings>推奨設定を使用</HugsLib_logs_useRecommendedSettings>
+  <HugsLib_logs_shortUrls>URL短縮サービスを利用</HugsLib_logs_shortUrls>
+  <HugsLib_logs_shortUrls_tip>アップロードする際に短縮URLを作成します。Steamでは短縮URLは自動的に削除されるのでURLを張る用には推奨できません。</HugsLib_logs_shortUrls_tip>
+  <HugsLib_logs_platformInfo>ハード環境情報を含む</HugsLib_logs_platformInfo>
+  <HugsLib_logs_platformInfo_tip>CPUやメモリ、ビデオカードに関する情報をログに記録します。</HugsLib_logs_platformInfo_tip>
+  <HugsLib_logs_unlimitedLogSize>無制限なログサイズを許可</HugsLib_logs_unlimitedLogSize>
+  <HugsLib_logs_unlimitedLogSize_tip>長くなりすぎたログによって問題が発生しないように、無効にするとログファイルの最大サイズは1万行までに制限されます。</HugsLib_logs_unlimitedLogSize_tip>
+  <HugsLib_logs_toClipboardBtn>クリップボードにコピー</HugsLib_logs_toClipboardBtn>
+  <HugsLib_logs_uploadBtn>アップロード</HugsLib_logs_uploadBtn>
 
   <HugsLib_logs_filesBtn>ファイル</HugsLib_logs_filesBtn>
   <HugsLib_logs_openLogFile>ログファイルを開く</HugsLib_logs_openLogFile>

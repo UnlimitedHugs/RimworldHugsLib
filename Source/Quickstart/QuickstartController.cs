@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Harmony;
+using HarmonyLib;
 using HugsLib.Settings;
 using HugsLib.Utils;
 using RimWorld;

@@ -243,11 +243,7 @@ namespace HugsLib.Utils {
 				case PlatformType.MacOSX:
 					return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Logs/Unity/Player.log");
 				case PlatformType.Windows:
-					logfile = Path.Combine(UnityData.dataPath, "output_log.txt");
-					if (File.Exists(logfile)) {
-						return logfile;
-					}
-					return Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%") + String.Format(@"Low\{0}\{1}\output_log.txt", Application.companyName, Application.productName);
+					return Path.Combine(Application.persistentDataPath, "Player.log");
 				default:
 					return null;
 			}
@@ -277,7 +273,7 @@ namespace HugsLib.Utils {
 							}
 							throw new Exception("timed out");
 						}
-						if (request.isError) {
+						if (request.isNetworkError || request.isHttpError) {
 							throw new Exception(request.error);
 						}
 						var status = (HttpStatusCode)request.responseCode;
@@ -308,7 +304,7 @@ namespace HugsLib.Utils {
 		public static FileInfo GetModAssemblyFileInfo(string assemblyName, ModContentPack contentPack) {
 			const string AssembliesFolderName = "Assemblies", AssemblyFileExtension = ".dll";
 			var directory = new DirectoryInfo(Path.Combine(
-				GenFilePaths.CoreModsFolderPath, Path.Combine(contentPack.RootDir, AssembliesFolderName)));
+				GenFilePaths.ModsFolderPath, Path.Combine(contentPack.RootDir, AssembliesFolderName)));
 			if (directory.Exists) {
 				return directory.GetFiles(assemblyName + AssemblyFileExtension, SearchOption.AllDirectories).FirstOrDefault();
 			}

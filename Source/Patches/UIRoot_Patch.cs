@@ -1,5 +1,5 @@
 ﻿using System;
-using Harmony;
+using HarmonyLib;
 using Verse;
 
 namespace HugsLib.Patches {
