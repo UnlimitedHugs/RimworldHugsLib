@@ -12,4 +12,7 @@
 HugsLib is a library that provides shared functionality to other mods.
 Version: 7.0.0
 	</description>
+	<loadAfter>
+		<li>Ludeon.RimWorld</li>
+	</loadAfter>
 </ModMetaData>
