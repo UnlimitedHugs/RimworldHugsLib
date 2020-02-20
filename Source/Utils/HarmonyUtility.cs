@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Harmony;
+using HarmonyLib;
 
 namespace HugsLib.Utils {
 	/// <summary>
@@ -15,8 +15,8 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Produces a human-readable list of all patched methods and their respective patches.
 		/// </summary>
-		/// <param name="instance">A HarmonyInstance that can be queried for patch information.</param>
-		public static string DescribePatchedMethods(HarmonyInstance instance) {
+		/// <param name="instance">A Harmony instance that can be queried for patch information.</param>
+		public static string DescribePatchedMethods(Harmony instance) {
 			try {
 				IEnumerable<MethodBase> patchedMethods;
 				try {
@@ -49,7 +49,7 @@ namespace HugsLib.Utils {
 					builder.Append(pair.MethodName);
 					builder.Append(": ");
 					// write patches
-					var patches = instance.GetPatchInfo(pair.Method);
+					var patches = Harmony.GetPatchInfo(pair.Method);
 					if (HasActivePatches(patches)) {
 						// write prefixes
 						if (patches.Prefixes != null && patches.Prefixes.Count > 0) {
@@ -82,12 +82,12 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Produces a human-readable list of all Harmony versions present and their respective owners.
 		/// </summary>
-		/// <param name="instance">A HarmonyInstance that can be queried for version information.</param>
+		/// <param name="instance">A Harmony instance that can be queried for version information.</param>
 		/// <returns></returns>
-		public static string DescribeHarmonyVersions(HarmonyInstance instance) {
+		public static string DescribeHarmonyVersions(Harmony instance) {
 			try {
 				Version currentVersion;
-				var modVersionPairs = instance.VersionInfo(out currentVersion);
+				var modVersionPairs = Harmony.VersionInfo(out currentVersion);
 				return "Harmony versions present: " + 
 					modVersionPairs.GroupBy(kv => kv.Value, kv => kv.Key).OrderByDescending(grp => grp.Key)
 					.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");
@@ -112,11 +112,11 @@ namespace HugsLib.Utils {
 					builder.AppendFormat("[{0}]", patch.priority);
 				}
 				// write full destination method name
-				builder.Append(patch.patch.FullName());
+				builder.Append(patch.PatchMethod.FullName());
 			}
 		}
 
-		private static bool HasActivePatches(Harmony.Patches patches) {
+		private static bool HasActivePatches(HarmonyLib.Patches patches) {
 			return patches != null &&
 			        ((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
 			         (patches.Postfixes != null && patches.Postfixes.Count != 0) ||
