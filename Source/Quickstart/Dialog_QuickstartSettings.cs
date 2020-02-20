@@ -122,7 +122,7 @@ namespace HugsLib.Quickstart {
 			}
 			if (Widgets.ButtonInvisible(rowRect)) {
 				if (settings.OperationMode != assignedMode) {
-					SoundDefOf.RadioButtonClicked.PlayOneShotOnCamera();
+					SoundDefOf.Click.PlayOneShotOnCamera();
 					QuickstartController.Settings.OperationMode = assignedMode;
 				}
 			}

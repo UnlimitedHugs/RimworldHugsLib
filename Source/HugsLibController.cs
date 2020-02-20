@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Harmony;
+using HarmonyLib;
 using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
@@ -114,7 +114,7 @@ namespace HugsLib {
 		public DoLaterScheduler DoLater { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
 
-		internal HarmonyInstance HarmonyInst { get; private set; }
+		internal Harmony HarmonyInst { get; private set; }
 
 		private HugsLibController() {
 		}
@@ -496,8 +496,8 @@ namespace HugsLib {
 		private void ApplyHarmonyPatches() {
 			try {
 				if (ShouldHarmonyAutoPatch(typeof(HugsLibController).Assembly, ModIdentifier)) {
-					HarmonyInstance.DEBUG = GenCommandLine.CommandLineArgPassed(HarmonyDebugCommandLineArg);
-					HarmonyInst = HarmonyInstance.Create(HarmonyInstanceIdentifier);
+					Harmony.DEBUG = GenCommandLine.CommandLineArgPassed(HarmonyDebugCommandLineArg);
+					HarmonyInst = new Harmony(HarmonyInstanceIdentifier);
 					HarmonyInst.PatchAll(typeof(HugsLibController).Assembly);
 				}
 			} catch (Exception e) {

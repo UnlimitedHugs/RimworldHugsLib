@@ -108,7 +108,7 @@ namespace HugsLib.Logs {
 						ShellOpenDirectory.Execute(GenFilePaths.SaveDataFolderPath);
 					}),
 					new FloatMenuOption("HugsLib_logs_openModsDir".Translate(), () => {
-						ShellOpenDirectory.Execute(GenFilePaths.CoreModsFolderPath);
+						ShellOpenDirectory.Execute(GenFilePaths.ModsFolderName);
 					})
 				}));
 				}

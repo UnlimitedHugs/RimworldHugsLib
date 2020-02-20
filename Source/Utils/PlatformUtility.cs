@@ -9,8 +9,7 @@ namespace HugsLib.Utils {
         public static PlatformType GetCurrentPlatform() {
             // Will need changing if another platform is supported by RimWorld in the future
             if (UnityData.platform == RuntimePlatform.OSXPlayer ||
-                    UnityData.platform == RuntimePlatform.OSXEditor ||
-                    UnityData.platform == RuntimePlatform.OSXDashboardPlayer)
+                    UnityData.platform == RuntimePlatform.OSXEditor)
                 return PlatformType.MacOSX;
             else if (UnityData.platform == RuntimePlatform.WindowsPlayer ||
                     UnityData.platform == RuntimePlatform.WindowsEditor)
