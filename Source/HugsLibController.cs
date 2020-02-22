@@ -8,7 +8,6 @@ using HugsLib.Logs;
 using HugsLib.News;
 using HugsLib.Quickstart;
 using HugsLib.Settings;
-using HugsLib.Source.Attrib;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -187,7 +186,6 @@ namespace HugsLib {
 			try {
 				initializationInProgress = true; // prevent the Unity events from causing race conditions during async loading
 				CheckForIncludedHugsLibAssembly();
-				ProcessAttributes();
 				EnumerateModAssemblies();
 				EnumerateChildMods(false);
 				for (int i = 0; i < childMods.Count; i++) {
@@ -419,10 +417,6 @@ namespace HugsLib {
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
-		}
-
-		private void ProcessAttributes() {
-			AttributeDetector.ProcessNewTypes();
 		}
 
 		// will run on startup and on reload. On reload it will add newly loaded mods
