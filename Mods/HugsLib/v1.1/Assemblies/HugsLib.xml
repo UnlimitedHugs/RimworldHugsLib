@@ -4,53 +4,6 @@
         <name>HugsLib</name>
     </assembly>
     <members>
-        <member name="T:HugsLib.Source.Attrib.AttributeDetector">
-            <summary>
-            Detects types and members with specific attributes and calls handlers marked with 
-            DetectableAttributeHandler to do something with the marked type or member.
-            Detectable attributes must implement IDetectableAttribute.
-            New types and members are detected after a def reload and each type/member is processed only once.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Source.Attrib.DetectableAttributeHandler">
-            <summary>
-            Apply this to a static method with a MemberInfo and an Attribute parameter to make it a handler for types or members with a certain attribute.
-            At load time the method will be called as many times as there are types or members marked with the attribute specified as the argument.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Source.Attrib.IDetectableAttribute">
-            <summary>
-            This interface must be implemented by all attributes that should be detectable with AttributeDetector
-            </summary>
-        </member>
-        <member name="T:HugsLib.Source.Settings.SettingHandleConvertibleUtility">
-            <summary>
-            Utility methods for SettingHandleConvertible data objects.
-            These are useful for packing and unpacking your custom fields into a string without bothering with manual serialization.
-            </summary>
-        </member>
-        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.DeserializeValuesFromString(System.String,System.Object)">
-            <summary>
-            Deserializes an XML string into an existing object instance.
-            </summary>
-            <param name="serializedValues">The serialized values to fill the object with</param>
-            <param name="targetObject">The object to receive the deserialized values</param>
-        </member>
-        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.SerializeValuesToString(System.Object)">
-            <summary>
-            Serializes an object into a compact XML string.
-            Whitespace and namespace declarations are omitted.
-            Make sure the object is annotated with SerializableAttribute and the fields to serialize with XmlElementAttribute.
-            </summary>
-            <param name="targetObject">The object to serialize</param>
-        </member>
-        <member name="T:HugsLib.EarlyInitAttribute">
-            <summary>
-            Used to indicate that a <see cref="T:HugsLib.ModBase"/> type should be instantiated at the earliest moment possible.
-            Specifically, when <see cref="T:Verse.Mod"/> classes are instantiated (see <see cref="T:Verse.PlayDataLoader"/>.DoPlayLoad()).
-            If <see cref="P:HugsLib.ModBase.HarmonyAutoPatch"/> is true, Harmony patching will also happen at that time.
-            </summary>
-        </member>
         <member name="T:HugsLib.Core.HugsLibMod">
             <summary>
             Entry point for the library.
@@ -110,6 +63,13 @@
             Also known as a semantic version number.
             System.Version can be implicitly cast to this type.
             VersionShort is no longer used by HugsLib internally, and the type is retained for backwards compatibility.
+            </summary>
+        </member>
+        <member name="T:HugsLib.EarlyInitAttribute">
+            <summary>
+            Used to indicate that a <see cref="T:HugsLib.ModBase"/> type should be instantiated at the earliest moment possible.
+            Specifically, when <see cref="T:Verse.Mod"/> classes are instantiated (see <see cref="T:Verse.PlayDataLoader"/>.DoPlayLoad()).
+            If <see cref="P:HugsLib.ModBase.HarmonyAutoPatch"/> is true, Harmony patching will also happen at that time.
             </summary>
         </member>
         <member name="T:HugsLib.Logs.Dialog_PublishLogs">
@@ -250,6 +210,27 @@
             <summary>
             Wraps settings related to the Quickstart system for storage in a SettingHandle.
             </summary>
+        </member>
+        <member name="T:HugsLib.Source.Settings.SettingHandleConvertibleUtility">
+            <summary>
+            Utility methods for SettingHandleConvertible data objects.
+            These are useful for packing and unpacking your custom fields into a string without bothering with manual serialization.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.DeserializeValuesFromString(System.String,System.Object)">
+            <summary>
+            Deserializes an XML string into an existing object instance.
+            </summary>
+            <param name="serializedValues">The serialized values to fill the object with</param>
+            <param name="targetObject">The object to receive the deserialized values</param>
+        </member>
+        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.SerializeValuesToString(System.Object)">
+            <summary>
+            Serializes an object into a compact XML string.
+            Whitespace and namespace declarations are omitted.
+            Make sure the object is annotated with SerializableAttribute and the fields to serialize with XmlElementAttribute.
+            </summary>
+            <param name="targetObject">The object to serialize</param>
         </member>
         <member name="T:HugsLib.Shell.Shell">
             <summary>
