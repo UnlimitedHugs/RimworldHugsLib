@@ -25,7 +25,11 @@ namespace HugsLib.Test {
 			Instance = this;
 		}
 
-		public override string ModIdentifier {
+		public override string LogIdentifier {
+			get { return SettingsIdentifier; }
+		}
+
+		public override string SettingsIdentifier {
 			get { return "TestMod"; }
 		}
 

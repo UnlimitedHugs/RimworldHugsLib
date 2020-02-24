@@ -22,7 +22,7 @@ namespace HugsLib {
 
 		/// <summary>
 		/// The ModSettingsPack specific to your mod.
-		/// Use this to create settings handles.
+		/// Use this to create settings handles that represent the values of saved settings.
 		/// </summary>
 		protected ModSettingsPack Settings { get; private set; }
 
@@ -41,8 +41,39 @@ namespace HugsLib {
 		/// <summary>
 		/// A unique identifier for your mod.
 		/// Valid characters are A-z, 0-9, -, no spaces.
+		/// By default uses the PackageId of the implementing mod or the type name if that is not set.
 		/// </summary>
-		public abstract string ModIdentifier { get; }
+		[Obsolete("Deprecated since 7.0 (Rimworld 1.1). Use ModBase.ModContentPack.PackageId to uniquely identify mods")]
+		public virtual string ModIdentifier {
+			get { return ModContentPack?.PackageId ?? GetType().FullName; } 
+		}
+		
+		/// <summary>
+		/// A unique identifier to use as a key when settings are stored for this mod by <see cref="ModSettingsManager"/>.
+		/// Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
+		/// By default uses the PackageId of the implementing mod.
+		/// Returning null will prevent the <see cref="Settings"/> property from being assigned.
+		/// </summary>
+		public virtual string SettingsIdentifier {
+			get { return ModContentPack?.PackageId; } 
+		}
+		
+		/// <summary>
+		/// A readable identifier for the mod, used as a prefix by <see cref="Logger"/> and in various error messages.
+		/// Appear as "[LogIdentifier] message" when using <see cref="Logger"/>.
+		/// By default uses the non-lowercase PackageId of the implementing mod or the type name if that is not set.
+		/// </summary>
+		public virtual string LogIdentifier {
+			get { return ModContentPack?.PackageIdPlayerFacing ?? GetType().FullName; } 
+		}
+
+		/// <summary>
+		/// The null-checked version of <see cref="LogIdentifier"/>. 
+		/// Returns the type name if <see cref="LogIdentifier"/> is null.
+		/// </summary>
+		public string LogIdentifierSafe {
+			get { return LogIdentifier ?? GetType().FullName; } 
+		}
 
 		protected ModContentPack modContentPackInt;
 		/// <summary>
@@ -54,12 +85,15 @@ namespace HugsLib {
 				if (Settings != null) {
 					Settings.EntryName = value != null ? value.Name : null;
 				}
+				Logger = new ModLogger(LogIdentifierSafe);
 				modContentPackInt = value;
 			}
 		}
 		
 		/// <summary>
-		/// Can be false if the mod was enabled at game start and then disabled in the mods menu
+		/// Can be false if the mod was enabled at game start and then disabled in the mods menu.
+		/// Always true, unless the <see cref="Verse.ModContentPack"/> of the declaring mod can't be 
+		/// identified for some unexpected reason.
 		/// </summary>
 		public bool ModIsActive { get; internal set; }
 		
@@ -68,18 +102,16 @@ namespace HugsLib {
 		/// </summary>
 		public AssemblyVersionInfo VersionInfo { get; internal set; }
 
-		protected ModBase() {
-			var modId = ModIdentifier;
-			if (!PersistentDataManager.IsValidElementName(modId)) throw new FormatException("Invalid mod identifier: " + modId);
-			Logger = new ModLogger(modId);
-			Settings = HugsLibController.Instance.Settings.GetModSettings(modId);
-		}
-
 		internal void ApplyHarmonyPatches() {
 			if (HarmonyAutoPatch) {
-				var harmonyId = HarmonyInstancePrefix + ModIdentifier;
+				var harmonyId = ModContentPack?.PackageId;
+				if (harmonyId == null) {
+					harmonyId = $"HugsLib.{LogIdentifierSafe}";
+					HugsLibController.Logger.Warning($"Failed to identify PackageId for \"{LogIdentifierSafe}\" " +
+													$"using \"{harmonyId}\" as Harmony id instead.");
+				}
 				try {
-					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, ModIdentifier)) {
+					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, harmonyId)) {
 						HarmonyInst = new Harmony(harmonyId);
 						HarmonyInst.PatchAll(GetType().Assembly);
 					}
@@ -87,6 +119,10 @@ namespace HugsLib {
 					HugsLibController.Logger.Error("Failed to apply Harmony patches for {0}. Exception was: {1}", harmonyId, e);
 				}
 			}
+		}
+
+		internal void AssignSettings(ModSettingsPack pack) {
+			Settings = pack;
 		}
 
 		/// <summary>

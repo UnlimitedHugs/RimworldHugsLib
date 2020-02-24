@@ -147,7 +147,7 @@ namespace HugsLib {
 					var childMod = childMods[i];
 					if (earlyInitializedMods.Contains(childMod)) continue;
 					earlyInitializedMods.Add(childMod);
-					var modId = childMod.ModIdentifier;
+					var modId = childMod.LogIdentifierSafe;
 					try {
 						childMod.EarlyInitialize();
 					} catch (Exception e) {
@@ -193,7 +193,7 @@ namespace HugsLib {
 					childMod.ModIsActive = assemblyContentPacks.ContainsKey(childMod.GetType().Assembly);
 					if (initializedMods.Contains(childMod)) continue; // no need to reinitialize already loaded mods
 					initializedMods.Add(childMod);
-					var modId = childMod.ModIdentifier;
+					var modId = childMod.LogIdentifierSafe;
 					try {
 						childMod.StaticInitialize();
 					} catch (Exception e) {
@@ -217,7 +217,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].Update();
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 			} catch (Exception e) {
@@ -234,7 +234,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].Tick(currentTick);
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 				TickDelayScheduler.Tick(currentTick);
@@ -251,7 +251,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].FixedUpdate();
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 			} catch (Exception e) {
@@ -268,7 +268,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].OnGUI();
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 			} catch (Exception e) {
@@ -282,7 +282,7 @@ namespace HugsLib {
 					try {
 						childMods[i].SceneLoaded(scene);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -308,7 +308,7 @@ namespace HugsLib {
 					try {
 						childMods[i].WorldLoaded();
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -322,7 +322,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapGenerated(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -336,7 +336,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapComponentsInitializing(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -366,7 +366,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapLoaded(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 				// show update news dialog
@@ -382,7 +382,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapDiscarded(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -396,7 +396,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].SettingsChanged();
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -411,7 +411,7 @@ namespace HugsLib {
 					try {
 						childMods[i].DefsLoaded();
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -433,18 +433,23 @@ namespace HugsLib {
 				var hasEarlyInit = subclass.HasAttribute<EarlyInitAttribute>();
 				if (hasEarlyInit != earlyInitMode) continue;
 				if (childMods.Find(cm => cm.GetType() == subclass) != null) continue; // skip duplicate types present in multiple assemblies
-				ModBase modbase;
 				try {
-					modbase = (ModBase)Activator.CreateInstance(subclass, true);
-					modbase.ApplyHarmonyPatches();
+					var modbase = (ModBase)Activator.CreateInstance(subclass, true);
 					modbase.ModContentPack = pack;
-					modbase.VersionInfo = AssemblyVersionInfo.ReadModAssembly(subclass.Assembly, pack);
-					if (childMods.Find(m => m.ModIdentifier == modbase.ModIdentifier) != null) {
-						Logger.Error("Duplicate mod identifier: " + modbase.ModIdentifier);
-						continue;
+					var settingsPackId = modbase.SettingsIdentifier;
+					if (!string.IsNullOrEmpty(settingsPackId)) {
+						if (PersistentDataManager.IsValidElementName(settingsPackId)) {
+							modbase.AssignSettings(Settings.GetModSettings(modbase.SettingsIdentifier));
+						} else {
+							Logger.Error($"string \"{settingsPackId}\" cannot be used as a settings identifier. " +
+										$"Override {nameof(ModBase)}.{nameof(ModBase.SettingsIdentifier)} to manually specify one. " +
+										$"See {nameof(ModBase.SettingsIdentifier)} autocomplete documentation for expected format.");
+						}
 					}
+					modbase.ApplyHarmonyPatches();
+					modbase.VersionInfo = AssemblyVersionInfo.ReadModAssembly(subclass.Assembly, pack);
 					childMods.Add(modbase);
-					instantiatedThisRun.Add(modbase.ModIdentifier);
+					instantiatedThisRun.Add(modbase.LogIdentifierSafe);
 				} catch (Exception e) {
 					Logger.ReportException(e, subclass.ToString(), false, "child mod instantiation");
 				}
@@ -458,10 +463,13 @@ namespace HugsLib {
 		private void InspectUpdateNews() {
 			foreach (var modBase in childMods) {
 				try {
-					var version = modBase.GetVersion();
-					UpdateFeatures.InspectActiveMod(modBase.ModIdentifier, version);
+					var modIdentifier = modBase.ModContentPack?.PackageId;
+					if (modIdentifier != null) {
+						var version = modBase.GetVersion();
+						UpdateFeatures.InspectActiveMod(modIdentifier, version);
+					}
 				} catch (Exception e) {
-					Logger.ReportException(e, modBase.ModIdentifier);
+					Logger.ReportException(e, modBase.LogIdentifierSafe);
 				}
 			}
 		}

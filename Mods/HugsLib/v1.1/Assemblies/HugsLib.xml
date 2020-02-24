@@ -277,7 +277,7 @@
         <member name="P:HugsLib.ModBase.Settings">
             <summary>
             The ModSettingsPack specific to your mod.
-            Use this to create settings handles.
+            Use this to create settings handles that represent the values of saved settings.
             </summary>
         </member>
         <member name="P:HugsLib.ModBase.HarmonyAutoPatch">
@@ -294,6 +294,28 @@
             <summary>
             A unique identifier for your mod.
             Valid characters are A-z, 0-9, -, no spaces.
+            By default uses the PackageId of the implementing mod or the type name if that is not set.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.SettingsIdentifier">
+            <summary>
+            A unique identifier to use as a key when settings are stored for this mod by <see cref="T:HugsLib.Settings.ModSettingsManager"/>.
+            Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
+            By default uses the PackageId of the implementing mod.
+            Returning null will prevent the <see cref="P:HugsLib.ModBase.Settings"/> property from being assigned.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.LogIdentifier">
+            <summary>
+            A readable identifier for the mod, used as a prefix by <see cref="P:HugsLib.ModBase.Logger"/> and in various error messages.
+            Appear as "[LogIdentifier] message" when using <see cref="P:HugsLib.ModBase.Logger"/>.
+            By default uses the non-lowercase PackageId of the implementing mod or the type name if that is not set.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.LogIdentifierSafe">
+            <summary>
+            The null-checked version of <see cref="P:HugsLib.ModBase.LogIdentifier"/>. 
+            Returns the type name if <see cref="P:HugsLib.ModBase.LogIdentifier"/> is null.
             </summary>
         </member>
         <member name="P:HugsLib.ModBase.ModContentPack">
@@ -303,7 +325,9 @@
         </member>
         <member name="P:HugsLib.ModBase.ModIsActive">
             <summary>
-            Can be false if the mod was enabled at game start and then disabled in the mods menu
+            Can be false if the mod was enabled at game start and then disabled in the mods menu.
+            Always true, unless the <see cref="T:Verse.ModContentPack"/> of the declaring mod can't be 
+            identified for some unexpected reason.
             </summary>
         </member>
         <member name="P:HugsLib.ModBase.VersionInfo">
@@ -317,14 +341,17 @@
             or the higher one between AssemblyVersion and AssemblyFileVersion
             </summary>
         </member>
-        <member name="M:HugsLib.ModBase.EarlyInitalize">
+        <member name="M:HugsLib.ModBase.EarlyInitialize">
             <summary>
-            Called during <see cref="T:Verse.Mod"/> instantiation, 
-            and only if the implementing class is annotated with <see cref="T:HugsLib.EarlyInitAttribute"/>
+            Called during HugsLib <see cref="T:Verse.Mod"/> instantiation, accounting for mod load order. 
+            Load order among mods implementing <see cref="T:HugsLib.ModBase"/> is respected.
+            and only if the implementing class is annotated with <see cref="T:HugsLib.EarlyInitAttribute"/>.
             </summary>
         </member>
-        <member name="M:HugsLib.ModBase.Initialize">
+        <member name="M:HugsLib.ModBase.StaticInitialize">
             <summary>
+            Called when HugsLib receives the <see cref="T:Verse.StaticConstructorOnStartup"/> call.
+            Load order among mods implementing <see cref="T:HugsLib.ModBase"/> is respected.
             Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
             </summary>
         </member>
@@ -397,10 +424,14 @@
         </member>
         <member name="M:HugsLib.ModBase.DefsLoaded">
             <summary>
-            Called after Initialize and when defs have been reloaded. This is a good place to inject defs.
+            Called after StaticInitialize and when defs have been reloaded. This is a good place to inject defs.
             Get your settings handles here, so that the labels will properly update on language change.
             If the mod is disabled after being loaded, this method will STILL execute. Use ModIsActive to check.
             </summary>
+            <remarks>
+            There is no scenario in which defs are reloaded without the game restarting, save for a mod manually initiating a reload. 
+            When def reloading is not an issue, anything done by this method can be safely done in StaticInitialize.
+            </remarks>
         </member>
         <member name="T:HugsLib.News.Dialog_UpdateFeatures">
             <summary>
