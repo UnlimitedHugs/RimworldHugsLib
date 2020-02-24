@@ -149,7 +149,7 @@ namespace HugsLib {
 					earlyInitializedMods.Add(childMod);
 					var modId = childMod.ModIdentifier;
 					try {
-						childMod.EarlyInitalize();
+						childMod.EarlyInitialize();
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}
@@ -195,7 +195,7 @@ namespace HugsLib {
 					initializedMods.Add(childMod);
 					var modId = childMod.ModIdentifier;
 					try {
-						childMod.Initialize();
+						childMod.StaticInitialize();
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}

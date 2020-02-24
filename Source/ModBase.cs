@@ -100,16 +100,19 @@ namespace HugsLib {
 		}
 
 		/// <summary>
-		/// Called during <see cref="Mod"/> instantiation, 
-		/// and only if the implementing class is annotated with <see cref="EarlyInitAttribute"/>
+		/// Called during HugsLib <see cref="Mod"/> instantiation, accounting for mod load order. 
+		/// Load order among mods implementing <see cref="ModBase"/> is respected.
+		/// and only if the implementing class is annotated with <see cref="EarlyInitAttribute"/>.
 		/// </summary>
-		public virtual void EarlyInitalize() {
+		public virtual void EarlyInitialize() {
 		}
 
 		/// <summary>
+		/// Called when HugsLib receives the <see cref="StaticConstructorOnStartup"/> call.
+		/// Load order among mods implementing <see cref="ModBase"/> is respected.
 		/// Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
 		/// </summary>
-		public virtual void Initialize() {
+		public virtual void StaticInitialize() {
 		}
 
 		/// <summary>
@@ -194,10 +197,14 @@ namespace HugsLib {
 		
 		
 		/// <summary>
-		/// Called after Initialize and when defs have been reloaded. This is a good place to inject defs.
+		/// Called after StaticInitialize and when defs have been reloaded. This is a good place to inject defs.
 		/// Get your settings handles here, so that the labels will properly update on language change.
 		/// If the mod is disabled after being loaded, this method will STILL execute. Use ModIsActive to check.
 		/// </summary>
+		/// <remarks>
+		/// There is no scenario in which defs are reloaded without the game restarting, save for a mod manually initiating a reload. 
+		/// When def reloading is not an issue, anything done by this method can be safely done in StaticInitialize.
+		/// </remarks>
 		public virtual void DefsLoaded() {
 		}
 	}

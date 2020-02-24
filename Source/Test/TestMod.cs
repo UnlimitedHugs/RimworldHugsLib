@@ -33,12 +33,12 @@ namespace HugsLib.Test {
 			get { return false; }
 		}
 
-		public override void EarlyInitalize() {
+		public override void EarlyInitialize() {
 			Logger.Message("Early-initialized");
 		}
 
-		public override void Initialize() {
-			Logger.Message("Initialized");
+		public override void StaticInitialize() {
+			Logger.Message("Static-initialized");
 			TestDoLaterScheduler();
 		}
 
