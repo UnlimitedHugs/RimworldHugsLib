@@ -175,6 +175,7 @@ namespace HugsLib {
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.Initialize();
+				UpdateFeatures.OnStaticConstructorInit();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
@@ -200,7 +201,6 @@ namespace HugsLib {
 						Logger.ReportException(e, modId);
 					}
 				}
-				InspectUpdateNews();
 				OnDefsLoaded();
 			} catch (Exception e) {
 				Logger.ReportException(e);
@@ -460,20 +460,6 @@ namespace HugsLib {
 			}
 		}
 
-		private void InspectUpdateNews() {
-			foreach (var modBase in childMods) {
-				try {
-					var modIdentifier = modBase.ModContentPack?.PackageId;
-					if (modIdentifier != null) {
-						var version = modBase.GetVersion();
-						UpdateFeatures.InspectActiveMod(modIdentifier, version);
-					}
-				} catch (Exception e) {
-					Logger.ReportException(e, modBase.LogIdentifierSafe);
-				}
-			}
-		}
-		
 		private void EnumerateModAssemblies() {
 			assemblyContentPacks = new Dictionary<Assembly, ModContentPack>();
 			foreach (var modContentPack in LoadedModManager.RunningMods) {

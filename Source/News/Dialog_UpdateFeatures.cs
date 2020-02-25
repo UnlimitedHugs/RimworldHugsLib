@@ -25,12 +25,12 @@ namespace HugsLib.News {
 		private readonly UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders;
 		private readonly Color TitleLineColor = new Color(0.3f, 0.3f, 0.3f);
 		private readonly Color LinkTextColor = new Color(.7f, .7f, 1f);
-		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>(); 
+		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>();
+		private readonly string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
 		private List<FeatureEntry> entries;
 		private float totalContentHeight = -1;
 		private Vector2 scrollPosition;
 		private List<string> pendingImages;
-		private string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
@@ -100,8 +100,8 @@ namespace HugsLib.News {
 				var labelRect = new Rect(togglePos.x + toggleSize, curY,
 					width - EntryTitleLinkWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
 				Text.Font = GameFont.Medium;
-				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.assemblyVersion);
-				Widgets.Label(labelRect, string.Format("<size={0}>{1}</size>", EntryTitleFontSize, titleText));
+				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.version);
+				Widgets.Label(labelRect, $"<size={EntryTitleFontSize}>{titleText}</size>");
 				Text.Font = GameFont.Small;
 				if (entry.def.linkUrl != null) {
 					Text.Anchor = TextAnchor.MiddleCenter;
@@ -111,7 +111,7 @@ namespace HugsLib.News {
 					Widgets.Label(linkRect, "HugsLib_features_link".Translate());
 					GUI.color = prevColor;
 					GenUI.ResetLabelAlign();
-					if (Widgets.ButtonInvisible(linkRect, true)) {
+					if (Widgets.ButtonInvisible(linkRect)) {
 						Application.OpenURL(entry.def.linkUrl);
 					}
 					if (Mouse.IsOver(linkRect)) {
@@ -131,15 +131,19 @@ namespace HugsLib.News {
 		}
 
 		private void DoIgnoreNewsProviderToggle(Vector2 togglePos, FeatureEntry entry) {
-			bool wasOn = !ignoredNewsProviders.Contains(entry.def.modIdentifier), isOn = wasOn;
+			var ownerPackageId = entry.def.modContentPack.PackageId;
+			var wasOn = !ignoredNewsProviders.Contains(ownerPackageId);
+			var isOn = wasOn;
 			Widgets.Checkbox(togglePos, ref isOn);
 			if (wasOn != isOn) {
-				Action toggleAction = () => ignoredNewsProviders.SetIgnored(entry.def.modIdentifier, !isOn);
+				void ToggleIgnoredState() {
+					ignoredNewsProviders.SetIgnored(ownerPackageId, !isOn);
+				}
 				if (isOn || HugsLibUtility.ShiftIsHeld) {
-					toggleAction();
+					ToggleIgnoredState();
 				} else {
 					Find.WindowStack.Add(new Dialog_Confirm("HugsLib_features_confirmIgnore".Translate(entry.def.modNameReadable), 
-						toggleAction, false,"HugsLib_features_confirmIgnoreTitle".Translate()));
+						ToggleIgnoredState, false,"HugsLib_features_confirmIgnoreTitle".Translate()));
 				}
 			}
 			var tooltipRect = new Rect(togglePos.x, togglePos.y, Widgets.CheckboxSize, Widgets.CheckboxSize);

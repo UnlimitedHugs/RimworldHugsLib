@@ -4,14 +4,10 @@ using Verse;
 
 namespace HugsLib {
 	/// <summary>
-	/// Describes a single update news item. A mod must have a class extending ModBase and keep its assembly version up to date to make use of this.
+	/// Describes a single update news item.
+	/// Must be defined in the News folder that is placed in the root mod directory of the mod.
 	/// </summary>
 	public class UpdateFeatureDef : Def {
-		/// <summary>
-		/// The <see cref="ModBase.ModIdentifier"/> of the mod which will cause this news item to be displayed.
-		/// Alternatively, the name of the folder the mod is loaded from can also be used.
-		/// </summary>
-		public string modIdentifier;
 		/// <summary>
 		/// Displayed in the title of the news item
 		/// </summary>
@@ -22,11 +18,12 @@ namespace HugsLib {
 		public string titleOverride;
 		// The minimum assembly version of the ModBase extension that will cause the feature to be displayed (format: major.minor.patch)
 		/// <summary>
-		/// The minimum assembly version or assembly file version (whichever one is higher) of the assembly 
-		/// containing the ModBase extending class, that will cause the feature to be displayed. (format: major.minor.patch)
-		/// If overrideVersion in Version.xml is set, it will be considered instead of the assembly versions.
+		/// The version number associated with the news item.
+		/// Used to sort news items and determine which items have not been displayed yet.
+		/// For example, after an item with version 3.2.1 has been displayed, adding an item with version 3.2.0 will not cause the 
+		/// New Mod Features dialog to automatically open. However, both items will still appear the next time the dialog is opened.
 		/// </summary>
-		public string assemblyVersion;
+		public string version;
 		/// <summary>
 		/// The text of the news item. Can contain text and images, supports Unity html markup (only recommended for highlighting).
 		/// The text can contain the following formatting markers:
@@ -42,22 +39,39 @@ namespace HugsLib {
 		/// Optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.
 		/// </summary>
 		public string linkUrl;
+		
+		// Do no remove these. They ensure compatibility with Rimworld 1.0 where UpdateFeatureDef was loaded from the Defs folder.
+		[Obsolete("No longer needs to be specified. Use Def.modContentPack.PackageId to identify which mod added this def. Deprecated since Rimworld 1.1")]
+		public string modIdentifier;
+		[Obsolete("Use UpdateFeatureDef.version to specify the version of the mod a news feature is about. Deprecated since Rimworld 1.1")]
+		public string assemblyVersion;
 
-		public Version Version { get; set; }
+		/// <summary>
+		/// If this is true, we are likely dealing with a def "inherited" through the folder versioning system from 1.0.
+		/// Discard these defs and skip verification.
+		/// </summary>
+		internal bool HasDeprecatedFormat {
+#pragma warning disable 618
+			get { return modIdentifier != null || assemblyVersion != null; }
+#pragma warning restore 618
+		}
+
+		public Version VersionParsed { get; set; }
 
 		public override void ResolveReferences() {
+			if (HasDeprecatedFormat) return;
 			base.ResolveReferences();
+
 			if (defName == null) {
-				defName = modIdentifier + assemblyVersion;
+				defName = modNameReadable + version;
 			}
-			if (modIdentifier == null) ReportError("UpdateFeatureDef.modIdentifier must be set");
 			if (modNameReadable == null) ReportError("UpdateFeatureDef.modNameReadable must be set");
 			Exception versionFailure = null;
 			try {
-				if (assemblyVersion == null) throw new Exception("UpdateFeatureDef.assemblyVersion must be defined");
-				Version = new Version(assemblyVersion);
+				if (version == null) throw new Exception("UpdateFeatureDef.version must be defined");
+				VersionParsed = new Version(version);
 			} catch (Exception e) {
-				Version = new Version();
+				VersionParsed = new Version();
 				versionFailure = e;
 			}
 			if (versionFailure != null) ReportError("UpdateFeatureDef.version parsing failed: " + versionFailure);
@@ -65,7 +79,7 @@ namespace HugsLib {
 		}
 
 		private void ReportError(string message) {
-			Log.Error(string.Format("UpdateFeatureDef (defName: {0}) contains invalid data: {1}", defName, message));
+			Log.Error($"UpdateFeatureDef (defName: {defName}) contains invalid data: {message}");
 		}
 	}
 }
