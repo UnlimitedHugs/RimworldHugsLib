@@ -9,7 +9,7 @@ namespace HugsLib {
 	public class UpdateFeatureDef : Def {
 		/// <summary>
 		/// The <see cref="ModBase.ModIdentifier"/> of the mod which will cause this news item to be displayed.
-		/// Alternatively, the name of the folder the mod is loaded from can also be used.
+		/// Alternatively, mods' packageId can also be used.
 		/// </summary>
 		public string modIdentifier;
 		/// <summary>
@@ -24,7 +24,9 @@ namespace HugsLib {
 		/// <summary>
 		/// The minimum assembly version or assembly file version (whichever one is higher) of the assembly 
 		/// containing the ModBase extending class, that will cause the feature to be displayed. (format: major.minor.patch)
-		/// If overrideVersion in Version.xml is set, it will be considered instead of the assembly versions.
+		/// Version will be read from the 'overrideVersion' field in Version.xml, the 'Version' field in Manifest.xml, the highest version of the
+		/// assembly containing the modBase if the modIdentifier matches a modBase, the highest version of any assembly containing a modBase, or
+		/// the highest version of the last (alphabetically) assembly in the mod.
 		/// </summary>
 		public string assemblyVersion;
 		/// <summary>
@@ -65,7 +67,7 @@ namespace HugsLib {
 		}
 
 		private void ReportError(string message) {
-			Log.Error(string.Format("UpdateFeatureDef (defName: {0}) contains invalid data: {1}", defName, message));
+			Log.Error( $"UpdateFeatureDef (defName: {defName}) contains invalid data: {message}" );
 		}
 	}
 }

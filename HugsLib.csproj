@@ -41,6 +41,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+
     <Reference Include="0Harmony, Version=2.0.0.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lib.Harmony.2.0.0.4\lib\net472\0Harmony.dll</HintPath>
     </Reference>
@@ -143,6 +144,8 @@
     <Compile Include="Source\Test\VanillaMod.cs" />
     <Compile Include="Source\Utils\AssemblyVersionInfo.cs" />
     <Compile Include="Source\Utils\DoLaterScheduler.cs" />
+    <Compile Include="Source\Utils\ManifestFile.cs" />
+    <Compile Include="Source\Utils\ModContentPackUtility.cs" />
     <Compile Include="Source\Utils\TickDelayScheduler.cs" />
     <Compile Include="Source\Utils\Dialog_Confirm.cs" />
     <Compile Include="Source\Utils\Dialog_Message.cs" />
@@ -162,7 +165,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>RimWorldWin64.exe</PostBuildEvent>
+    <PostBuildEvent>REM RimWorldWin64.exe</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

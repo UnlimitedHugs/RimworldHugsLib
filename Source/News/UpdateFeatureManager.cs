@@ -1,25 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
+using RimWorld;
 using Verse;
 
 namespace HugsLib.News {
 	/// <summary>
 	/// Stores the last displayed update news item for all mods. Shows the news dialog window when there are not yet displayed news items available.
 	/// </summary>
-	public class UpdateFeatureManager : PersistentDataManager {
+	public class UpdateFeatureManager : PersistentDataManager
+    {
+        private const string UpdateFeatureDefFolder = "News/";
 
-		protected override string FileName {
+        protected override string FileName {
 			get { return "LastSeenNews.xml"; }
 		}
 		// highest version that has displayed features
 		private readonly Dictionary<string, Version> knownVersions = new Dictionary<string, Version>();
 		// current version if higher than last featured
 		private readonly Dictionary<string, Version> freshVersions = new Dictionary<string, Version>();
+        private readonly List<ModContentPack> relevantMods = new List<ModContentPack>();
 
 		private SettingHandle<IgnoredNewsIds> IgnoredNewsProvidersSetting { get; set; }
 		private SettingHandle<bool> ShowNewsSetting { get; set; }
@@ -28,20 +33,34 @@ namespace HugsLib.News {
 			LoadData();
 		}
 
-		public void InspectActiveMod(string modId, Version currentVersion) {
-			var knownVersion = TryGetKnownVersion(modId);
+        public void InspectActiveMod( ModBase mod )
+        {
+            InspectActiveMod( mod.ModIdentifier, mod.ModContentPack, mod.GetVersion() );
+        }
+
+        public void InspectActiveMod( ModContentPack pack )
+        {
+            InspectActiveMod( pack.PackageId, pack, pack.GetVersion() );
+        }
+
+		public void InspectActiveMod( string identifier, ModContentPack pack, Version currentVersion) {
+			var knownVersion = TryGetKnownVersion(identifier);
 			if (knownVersion == null || currentVersion > knownVersion) {
-				var existingFreshVersion = freshVersions.TryGetValue(modId);
-				freshVersions[modId] = existingFreshVersion == null || currentVersion > existingFreshVersion ? 
+				var existingFreshVersion = freshVersions.TryGetValue(identifier);
+				freshVersions[identifier] = existingFreshVersion == null || currentVersion > existingFreshVersion ? 
 					currentVersion : existingFreshVersion;
-			}
+                HugsLibController.Logger.Trace( $"New version {currentVersion} of {identifier} detected.");
+                relevantMods.Add( pack );
+            }
 		}
 
 		public bool TryShowDialog(bool manuallyOpened) {
 			if ((!ShowNewsSetting.Value && !manuallyOpened) || (freshVersions.Count == 0 && !manuallyOpened)) return false;
+            TryLoadUpdates();
+
 			List<UpdateFeatureDef> defsToShow;
 			if (manuallyOpened) {
-				defsToShow = DefDatabase<UpdateFeatureDef>.AllDefs.ToList();
+				defsToShow = _updateFeatureDefs;
 			} else {
 				// try to pull defs newer than already featured, remember highest pulled version
 				defsToShow = new List<UpdateFeatureDef>();
@@ -51,7 +70,7 @@ namespace HugsLib.News {
 					var freshVersion = freshVersionPair.Value;
 					var knownVersion = TryGetKnownVersion(modId) ?? new Version();
 					Version highestVersionWithFeature = null;
-					foreach (var def in DefDatabase<UpdateFeatureDef>.AllDefs) {
+					foreach (var def in _updateFeatureDefs) {
 						if (def.modIdentifier != modId) continue;
 						if (def.Version <= knownVersion || def.Version > freshVersion) continue;
 						defsToShow.Add(def);
@@ -72,6 +91,56 @@ namespace HugsLib.News {
 			}
 			return false;
 		}
+
+        private List<UpdateFeatureDef> _updateFeatureDefs;
+        public void TryLoadUpdates()
+        {
+            if ( _updateFeatureDefs != null ) return;
+            _updateFeatureDefs = new List<UpdateFeatureDef>();
+
+            // as we're moving the updates out of /Defs and into /News, we can no longer rely on the DefDatabase to magically 
+            // load all the updateFeatureDefs. Instead, we'll have to manually point the reader to the relevant folders. 
+            // Overall, we'll stick as much as we can to the vanilla def loading experience, albeit without patches
+            var newsAssets = new List<LoadableXmlAsset>();
+            foreach ( var mod in relevantMods )
+                // this also handles versioned folder shenanigans.
+                newsAssets.AddRange( DirectXmlLoader.XmlAssetsInModFolder( mod, UpdateFeatureDefFolder ) );
+
+            foreach ( var asset in newsAssets )
+                HugsLibController.Logger.Trace($"News asset found at {asset.FullFilePath} in mod {asset.mod}");
+
+            // create a single doc
+            var news = LoadedModManager.CombineIntoUnifiedXML( newsAssets, new Dictionary<XmlNode, LoadableXmlAsset>() );
+
+            // we could now apply patches, but that seems like it's overkill
+            XmlInheritance.Clear();
+            var nodes = new List<XmlNode>();
+            foreach ( var child in news.DocumentElement.ChildNodes )
+                nodes.Add( child as XmlNode );
+            
+            // deal with inheritance
+            foreach ( var node in nodes )
+                if ( node.NodeType == XmlNodeType.Element )
+                    XmlInheritance.TryRegister( node, null );
+            XmlInheritance.Resolve();
+
+            // load defs
+            foreach ( var node in nodes )
+            {
+                var def = DirectXmlLoader.DefFromNode( node, null );
+                if ( def is UpdateFeatureDef update )
+                    _updateFeatureDefs.Add( update );
+            }
+
+            // resolve them references
+            foreach ( var updateFeatureDef in _updateFeatureDefs )
+                updateFeatureDef.ResolveReferences();
+
+#if DEBUG
+            foreach ( var updateFeatureDef in _updateFeatureDefs )
+                HugsLibController.Logger.Message( $"Feature def {updateFeatureDef.defName} loaded, version {updateFeatureDef.Version}");
+#endif
+        }
 
 		public void ClearSavedData() {
 			knownVersions.Clear();

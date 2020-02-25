@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+	<HugsLib.UpdateFeatureDef Abstract="true" Name="TestUpdateFeatureBase">
+		<modNameReadable>Test Mod</modNameReadable>
+		<modIdentifier>TestMod</modIdentifier>
+		<linkUrl>https://ludeon.com/forums/index.php?topic=17218</linkUrl>
+	</HugsLib.UpdateFeatureDef>
+	
+	<!-- Note: these are probably not worth translating. This is a lot of text, and the player will only see this once -->
+		
+	<HugsLib.UpdateFeatureDef ParentName="TestUpdateFeatureBase">
+		<assemblyVersion>2.3.0</assemblyVersion>
+		<content>Version 2.3.0 is awesome.</content>
+	</HugsLib.UpdateFeatureDef>
+	
+	<HugsLib.UpdateFeatureDef ParentName="TestUpdateFeatureBase">
+		<assemblyVersion>2.4.0</assemblyVersion>
+    <content>Version 2.4.0 is even better.</content>
+	</HugsLib.UpdateFeatureDef>
+</Defs>

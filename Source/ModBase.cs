@@ -93,10 +93,9 @@ namespace HugsLib {
 		/// Return the override version from the Version.xml file if specified, 
 		/// or the higher one between AssemblyVersion and AssemblyFileVersion
 		/// </summary>
-		public virtual Version GetVersion() {
-			var file = VersionFile.TryParseVersionFile(ModContentPack);
-			if (file != null && file.OverrideVersion != null) return file.OverrideVersion;
-			return VersionInfo.HighestVersion;
+		public virtual Version GetVersion()
+        {
+            return ModContentPack.GetVersion( this );
 		}
 
 		/// <summary>
