@@ -159,15 +159,11 @@ namespace HugsLib.News {
 			public static void ReloadNewsFeatureDefs() {
 				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
 				DefDatabase<UpdateFeatureDef>.Clear();
-				var parsedDefs = LoadAndParseNewsFeatureDefs().ToArray();
-				foreach (var defOrigin in parsedDefs) {
-					// this might be helpful to some other mod looking up defs by mod
-					defOrigin.OwnerContentPack.AddDef(defOrigin.Def, defOrigin.XmlFilePath);
-				}
-				DefDatabase<UpdateFeatureDef>.Add(parsedDefs.Select(o => o.Def));
+				var parsedDefs = LoadAndParseNewsFeatureDefs();
+				DefDatabase<UpdateFeatureDef>.Add(parsedDefs);
 			}
 
-			private static IEnumerable<DefWithOrigin> LoadAndParseNewsFeatureDefs() {
+			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
 				XmlInheritance.Clear();
 				// As we're moving the updates out of /Defs and into /News, we can no longer rely on the DefDatabase to magically 
 				// load all the UpdateFeatureDefs. Instead, we'll have to manually point the reader to the relevant folders. 
@@ -175,7 +171,7 @@ namespace HugsLib.News {
 				// Patch metadata has already been cleared, and parsing it again would add too much overhead.
 				// First, gather all XML nodes that represent an UpdateFeatureDef, and remember where they came from
 				// We can't parse them info defs the spot, because there are abstract nodes and inheritance to consider.
-				var newsItemNodes = new List<(ModContentPack pack, string filePath, XmlNode node)>();
+				var newsItemNodes = new List<(ModContentPack pack, XmlNode node)>();
 				foreach (var modContentPack in LoadedModManager.RunningMods) {
 					// this also handles versioned folder shenanigans
 					var modNewsXmlAssets = DirectXmlLoader.XmlAssetsInModFolder(modContentPack, UpdateFeatureDefFolder);
@@ -183,22 +179,22 @@ namespace HugsLib.News {
 						var rootElement = xmlAsset.xmlDoc?.DocumentElement;
 						if (rootElement != null) {
 							foreach (var childNode in rootElement.ChildNodes.OfType<XmlNode>()) {
-								newsItemNodes.Add((modContentPack, xmlAsset.FullFilePath, childNode));
+								newsItemNodes.Add((modContentPack, childNode));
 							}
 						}
 					}
 				}
 
 				// deal with inheritance
-				foreach (var (_, _, node) in newsItemNodes) {
+				foreach (var (_, node) in newsItemNodes) {
 					if (node != null && node.NodeType == XmlNodeType.Element) {
 						XmlInheritance.TryRegister(node, null);
 					}
 				}
 				XmlInheritance.Resolve();
 
-				var parsedFeatureDefs = new List<DefWithOrigin>();
-				foreach (var (pack, filePath, node) in newsItemNodes) {
+				var parsedFeatureDefs = new List<UpdateFeatureDef>();
+				foreach (var (pack, node) in newsItemNodes) {
 					// parse defs
 					var def = DirectXmlLoader.DefFromNode(node, null);
 					if (def is UpdateFeatureDef featureDef) {
@@ -210,8 +206,9 @@ namespace HugsLib.News {
 															$"with defName \"{def.defName}\" is using deprecated fields modIdentifier " +
 															"and/or assemblyVersion. Discarding def.");
 						} else {
+							def.modContentPack = pack;
 							featureDef.ResolveReferences();
-							parsedFeatureDefs.Add(new DefWithOrigin(pack, filePath, featureDef));
+							parsedFeatureDefs.Add(featureDef);
 						}
 					}
 				}
@@ -219,18 +216,6 @@ namespace HugsLib.News {
 				XmlInheritance.Clear();
 
 				return parsedFeatureDefs;
-			}
-
-			private struct DefWithOrigin {
-				public readonly ModContentPack OwnerContentPack;
-				public readonly string XmlFilePath;
-				public readonly UpdateFeatureDef Def;
-
-				public DefWithOrigin(ModContentPack ownerContentPack, string xmlFilePath, UpdateFeatureDef def) {
-					OwnerContentPack = ownerContentPack;
-					XmlFilePath = xmlFilePath;
-					Def = def;
-				}
 			}
 		}
 	}
