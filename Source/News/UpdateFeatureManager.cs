@@ -206,7 +206,7 @@ namespace HugsLib.News {
 							HugsLibController.Logger.Warning($"{nameof(UpdateFeatureDef)} with defName \"{def.defName}\" " +
 															$"has unknown {nameof(ModContentPack)}. Discarding def.");
 						} else if (featureDef.HasDeprecatedFormat) {
-							HugsLibController.Logger.Warning($"{nameof(UpdateFeatureDef)} by mod {def.modContentPack.PackageIdPlayerFacing} " +
+							HugsLibController.Logger.Warning($"{nameof(UpdateFeatureDef)} by mod {pack.PackageIdPlayerFacing} " +
 															$"with defName \"{def.defName}\" is using deprecated fields modIdentifier " +
 															"and/or assemblyVersion. Discarding def.");
 						} else {
