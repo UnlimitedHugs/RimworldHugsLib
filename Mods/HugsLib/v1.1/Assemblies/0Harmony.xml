@@ -1814,6 +1814,11 @@
              <returns>The calling method/constructor (excluding the caller)</returns>
             
         </member>
+        <member name="P:HarmonyLib.AccessTools.IsMonoRuntime">
+             <summary>Tells you if the current runtime is based on Mono</summary>
+             <returns>True if we are running under Mono, false otherwise (.NET)</returns>
+            
+        </member>
         <member name="M:HarmonyLib.AccessTools.ThrowMissingMemberException(System.Type,System.String[])">
              <summary>Throws a missing member runtime exception</summary>
              <param name="type">The type that is involved</param>
