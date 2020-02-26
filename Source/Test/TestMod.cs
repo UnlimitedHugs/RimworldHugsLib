@@ -146,6 +146,7 @@ namespace HugsLib.Test {
 			Settings.GetHandle("str", "String value", "", "value");
 			var spinner = Settings.GetHandle("intSpinner", "Spinner", "desc", 5, Validators.IntRangeValidator(0, 30));
 			spinner.SpinnerIncrement = 2;
+			spinner.CanBeReset = false;
 			Settings.GetHandle("enumThing", "Enum setting", "", HandleEnum.DefaultValue, null, "test_enumSetting_");
 			Settings.GetHandle("toggle", "Toggle setting extra long title that would not fit into one line", "Toggle setting", false);
 			var custom = Settings.GetHandle("custom", "custom setting", "custom setting desc", false);

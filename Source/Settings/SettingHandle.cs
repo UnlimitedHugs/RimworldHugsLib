@@ -43,9 +43,16 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public DrawCustomControl CustomDrawer { get; set; }
 		/// <summary>
-		/// When true, setting will never appear in the menu and can not be reset to default by the player. For serialized data.
+		/// When true, setting will never appear. For serialized data.
+		/// No longer affects value resetting, see <see cref="CanBeReset"/>
 		/// </summary>
 		public bool NeverVisible { get; set; }
+		/// <summary>
+		/// When true (true by default), the setting can be reset to its default value by the player.
+		/// If the handle is visible, this can be done through the right-click menu, or using the "Reset all" button.
+		/// Disabling this is generally not recommended, except for specific use cases (for example, content unlocked by the player).
+		/// </summary>
+		public bool CanBeReset { get; set; } = true;
 		/// <summary>
 		/// When true, will not save this setting to the xml file. Useful in conjunction with CustomDrawer for placing buttons in the settings menu.
 		/// </summary>
@@ -177,6 +184,7 @@ namespace HugsLib.Settings {
 
 		/// <summary>
 		/// Assigns the default value to the Value property.
+		/// Ignores the <see cref="SettingHandle.CanBeReset"/> property.
 		/// </summary>
 		public override void ResetToDefault() {
 			Value = DefaultValue;
