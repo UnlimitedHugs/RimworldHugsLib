@@ -14,5 +14,6 @@ Version: 6.2.0
 	</description>
 	<loadAfter>
 		<li>Ludeon.RimWorld</li>
+		<li>Ludeon.RimWorld.Royalty</li>
 	</loadAfter>
 </ModMetaData>
