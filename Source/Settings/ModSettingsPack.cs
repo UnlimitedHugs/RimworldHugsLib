@@ -29,6 +29,24 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public ListPriority DisplayPriority { get; set; }
 		/// <summary>
+		/// Returns true if any handles retrieved from this pack have had their values changed.
+		/// Resets to false after the changes are saved.
+		/// </summary>
+		public bool HasUnsavedChanges {
+			get {
+				for (var i = 0; i < handles.Count; i++) {
+					if (handles[i].HasUnsavedChanges && handles[i].ShouldBeSaved) return true;
+				}
+				return false;
+			} 
+		}
+		/// <summary>
+		/// Enumerates the handles that have been registered with this pack up to this point.
+		/// </summary>
+		public IEnumerable<SettingHandle> Handles {
+			get { return handles; }
+		}
+		/// <summary>
 		/// Set to true to disable the collapsing of setting handles in the Mod Settings dialog.
 		/// </summary>
 		internal bool AlwaysExpandEntry;
@@ -81,6 +99,7 @@ namespace HugsLib.Settings {
 					handle.ResetToDefault();
 				}
 			}
+			handle.HasUnsavedChanges = false;
 			return handle;
 		}
 
@@ -138,10 +157,6 @@ namespace HugsLib.Settings {
 			return loadedValues.Remove(name);
 		}
 
-		public IEnumerable<SettingHandle> Handles {
-			get { return handles; }
-		} 
-
 		internal void LoadFromXml(XElement xml) {
 			loadedValues.Clear();
 			foreach (var childNode in xml.Elements()) {
@@ -159,6 +174,7 @@ namespace HugsLib.Settings {
 			foreach (var handle in handles) {
 				if(!handle.ShouldBeSaved) continue;
 				packElem.Add(new XElement(handle.Name, new XText(handle.StringValue)));
+				handle.HasUnsavedChanges = false;
 			}
 		}
 	}

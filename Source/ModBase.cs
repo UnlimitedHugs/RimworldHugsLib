@@ -121,9 +121,12 @@ namespace HugsLib {
 			}
 		}
 
-		internal void AssignSettings(ModSettingsPack pack) {
-			Settings = pack;
-			Settings.EntryName = ModContentPack?.Name;
+		internal ModSettingsPack SettingsPackInternalAccess {
+			get { return Settings; }
+			set {
+				Settings = value;
+				Settings.EntryName = ModContentPack?.Name;
+			}
 		}
 
 		/// <summary>

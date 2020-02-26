@@ -1,6 +1,7 @@
 #if TEST_MOD
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Serialization;
 using HugsLib.Settings;
 using HugsLib.Source.Settings;
@@ -131,8 +132,10 @@ namespace HugsLib.Test {
 			Logger.Message("SceneLoaded:" + scene.name);
 		}
 
+		private bool settingsChangedCalled;
 		public override void SettingsChanged() {
 			Logger.Message("SettingsChanged");
+			settingsChangedCalled = true;
 		}
 
 		private enum HandleEnum {
@@ -157,6 +160,7 @@ namespace HugsLib.Test {
 				}
 				return false;
 			};
+			TestSettingsHasUnsavedChanges();
 			TestCustomTypeSetting();
 			TestGiveShortHash();
 			//TestConditionalVisibilitySettings();	
@@ -179,6 +183,58 @@ namespace HugsLib.Test {
 				var index = i;
 				toggle.VisibilityPredicate = () => Input.mousePosition.x/22 < index;
 			}
+		}
+
+		private void TestSettingsHasUnsavedChanges() {
+			void Assert(bool condition, string expectedConditionMessage) {
+				if(!condition) HugsLibController.Logger.Error($"Expected {nameof(TestSettingsHasUnsavedChanges)} condition: {expectedConditionMessage}");
+			}
+			var controllerSaved = false;
+			TestModSettingsChangedDetector.SettingsChangedCalled = false;
+			void OnControllerSaved() {
+				controllerSaved = true;
+			}
+			HugsLibController.SettingsManager.AfterModSettingsSaved += OnControllerSaved;
+			settingsChangedCalled = false;
+			var handle = Settings.GetHandle<int>("changeTestHandle", null, null);
+			handle.NeverVisible = true;
+			
+			if (HugsLibController.SettingsManager.HasUnsavedChanges) {
+				HugsLibController.Logger.Warning("Already modified handles: "+HugsLibController.SettingsManager.ModSettingsPacks
+					.SelectMany(p => p.Handles).Where(h => h.HasUnsavedChanges).Select(h => h.Name).ListElements());
+			}
+			Assert(HugsLibController.SettingsManager.HasUnsavedChanges == false, "controller unsaved false");
+			
+			HugsLibController.SettingsManager.SaveChanges();
+
+			Assert(controllerSaved == false, "controller not saving without changes");
+			Assert(settingsChangedCalled == false, "SettingsChanged not called before");
+			Assert(handle.HasUnsavedChanges == false, "handle unsaved false");
+			Assert(Settings.HasUnsavedChanges == false, "pack unsaved false");
+			
+			handle.Value += 1;
+			
+			Assert(handle.HasUnsavedChanges, "handle unsaved true");
+			Assert(Settings.HasUnsavedChanges, "pack unsaved true");
+			Assert(HugsLibController.SettingsManager.HasUnsavedChanges, "controller unsaved true");
+
+			HugsLibController.SettingsManager.SaveChanges();
+
+			Assert(controllerSaved, "controller saved changes");
+			Assert(settingsChangedCalled, "SettingsChanged called after");
+			Assert(handle.HasUnsavedChanges == false, "handle unsaved after false");
+			Assert(Settings.HasUnsavedChanges == false, "pack unsaved after false");
+			Assert(TestModSettingsChangedDetector.SettingsChangedCalled == false, "foreign mod not notified");
+			Assert(HugsLibController.SettingsManager.HasUnsavedChanges == false, "controller unsaved after false");
+
+			settingsChangedCalled = false;
+			TestModSettingsChangedDetector.SettingsChangedCalled = false;
+			TestModSettingsChangedDetector.Handle.Value += 1;
+			HugsLibController.SettingsManager.SaveChanges();
+			Assert(settingsChangedCalled == false, "our mod not notified");
+			Assert(TestModSettingsChangedDetector.SettingsChangedCalled, "foreign mod notified");
+
+			HugsLibController.SettingsManager.AfterModSettingsSaved -= OnControllerSaved;
 		}
 
 		private void TestCustomTypeSetting() {
@@ -213,6 +269,26 @@ namespace HugsLib.Test {
 
 	}
 
+	/// <summary>
+	/// Used to ensure only mods with actually changed settings receive the SettingsChanged callback
+	/// </summary>
+	[EarlyInit]
+	public class TestModSettingsChangedDetector : ModBase {
+		public static SettingHandle<int> Handle { get; set; }
+		public static bool SettingsChangedCalled { get; set; }
+
+		public override string SettingsIdentifier => "SettingsChangedDetector";
+		public override string LogIdentifier => SettingsIdentifier;
+
+		public override void EarlyInitialize() {
+			Handle = Settings.GetHandle<int>("testHandle", null, null);
+			Handle.NeverVisible = true;
+		}
+
+		public override void SettingsChanged() {
+			SettingsChangedCalled = true;
+		}
+	}
 
 }
 #endif

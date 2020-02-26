@@ -83,7 +83,7 @@ namespace HugsLib.Quickstart {
 
 		internal static void RegisterSettings(ModSettingsPack settings) {
 			handle = settings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
-			handle.VisibilityPredicate = () => false; // invisible, but can be reset by "Reset all settings"
+			handle.NeverVisible = true;
 		}
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {

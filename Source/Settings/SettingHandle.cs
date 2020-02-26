@@ -69,6 +69,13 @@ namespace HugsLib.Settings {
 		/// Affects the order in which handles appear in the settings menu. Lower comes first, default is 0.
 		/// </summary>
 		public int DisplayOrder { get; set; }
+		/// <summary>
+		/// Returns true if the <see cref="SettingHandle{T}.Value"/> of this handle has been modified
+		/// after the creation of the handle or the last time its value was saved.
+		/// Automatically resets to false when <see cref="ModSettingsManager"/> saves changes.
+		/// Can be manually toggled when e.g. replacing null with an instance in a <see cref="SettingHandleConvertible"/> handle.
+		/// </summary>
+		public bool HasUnsavedChanges { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
@@ -109,11 +116,13 @@ namespace HugsLib.Settings {
 			set {
 				var prevValue = _value;
 				_value = value;
-				if (OnValueChanged != null && !SafeEquals(prevValue, _value)) {
+				if (!SafeEquals(prevValue, _value)) {
+					HasUnsavedChanges = true;
 					try {
-						OnValueChanged(_value);
+						OnValueChanged?.Invoke(_value);
 					} catch (Exception e) {
-						HugsLibController.Logger.Error("Exception while calling SettingHandle.OnValueChanged. Handle name was: \"{0}\" Value was: \"{1}\". Exception was: {2}", Name, StringValue, e);
+						HugsLibController.Logger.Error("Exception while calling SettingHandle.OnValueChanged. Handle name was: " +
+														"\"{0}\" Value was: \"{1}\". Exception was: {2}", Name, StringValue, e);
 						throw;
 					}
 				}
@@ -174,7 +183,15 @@ namespace HugsLib.Settings {
 		internal override bool ShouldBeSaved {
 			get {
 				var convertible = Value as SettingHandleConvertible;
-				return !(Unsaved || HasDefaultValue() || (convertible != null && !convertible.ShouldBeSaved));
+				bool SkipConvertibleSaving() {
+					try {
+						return convertible != null && !convertible.ShouldBeSaved;
+					} catch (Exception e) {
+						HugsLibController.Logger.ReportException(e);
+						return false;
+					}
+				}
+				return !(Unsaved || HasDefaultValue() || SkipConvertibleSaving());
 			}
 		}
 

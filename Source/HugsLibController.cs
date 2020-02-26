@@ -125,7 +125,8 @@ namespace HugsLib {
 				Logger.Message("version {0}", LibraryVersion);
 				PrepareReflection();
 				ApplyHarmonyPatches();
-				Settings = new ModSettingsManager(OnSettingsChanged);
+				Settings = new ModSettingsManager();
+				Settings.BeforeModSettingsSaved += OnBeforeModSettingsSaved;
 				UpdateFeatures = new UpdateFeatureManager();
 				TickDelayScheduler = new TickDelayScheduler();
 				DistributedTicker = new DistributedTickScheduler();
@@ -390,11 +391,14 @@ namespace HugsLib {
 			}
 		}
 
-		private void OnSettingsChanged() {
+		private void OnBeforeModSettingsSaved() {
 			try {
 				for (int i = 0; i < initializedMods.Count; i++) {
 					try {
-						initializedMods[i].SettingsChanged();
+						var mod = initializedMods[i];
+						if (mod.SettingsPackInternalAccess != null && mod.SettingsPackInternalAccess.HasUnsavedChanges) {
+							initializedMods[i].SettingsChanged();
+						}
 					} catch (Exception e) {
 						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe);
 					}
@@ -439,7 +443,7 @@ namespace HugsLib {
 					var settingsPackId = modbase.SettingsIdentifier;
 					if (!string.IsNullOrEmpty(settingsPackId)) {
 						if (PersistentDataManager.IsValidElementName(settingsPackId)) {
-							modbase.AssignSettings(Settings.GetModSettings(modbase.SettingsIdentifier));
+							modbase.SettingsPackInternalAccess = Settings.GetModSettings(modbase.SettingsIdentifier);
 						} else {
 							Logger.Error($"string \"{settingsPackId}\" cannot be used as a settings identifier. " +
 										$"Override {nameof(ModBase)}.{nameof(ModBase.SettingsIdentifier)} to manually specify one. " +

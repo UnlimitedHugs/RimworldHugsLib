@@ -567,6 +567,17 @@
             Mods are generally ordered by name. Please leave this at Normal unless you have a good reason to change it.
             </summary>
         </member>
+        <member name="P:HugsLib.Settings.ModSettingsPack.HasUnsavedChanges">
+            <summary>
+            Returns true if any handles retrieved from this pack have had their values changed.
+            Resets to false after the changes are saved.
+            </summary>
+        </member>
+        <member name="P:HugsLib.Settings.ModSettingsPack.Handles">
+            <summary>
+            Enumerates the handles that have been registered with this pack up to this point.
+            </summary>
+        </member>
         <member name="F:HugsLib.Settings.ModSettingsPack.AlwaysExpandEntry">
             <summary>
             Set to true to disable the collapsing of setting handles in the Mod Settings dialog.
@@ -619,6 +630,28 @@
         <member name="T:HugsLib.Settings.ModSettingsManager">
             <summary>
             A central place for mods to store persistent settings. Individual settings are grouped by mod using ModSettingsPack
+            </summary>
+        </member>
+        <member name="E:HugsLib.Settings.ModSettingsManager.BeforeModSettingsSaved">
+            <summary>
+            Fires when <see cref="M:HugsLib.Settings.ModSettingsManager.SaveChanges"/> is called and changes are about to be saved.
+            Use <see cref="P:HugsLib.Settings.ModSettingsManager.ModSettingsPacks"/> and <see cref="P:HugsLib.Settings.ModSettingsPack.HasUnsavedChanges"/> to identify changed packs,
+            and <see cref="P:HugsLib.Settings.ModSettingsPack.Handles"/> with <see cref="P:HugsLib.Settings.SettingHandle.HasUnsavedChanges"/> to identify changed handles.
+            </summary>
+        </member>
+        <member name="E:HugsLib.Settings.ModSettingsManager.AfterModSettingsSaved">
+            <summary>
+            Fires when <see cref="M:HugsLib.Settings.ModSettingsManager.SaveChanges"/> is called and the settings file has just been written to disk.
+            </summary>
+        </member>
+        <member name="P:HugsLib.Settings.ModSettingsManager.ModSettingsPacks">
+            <summary>
+            Enumerates the <see cref="T:HugsLib.Settings.ModSettingsPack"/>s that have been registered up to this point.
+            </summary>
+        </member>
+        <member name="P:HugsLib.Settings.ModSettingsManager.HasUnsavedChanges">
+            <summary>
+            Returns true when there are handles with values that have changed since the last time settings were saved.
             </summary>
         </member>
         <member name="M:HugsLib.Settings.ModSettingsManager.GetModSettings(System.String,System.String)">
@@ -683,7 +716,15 @@
         </member>
         <member name="P:HugsLib.Settings.SettingHandle.NeverVisible">
             <summary>
-            When true, setting will never appear in the menu and can not be reset to default by the player. For serialized data.
+            When true, setting will never appear. For serialized data.
+            No longer affects value resetting, see <see cref="P:HugsLib.Settings.SettingHandle.CanBeReset"/>
+            </summary>
+        </member>
+        <member name="P:HugsLib.Settings.SettingHandle.CanBeReset">
+            <summary>
+            When true (true by default), the setting can be reset to its default value by the player.
+            If the handle is visible, this can be done through the right-click menu, or using the "Reset all" button.
+            Disabling this is generally not recommended, except for specific use cases (for example, content unlocked by the player).
             </summary>
         </member>
         <member name="P:HugsLib.Settings.SettingHandle.Unsaved">
@@ -704,6 +745,14 @@
         <member name="P:HugsLib.Settings.SettingHandle.DisplayOrder">
             <summary>
             Affects the order in which handles appear in the settings menu. Lower comes first, default is 0.
+            </summary>
+        </member>
+        <member name="P:HugsLib.Settings.SettingHandle.HasUnsavedChanges">
+            <summary>
+            Returns true if the <see cref="P:HugsLib.Settings.SettingHandle`1.Value"/> of this handle has been modified
+            after the creation of the handle or the last time its value was saved.
+            Automatically resets to false when <see cref="T:HugsLib.Settings.ModSettingsManager"/> saves changes.
+            Can be manually toggled when e.g. replacing null with an instance in a <see cref="T:HugsLib.Settings.SettingHandleConvertible"/> handle.
             </summary>
         </member>
         <member name="M:HugsLib.Settings.SettingHandle`1.op_Implicit(HugsLib.Settings.SettingHandle{`0})~`0">
@@ -742,6 +791,7 @@
         <member name="M:HugsLib.Settings.SettingHandle`1.ResetToDefault">
             <summary>
             Assigns the default value to the Value property.
+            Ignores the <see cref="P:HugsLib.Settings.SettingHandle.CanBeReset"/> property.
             </summary>
         </member>
         <member name="M:HugsLib.Settings.SettingHandle`1.HasDefaultValue">

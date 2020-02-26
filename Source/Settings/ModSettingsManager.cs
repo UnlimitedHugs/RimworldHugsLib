@@ -12,11 +12,38 @@ namespace HugsLib.Settings {
 			get { return "ModSettings.xml"; }
 		}
 
+		/// <summary>
+		/// Fires when <see cref="SaveChanges"/> is called and changes are about to be saved.
+		/// Use <see cref="ModSettingsPacks"/> and <see cref="ModSettingsPack.HasUnsavedChanges"/> to identify changed packs,
+		/// and <see cref="ModSettingsPack.Handles"/> with <see cref="SettingHandle.HasUnsavedChanges"/> to identify changed handles.
+		/// </summary>
+		public event Action BeforeModSettingsSaved;
+		/// <summary>
+		/// Fires when <see cref="SaveChanges"/> is called and the settings file has just been written to disk.
+		/// </summary>
+		public event Action AfterModSettingsSaved;
+
 		private readonly List<ModSettingsPack> packs = new List<ModSettingsPack>();
-		private readonly Action SettingsChangedCallback;
 		
-		internal ModSettingsManager(Action settingsChangedCallback) {
-			SettingsChangedCallback = settingsChangedCallback;
+		/// <summary>
+		/// Enumerates the <see cref="ModSettingsPack"/>s that have been registered up to this point.
+		/// </summary>
+		public IEnumerable<ModSettingsPack> ModSettingsPacks {
+			get { return packs; }
+		}
+		/// <summary>
+		/// Returns true when there are handles with values that have changed since the last time settings were saved.
+		/// </summary>
+		public bool HasUnsavedChanges {
+			get {
+				for (var i = 0; i < packs.Count; i++) {
+					if (packs[i].HasUnsavedChanges) return true;
+				}
+				return false;
+			}
+		}
+
+		internal ModSettingsManager() {
 			LoadData();
 		}
 
@@ -39,8 +66,18 @@ namespace HugsLib.Settings {
 		/// Saves all settings to disk and notifies all ModBase mods by calling SettingsChanged() 
 		/// </summary>
 		public void SaveChanges() {
+			if (!HasUnsavedChanges) return;
+			try {
+				BeforeModSettingsSaved?.Invoke();
+			} catch (Exception e) {
+				HugsLibController.Logger.ReportException(e);
+			}
 			SaveData();
-			if (SettingsChangedCallback != null) SettingsChangedCallback();
+			try {
+				AfterModSettingsSaved?.Invoke();
+			} catch (Exception e) {
+				HugsLibController.Logger.ReportException(e);
+			}
 		}
 
 		public bool HasSettingsForMod(string modId) {
@@ -56,10 +93,6 @@ namespace HugsLib.Settings {
 			if (pack == null) return false;
 			return packs.Remove(GetModSettings(modId));
 		}
-
-		public IEnumerable<ModSettingsPack> ModSettingsPacks {
-			get { return packs; }
-		} 
 
 		protected override void LoadFromXml(XDocument xml) {
 			packs.Clear();

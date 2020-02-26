@@ -459,7 +459,7 @@ namespace HugsLib.Logs {
 		internal static void RegisterSettings(ModSettingsPack pack) {
 			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", null, null);
 			if (optionsHandle.Value == null) optionsHandle.Value = new LogPublisherOptions();
-			optionsHandle.VisibilityPredicate = () => false; // invisible, but can be reset by "Reset all settings"
+			optionsHandle.NeverVisible = true;
 		}
 	}
 }
