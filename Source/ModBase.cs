@@ -123,6 +123,7 @@ namespace HugsLib {
 
 		internal void AssignSettings(ModSettingsPack pack) {
 			Settings = pack;
+			Settings.EntryName = ModContentPack?.Name;
 		}
 
 		/// <summary>
