@@ -65,6 +65,25 @@
             VersionShort is no longer used by HugsLib internally, and the type is retained for backwards compatibility.
             </summary>
         </member>
+        <member name="T:HugsLib.News.Dialog_UpdateFeatures">
+            <summary>
+            Displays a list to update feature defs with basic image and formatting support. See <see cref="T:HugsLib.UpdateFeatureDef"/> for proper syntax.
+            </summary>
+        </member>
+        <member name="T:HugsLib.News.UpdateFeatureManager">
+            <summary>
+            Stores the highest displayed update news version for all mods that provide update news via <see cref="T:HugsLib.UpdateFeatureDef"/>.
+            Defs are loaded from the News folder in the root mod directory.
+            </summary>
+        </member>
+        <member name="M:HugsLib.News.UpdateFeatureManager.TryShowDialog(System.Boolean)">
+            <summary>
+            Shows the news dialog window when there are not yet displayed news items available.
+            </summary>
+            <param name="manuallyOpened">Pass true to disable filtering based on what has 
+            and has not been seen and open the dialog with all available news items.</param>
+            <returns>true, if there have been found news items that were not displayed before, and the dialog has been opened</returns>
+        </member>
         <member name="T:HugsLib.EarlyInitAttribute">
             <summary>
             Used to indicate that a <see cref="T:HugsLib.ModBase"/> type should be instantiated at the earliest moment possible.
@@ -432,25 +451,6 @@
             There is no scenario in which defs are reloaded without the game restarting, save for a mod manually initiating a reload. 
             When def reloading is not an issue, anything done by this method can be safely done in StaticInitialize.
             </remarks>
-        </member>
-        <member name="T:HugsLib.News.Dialog_UpdateFeatures">
-            <summary>
-            Displays a list to update feature defs with basic image and formatting support. See <see cref="T:HugsLib.UpdateFeatureDef"/> for proper syntax.
-            </summary>
-        </member>
-        <member name="T:HugsLib.News.UpdateFeatureManager">
-            <summary>
-            Stores the highest displayed update news version for all mods that provide update news via <see cref="T:HugsLib.UpdateFeatureDef"/>.
-            Defs are loaded from the News folder in the root mod directory.
-            </summary>
-        </member>
-        <member name="M:HugsLib.News.UpdateFeatureManager.TryShowDialog(System.Boolean)">
-            <summary>
-            Shows the news dialog window when there are not yet displayed news items available.
-            </summary>
-            <param name="manuallyOpened">Pass true to disable filtering based on what has 
-            and has not been seen and open the dialog with all available news items.</param>
-            <returns>true, if there have been found news items that were not displayed before, and the dialog has been opened</returns>
         </member>
         <member name="T:HugsLib.UpdateFeatureDef">
             <summary>

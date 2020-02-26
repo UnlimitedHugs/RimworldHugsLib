@@ -30,7 +30,7 @@ namespace HugsLib.News {
 		private List<FeatureEntry> entries;
 		private float totalContentHeight = -1;
 		private Vector2 scrollPosition;
-		private List<string> pendingImages;
+		private bool anyImagesPending;
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
@@ -47,7 +47,15 @@ namespace HugsLib.News {
 			resizeable = false;
 			GenerateDrawableEntries(featureDefs);
 		}
-		
+
+		public override void Close(bool doCloseSound = true) {
+			base.Close(doCloseSound);
+			foreach (var resolvedTexture in resolvedImages.Values) {
+				UnityEngine.Object.Destroy(resolvedTexture);
+			}
+			resolvedImages.Clear();
+		}
+
 		public override void DoWindowContents(Rect inRect) {
 			var windowButtonSize = CloseButSize;
 			var contentRect = new Rect(0, 0, inRect.width, inRect.height - (windowButtonSize.y + 10f)).ContractedBy(10f);
@@ -61,7 +69,7 @@ namespace HugsLib.News {
 				TooltipHandler.TipRegion(titleRect, "HugsLib_features_description".Translate());
 			}
 			GenUI.ResetLabelAlign();
-			if (pendingImages == null) {
+			if (!anyImagesPending) {
 				Text.Font = GameFont.Small;
 				var scrollViewRect = new Rect(0f, titleRect.height, contentRect.width, contentRect.height - titleRect.height);
 				var scrollBarVisible = totalContentHeight > scrollViewRect.height;
@@ -165,31 +173,41 @@ namespace HugsLib.News {
 
 		private void GenerateDrawableEntries(List<UpdateFeatureDef> defs) {
 			entries = new List<FeatureEntry>(defs.Count);
-			pendingImages = new List<string>();
+			var requiredImagePairs = new List<(ModContentPack pack, string fileName)>();
 			foreach (var def in defs) {
-				entries.Add(new FeatureEntry(def, ParseEntryContent(def.content)));
+				entries.Add(new FeatureEntry(def, ParseEntryContent(def.content, out IEnumerable<string> requiredImages)));
+				foreach (var imageFileName in requiredImages) {
+					requiredImagePairs.Add((def.modContentPack, imageFileName));
+				}
 			}
-			LongEventHandler.ExecuteWhenFinished(ResolveImages);
+			if (requiredImagePairs.Count > 0) {
+				anyImagesPending = true; // TODO: is this required? Current setup loads images synchronously
+				var requiredImagesGroupedByMod = requiredImagePairs
+					.GroupBy(pair => pair.pack, pair => pair.fileName);
+				HugsLibController.Instance.DoLater.DoNextUpdate(() => {
+					// this must be done in the main thread due to Unity API calls
+					foreach (var group in requiredImagesGroupedByMod) {
+						ResolveImagesForMod(group.Key, group);
+					}
+					anyImagesPending = false;
+				});
+			}
 		}
 
-		private void ResolveImages() {
-			foreach (var imageName in pendingImages) {
-				var tex = ContentFinder<Texture2D>.Get(imageName, false);
-				if (tex == null) {
-					HugsLibController.Logger.Warning("No texture named {0} for use in update feature text", imageName);
-					tex = ContentFinder<Texture2D>.Get(BaseContent.BadTexPath);
-				}
-				resolvedImages[imageName] = tex;
+		private void ResolveImagesForMod(ModContentPack mod, IEnumerable<string> imageFileNames) {
+			foreach (var nameTexturePair in UpdateFeatureImageLoader.LoadImagesForMod(mod, imageFileNames)) {
+				resolvedImages[nameTexturePair.Key] = nameTexturePair.Value;
 			}
-			pendingImages = null;
 		}
 		
-		private List<DescriptionSegment> ParseEntryContent(string content) {
+		private List<DescriptionSegment> ParseEntryContent(string content, out IEnumerable<string> requiredImages) {
 			const char SegmentSeparator = '|';
 			const char ArgumentSeparator = ':';
 			const char ListSeparator = ',';
 			const string ImageSegmentTag = "img:";
 			const string CaptionSegmentTag = "caption:";
+			var requiredImagesList = new List<string>();
+			requiredImages = requiredImagesList;
 			try {
 				content = content.Replace("\\n", "\n");
 				var segmentStrings = content.Split(SegmentSeparator);
@@ -204,7 +222,7 @@ namespace HugsLib.News {
 						if (parts[1].Length == 0) continue;
 						images = parts[1].Split(ListSeparator).Where(s => s.Length > 0).ToArray();
 						for (int i = 0; i < images.Length; i++) {
-							pendingImages.Add(images[i]);
+							requiredImagesList.Add(images[i]);
 						}
 					} else if (segmentString.StartsWith(CaptionSegmentTag)) {
 						if (segmentList.Count == 0 || segmentList[segmentList.Count - 1].type != DescriptionSegment.SegmentType.Image) {

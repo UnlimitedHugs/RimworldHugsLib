@@ -14,7 +14,7 @@ namespace HugsLib.News {
 	/// Defs are loaded from the News folder in the root mod directory.
 	/// </summary>
 	public class UpdateFeatureManager : PersistentDataManager {
-		private const string UpdateFeatureDefFolder = "News/";
+		internal const string UpdateFeatureDefFolder = "News/";
 
 		protected override string FileName {
 			get { return "LastSeenNews.xml"; }

@@ -60,6 +60,10 @@
       <HintPath>..\RimworldManaged\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\RimworldManaged\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RimworldManaged\UnityEngine.IMGUIModule.dll</HintPath>
@@ -85,6 +89,7 @@
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
+    <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\Utils\EarlyInitAttribute.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogsOptions.cs" />
     <Compile Include="Source\Logs\LogPublisherOptions.cs" />
