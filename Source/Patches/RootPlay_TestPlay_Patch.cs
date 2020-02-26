@@ -18,10 +18,11 @@ namespace HugsLib.Patches {
 		private static bool patchedSize;
 
 		[HarmonyPrepare]
-		public static void Prepare() {
+		public static bool Prepare() {
 			LongEventHandler.ExecuteWhenFinished(() => {
 				if (!patchedScenario || !patchedSize) HugsLibController.Logger.Error("RootPlay_TestPlay_Patch was partial or unsuccessful: {0}, {1}", patchedScenario, patchedSize);
 			});
+			return true;
 		}
 
 		[HarmonyTranspiler]
