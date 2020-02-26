@@ -488,6 +488,13 @@
             Paragraph1|Paragraph2|img:singleImage|caption:caption\ntext|img:sequence1,sequence2|More text
             </summary>
         </member>
+        <member name="F:HugsLib.UpdateFeatureDef.trimWhitespace">
+            <summary>
+            When set to true (true by default), leading and trailing whitespace characters (spaces, tabs, newlines)
+            are removed from content captions and paragraphs.
+            This makes it easier lay out your content and not have to cram everything into one line.
+            </summary>
+        </member>
         <member name="F:HugsLib.UpdateFeatureDef.linkUrl">
             <summary>
             Optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.

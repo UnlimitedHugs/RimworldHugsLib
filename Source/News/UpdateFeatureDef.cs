@@ -36,6 +36,12 @@ namespace HugsLib {
 		/// </summary>
 		public string content;
 		/// <summary>
+		/// When set to true (true by default), leading and trailing whitespace characters (spaces, tabs, newlines)
+		/// are removed from content captions and paragraphs.
+		/// This makes it easier lay out your content and not have to cram everything into one line.
+		/// </summary>
+		public bool trimWhitespace = true;
+		/// <summary>
 		/// Optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.
 		/// </summary>
 		public string linkUrl;

@@ -175,7 +175,7 @@ namespace HugsLib.News {
 			entries = new List<FeatureEntry>(defs.Count);
 			var requiredImagePairs = new List<(ModContentPack pack, string fileName)>();
 			foreach (var def in defs) {
-				entries.Add(new FeatureEntry(def, ParseEntryContent(def.content, out IEnumerable<string> requiredImages)));
+				entries.Add(new FeatureEntry(def, ParseEntryContent(def.content, def.trimWhitespace, out IEnumerable<string> requiredImages)));
 				foreach (var imageFileName in requiredImages) {
 					requiredImagePairs.Add((def.modContentPack, imageFileName));
 				}
@@ -200,7 +200,7 @@ namespace HugsLib.News {
 			}
 		}
 		
-		private List<DescriptionSegment> ParseEntryContent(string content, out IEnumerable<string> requiredImages) {
+		private List<DescriptionSegment> ParseEntryContent(string content, bool trimWhitespace, out IEnumerable<string> requiredImages) {
 			const char SegmentSeparator = '|';
 			const char ArgumentSeparator = ':';
 			const char ListSeparator = ',';
@@ -212,7 +212,11 @@ namespace HugsLib.News {
 				content = content.Replace("\\n", "\n");
 				var segmentStrings = content.Split(SegmentSeparator);
 				var segmentList = new List<DescriptionSegment>();
-				foreach (var segmentString in segmentStrings) {
+				foreach (var contentSegmentString in segmentStrings) {
+					var segmentString = contentSegmentString;
+					if (trimWhitespace) {
+						segmentString = segmentString.Trim();
+					}
 					DescriptionSegment.SegmentType segmentType;
 					string[] images = null;
 					string text = null;
@@ -238,6 +242,9 @@ namespace HugsLib.News {
 					} else {
 						segmentType = DescriptionSegment.SegmentType.Text;
 						text = segmentString;
+					}
+					if (text != null && trimWhitespace) {
+						text = text.Trim();
 					}
 					var seg = new DescriptionSegment(segmentType) {imageNames = images, text = text};
 					segmentList.Add(seg);
