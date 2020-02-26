@@ -24,10 +24,11 @@ namespace HugsLib.Patches {
 		private static bool patched;
 
 		[HarmonyPrepare]
-		public static void Prepare() {
+		public static bool Prepare() {
 			LongEventHandler.ExecuteWhenFinished(() => {
 				if (!patched) HugsLibController.Logger.Error("Dialog_Options_Patch could not be applied.");
 			});
+			return true;
 		}
 
 		[HarmonyTranspiler]
