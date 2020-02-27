@@ -124,12 +124,12 @@ namespace HugsLib {
 		}
 
 		internal void ApplyHarmonyPatches() {
+			ModLogger GetLogger() => Logger ?? new ModLogger(LogIdentifierSafe);
 			if (HarmonyAutoPatch) {
 				var harmonyId = ModContentPack?.PackageIdPlayerFacing;
 				if (harmonyId == null) {
 					harmonyId = $"HugsLib.{LogIdentifierSafe}";
-					HugsLibController.Logger.Warning($"Failed to identify PackageId for \"{LogIdentifierSafe}\" " +
-													$"using \"{harmonyId}\" as Harmony id instead.");
+					GetLogger().Warning($"Failed to identify PackageId, using \"{harmonyId}\" as Harmony id instead.");
 				}
 				try {
 					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, harmonyId)) {
@@ -137,7 +137,7 @@ namespace HugsLib {
 						HarmonyInst.PatchAll(GetType().Assembly);
 					}
 				} catch (Exception e) {
-					HugsLibController.Logger.Error("Failed to apply Harmony patches for {0}. Exception was: {1}", harmonyId, e);
+					GetLogger().Error("Failed to apply Harmony patches for {0}. Exception was: {1}", harmonyId, e);
 				}
 			}
 		}
