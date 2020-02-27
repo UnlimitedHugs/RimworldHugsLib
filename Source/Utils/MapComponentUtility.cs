@@ -9,6 +9,7 @@ namespace HugsLib.Utils {
 		/// The injection is performed at ExecuteWhenFinished to allow calling this method in MapComponent constructors.
 		/// </summary>
 		/// <param name="mapComponent">The MapComponent that is expected to be present is the map's component list</param>
+		[Obsolete("Map components are now automatically injected by the game, including the ones added after map creation")]
 		public static void EnsureIsActive(this MapComponent mapComponent) {
 			if (mapComponent == null) throw new Exception("MapComponent is null");
 			LongEventHandler.ExecuteWhenFinished(() => {
@@ -26,6 +27,7 @@ namespace HugsLib.Utils {
 		/// </summary>
 		/// <typeparam name="T">The type of your MapComponent</typeparam>
 		/// <param name="map">The map to get the component from</param>
+		[Obsolete("Base game now has Verse.Map.GetComponent<T>() which does the same thing")]
 		public static T GetMapComponent<T>(this Map map) where T : MapComponent {
 			if (map == null || map.components == null) throw new Exception("Cannot get component from null or uninitialized map");
 			var comp = (T)map.components.Find(c => c is T);
