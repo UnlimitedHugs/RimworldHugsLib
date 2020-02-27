@@ -36,15 +36,12 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public bool HasUnsavedChanges {
 			get {
-				if(packListChanged) return true;
 				for (var i = 0; i < packs.Count; i++) {
 					if (packs[i].HasUnsavedChanges) return true;
 				}
 				return false;
 			}
 		}
-
-		private bool packListChanged;
 
 		internal ModSettingsManager() {
 			LoadData();
@@ -69,7 +66,6 @@ namespace HugsLib.Settings {
 					EntryName = displayModName
 				};
 				packs.Add(pack);
-				packListChanged = true;
 			}
 			pack.ParentManager = this;
 			return pack;
@@ -86,7 +82,6 @@ namespace HugsLib.Settings {
 				HugsLibController.Logger.ReportException(e);
 			}
 			SaveData();
-			packListChanged = false;
 			try {
 				AfterModSettingsSaved?.Invoke();
 			} catch (Exception e) {
@@ -106,7 +101,6 @@ namespace HugsLib.Settings {
 			var pack = packs.Find(p => p.ModId == modId);
 			if (pack == null) return false;
 			if (packs.Remove(GetModSettings(modId))) {
-				packListChanged = true;
 				return true;
 			}
 			return false;
