@@ -382,7 +382,7 @@ namespace HugsLib.Logs {
 			var builder = new StringBuilder();
 			builder.Append("Loaded mods:\n");
 			foreach (var modContentPack in LoadedModManager.RunningMods) {
-				builder.Append(modContentPack.Name);
+				builder.AppendFormat("{0}({1})", modContentPack.Name, modContentPack.PackageIdPlayerFacing);
 				var versionFile = VersionFile.TryParseVersionFile(modContentPack);
 				if (versionFile != null && versionFile.OverrideVersion != null) {
 					builder.AppendFormat("[ov:{0}]: ", versionFile.OverrideVersion);
