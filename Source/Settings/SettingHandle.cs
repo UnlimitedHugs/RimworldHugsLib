@@ -81,9 +81,19 @@ namespace HugsLib.Settings {
 		public abstract Type ValueType { get; }
 
 		internal abstract bool ShouldBeSaved { get; }
+		internal ModSettingsPack ParentPack { get; set; }
 
 		public abstract void ResetToDefault();
 		public abstract bool HasDefaultValue();
+
+		/// <summary>
+		/// Marks the handle as modified and forces all settings to be saved.
+		/// This is necessary for <see cref="SettingHandleConvertible"/> values, as changes in reference types cannot be automatically detected.
+		/// </summary>
+		public void ForceSaveChanges() {
+			HasUnsavedChanges = true;
+			ParentPack.SaveChanges();
+		}
 
 		protected SettingHandle() {
 			SpinnerIncrement = 1;

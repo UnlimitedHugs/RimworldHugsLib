@@ -205,7 +205,7 @@ namespace HugsLib.Test {
 			}
 			Assert(HugsLibController.SettingsManager.HasUnsavedChanges == false, "controller unsaved false");
 			
-			HugsLibController.SettingsManager.SaveChanges();
+			Settings.SaveChanges();
 
 			Assert(controllerSaved == false, "controller not saving without changes");
 			Assert(settingsChangedCalled == false, "SettingsChanged not called before");
@@ -218,7 +218,7 @@ namespace HugsLib.Test {
 			Assert(Settings.HasUnsavedChanges, "pack unsaved true");
 			Assert(HugsLibController.SettingsManager.HasUnsavedChanges, "controller unsaved true");
 
-			HugsLibController.SettingsManager.SaveChanges();
+			Settings.SaveChanges();
 
 			Assert(controllerSaved, "controller saved changes");
 			Assert(settingsChangedCalled, "SettingsChanged called after");
@@ -230,7 +230,7 @@ namespace HugsLib.Test {
 			settingsChangedCalled = false;
 			TestModSettingsChangedDetector.SettingsChangedCalled = false;
 			TestModSettingsChangedDetector.Handle.Value += 1;
-			HugsLibController.SettingsManager.SaveChanges();
+			Settings.SaveChanges();
 			Assert(settingsChangedCalled == false, "our mod not notified");
 			Assert(TestModSettingsChangedDetector.SettingsChangedCalled, "foreign mod notified");
 
@@ -246,8 +246,8 @@ namespace HugsLib.Test {
 				custom.Value.Nums.RemoveAt(0);
 			}
 			custom.Value.Prop++;
-			HugsLibController.SettingsManager.SaveChanges();
-			Logger.Trace(string.Format("Custom setting values: Nums:{0} Prop:{1}", custom.Value.Nums.Join(","), custom.Value.Prop));
+			custom.ForceSaveChanges();
+			Logger.Trace($"Custom setting values: Nums:{custom.Value.Nums.Join(",")} Prop:{custom.Value.Prop}");
 		}
 
 		//<customType>aasd1w423</customType>

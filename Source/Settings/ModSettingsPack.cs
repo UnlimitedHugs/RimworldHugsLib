@@ -51,6 +51,8 @@ namespace HugsLib.Settings {
 		/// </summary>
 		internal bool AlwaysExpandEntry;
 
+		internal ModSettingsManager ParentManager { get; set; }
+
 		private readonly Dictionary<string, string> loadedValues = new Dictionary<string, string>();
 		private readonly List<SettingHandle> handles = new List<SettingHandle>();
 
@@ -81,6 +83,7 @@ namespace HugsLib.Settings {
 			}
 			if (handle == null) {
 				handle = new SettingHandle<T>(settingName) {Value = defaultValue};
+				handle.ParentPack = this;
 				handles.Add(handle);
 			}
 			handle.DefaultValue = defaultValue;
@@ -155,6 +158,14 @@ namespace HugsLib.Settings {
 		/// <param name="name">The identifier of the setting (handle identifier)</param>
 		public bool TryRemoveUnclaimedValue(string name) {
 			return loadedValues.Remove(name);
+		}
+
+		/// <summary>
+		/// Prompts the <see cref="ModSettingsManager"/> to save changes if any or the registered 
+		/// <see cref="ModSettingsPack"/>s have handles with unsaved changes
+		/// </summary>
+		public void SaveChanges() {
+			ParentManager.SaveChanges();
 		}
 
 		internal void LoadFromXml(XElement xml) {

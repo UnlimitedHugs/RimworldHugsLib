@@ -642,6 +642,12 @@
             </summary>
             <param name="name">The identifier of the setting (handle identifier)</param>
         </member>
+        <member name="M:HugsLib.Settings.ModSettingsPack.SaveChanges">
+            <summary>
+            Prompts the <see cref="T:HugsLib.Settings.ModSettingsManager"/> to save changes if any or the registered 
+            <see cref="T:HugsLib.Settings.ModSettingsPack"/>s have handles with unsaved changes
+            </summary>
+        </member>
         <member name="T:HugsLib.Settings.ModSettingsManager">
             <summary>
             A central place for mods to store persistent settings. Individual settings are grouped by mod using ModSettingsPack
@@ -768,6 +774,12 @@
             after the creation of the handle or the last time its value was saved.
             Automatically resets to false when <see cref="T:HugsLib.Settings.ModSettingsManager"/> saves changes.
             Can be manually toggled when e.g. replacing null with an instance in a <see cref="T:HugsLib.Settings.SettingHandleConvertible"/> handle.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Settings.SettingHandle.ForceSaveChanges">
+            <summary>
+            Marks the handle as modified and forces all settings to be saved.
+            This is necessary for <see cref="T:HugsLib.Settings.SettingHandleConvertible"/> values, as changes in reference types cannot be automatically detected.
             </summary>
         </member>
         <member name="M:HugsLib.Settings.SettingHandle`1.op_Implicit(HugsLib.Settings.SettingHandle{`0})~`0">

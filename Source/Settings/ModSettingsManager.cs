@@ -36,12 +36,15 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public bool HasUnsavedChanges {
 			get {
+				if(packListChanged) return true;
 				for (var i = 0; i < packs.Count; i++) {
 					if (packs[i].HasUnsavedChanges) return true;
 				}
 				return false;
 			}
 		}
+
+		private bool packListChanged;
 
 		internal ModSettingsManager() {
 			LoadData();
@@ -54,11 +57,21 @@ namespace HugsLib.Settings {
 		/// <param name="displayModName">A display name of the mod owning the pack. This will be displayed in the Mod Settings dialog.</param>
 		public ModSettingsPack GetModSettings(string modId, string displayModName = null) {
 			if(!IsValidElementName(modId)) throw new Exception("Invalid name for mod settings group: "+modId);
+			ModSettingsPack pack = null;
 			for (int i = 0; i < packs.Count; i++) {
-				if (packs[i].ModId == modId) return packs[i];
+				if (packs[i].ModId == modId) {
+					pack = packs[i];
+					break;
+				}
 			}
-			var pack = new ModSettingsPack(modId) {EntryName = displayModName};
-			packs.Add(pack);
+			if (pack == null) {
+				pack = new ModSettingsPack(modId) {
+					EntryName = displayModName
+				};
+				packs.Add(pack);
+				packListChanged = true;
+			}
+			pack.ParentManager = this;
 			return pack;
 		}
 
@@ -73,6 +86,7 @@ namespace HugsLib.Settings {
 				HugsLibController.Logger.ReportException(e);
 			}
 			SaveData();
+			packListChanged = false;
 			try {
 				AfterModSettingsSaved?.Invoke();
 			} catch (Exception e) {
@@ -91,7 +105,11 @@ namespace HugsLib.Settings {
 		public bool TryRemoveModSettings(string modId) {
 			var pack = packs.Find(p => p.ModId == modId);
 			if (pack == null) return false;
-			return packs.Remove(GetModSettings(modId));
+			if (packs.Remove(GetModSettings(modId))) {
+				packListChanged = true;
+				return true;
+			}
+			return false;
 		}
 
 		protected override void LoadFromXml(XDocument xml) {

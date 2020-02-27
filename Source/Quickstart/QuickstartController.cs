@@ -103,7 +103,7 @@ namespace HugsLib.Quickstart {
 		}
 
 		internal static void SaveSettings() {
-			HugsLibController.SettingsManager.SaveChanges();
+			handle.ForceSaveChanges();
 		}
 
 		internal static Scenario ReplaceQuickstartScenarioIfNeeded(Scenario original) {

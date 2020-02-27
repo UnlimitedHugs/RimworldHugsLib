@@ -112,6 +112,7 @@ namespace HugsLib.News {
 				IgnoredNewsProvidersSetting.HasUnsavedChanges = false;
 			}
 			IgnoredNewsProvidersSetting.NeverVisible = true;
+			IgnoredNewsProvidersSetting.Value.Handle = IgnoredNewsProvidersSetting;
 		}
 
 		protected override void LoadFromXml(XDocument xml) {
@@ -134,13 +135,15 @@ namespace HugsLib.News {
 			private const char SerializationSeparator = '|';
 			private HashSet<string> ignoredOwnerIds = new HashSet<string>();
 
+			public SettingHandle<IgnoredNewsIds> Handle { private get; set; }
+
 			public bool Contains(string ownerId) {
 				return ignoredOwnerIds.Contains(ownerId);
 			}
 
 			public void SetIgnored(string ownerId, bool ignore) {
 				var changed = ignore ? ignoredOwnerIds.Add(ownerId) : ignoredOwnerIds.Remove(ownerId);
-				if (changed) HugsLibController.SettingsManager.SaveChanges();
+				if (changed) Handle.ForceSaveChanges();
 			}
 
 			public override bool ShouldBeSaved {

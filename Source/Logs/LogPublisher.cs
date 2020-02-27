@@ -56,7 +56,7 @@ namespace HugsLib.Logs {
 					OnUpload = OnPublishConfirmed,
 					OnCopy = CopyToClipboard,
 					OnOptionsToggled = UpdateCustomOptionsUsage,
-					OnPostClose = () => HugsLibController.Instance.Settings.SaveChanges()
+					OnPostClose = () => optionsHandle.ForceSaveChanges()
 				});
 			} else {
 				ShowPublishDialog();
