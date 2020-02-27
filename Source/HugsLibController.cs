@@ -440,18 +440,9 @@ namespace HugsLib {
 				if (hasEarlyInit != earlyInitMode) continue;
 				if (childMods.Find(cm => cm.GetType() == subclass) != null) continue; // skip duplicate types present in multiple assemblies
 				try {
+					ModBase.CurrentlyProcessedContentPack = pack;
 					var modbase = (ModBase)Activator.CreateInstance(subclass, true);
-					modbase.ModContentPack = pack;
-					var settingsPackId = modbase.SettingsIdentifier;
-					if (!string.IsNullOrEmpty(settingsPackId)) {
-						if (PersistentDataManager.IsValidElementName(settingsPackId)) {
-							modbase.SettingsPackInternalAccess = Settings.GetModSettings(modbase.SettingsIdentifier);
-						} else {
-							Logger.Error($"string \"{settingsPackId}\" cannot be used as a settings identifier. " +
-										$"Override {nameof(ModBase)}.{nameof(ModBase.SettingsIdentifier)} to manually specify one. " +
-										$"See {nameof(ModBase.SettingsIdentifier)} autocomplete documentation for expected format.");
-						}
-					}
+					ModBase.CurrentlyProcessedContentPack = null;
 					modbase.ApplyHarmonyPatches();
 					modbase.VersionInfo = AssemblyVersionInfo.ReadModAssembly(subclass.Assembly, pack);
 					childMods.Add(modbase);

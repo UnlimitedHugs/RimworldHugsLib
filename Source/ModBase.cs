@@ -81,18 +81,13 @@ namespace HugsLib {
 		}
 
 		protected ModContentPack modContentPackInt;
+
 		/// <summary>
 		/// The content pack for the mod containing the assembly this class belongs to
 		/// </summary>
 		public virtual ModContentPack ModContentPack {
 			get { return modContentPackInt; }
-			internal set {
-				if (Settings != null) {
-					Settings.EntryName = value != null ? value.Name : null;
-				}
-				Logger = new ModLogger(LogIdentifierSafe);
-				modContentPackInt = value;
-			}
+			internal set { modContentPackInt = value; }
 		}
 		
 		/// <summary>
@@ -106,6 +101,27 @@ namespace HugsLib {
 		/// Contains the AssemblyVersion and AssemblyFileVersion of the mod. Used by <see cref="GetVersion"/>.
 		/// </summary>
 		public AssemblyVersionInfo VersionInfo { get; internal set; }
+
+		/// <summary>
+		/// Added to avoid breaking mod compatibility during the 7.0 update.
+		/// TODO: kill this during the next major update
+		/// </summary>
+		internal static ModContentPack CurrentlyProcessedContentPack { get; set; }
+
+		protected ModBase() {
+			modContentPackInt = CurrentlyProcessedContentPack;
+			Logger = new ModLogger(LogIdentifierSafe);
+			var settingsPackId = SettingsIdentifier;
+			if (!string.IsNullOrEmpty(settingsPackId)) {
+				if (PersistentDataManager.IsValidElementName(settingsPackId)) {
+					Settings = HugsLibController.Instance.Settings.GetModSettings(settingsPackId, modContentPackInt?.Name);
+				} else {
+					Logger.Error($"string \"{settingsPackId}\" cannot be used as a settings identifier. " +
+								$"Override {nameof(ModBase)}.{nameof(SettingsIdentifier)} to manually specify one. " +
+								$"See {nameof(SettingsIdentifier)} autocomplete documentation for expected format.");
+				}
+			}
+		}
 
 		internal void ApplyHarmonyPatches() {
 			if (HarmonyAutoPatch) {
@@ -128,10 +144,6 @@ namespace HugsLib {
 
 		internal ModSettingsPack SettingsPackInternalAccess {
 			get { return Settings; }
-			set {
-				Settings = value;
-				Settings.EntryName = ModContentPack?.Name;
-			}
 		}
 
 		/// <summary>
