@@ -125,7 +125,7 @@ namespace HugsLib {
 
 		internal void ApplyHarmonyPatches() {
 			if (HarmonyAutoPatch) {
-				var harmonyId = ModContentPack?.PackageId;
+				var harmonyId = ModContentPack?.PackageIdPlayerFacing;
 				if (harmonyId == null) {
 					harmonyId = $"HugsLib.{LogIdentifierSafe}";
 					HugsLibController.Logger.Warning($"Failed to identify PackageId for \"{LogIdentifierSafe}\" " +
