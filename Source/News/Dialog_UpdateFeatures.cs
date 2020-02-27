@@ -181,7 +181,7 @@ namespace HugsLib.News {
 				}
 			}
 			if (requiredImagePairs.Count > 0) {
-				anyImagesPending = true; // TODO: is this required? Current setup loads images synchronously
+				anyImagesPending = true;
 				var requiredImagesGroupedByMod = requiredImagePairs
 					.GroupBy(pair => pair.pack, pair => pair.fileName);
 				HugsLibController.Instance.DoLater.DoNextUpdate(() => {
