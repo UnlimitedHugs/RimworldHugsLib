@@ -26,8 +26,12 @@ namespace HugsLib.News {
 		private SettingHandle<IgnoredNewsIds> IgnoredNewsProvidersSetting { get; set; }
 		private SettingHandle<bool> ShowNewsSetting { get; set; }
 
-		internal UpdateFeatureManager() {
+		public UpdateFeatureManager() {
 			LoadData();
+		}
+
+		[Obsolete("Mods no longer need to call in, fresh news are automatically detected based on their defs")]
+		public void InspectActiveMod(string modId, Version currentVersion) {
 		}
 
 		internal void OnStaticConstructorInit() {

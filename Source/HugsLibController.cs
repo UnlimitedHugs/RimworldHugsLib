@@ -151,6 +151,7 @@ namespace HugsLib {
 					var modId = childMod.LogIdentifierSafe;
 					try {
 						childMod.EarlyInitialize();
+						childMod.EarlyInitalize();
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}
@@ -198,6 +199,7 @@ namespace HugsLib {
 					var modId = childMod.LogIdentifierSafe;
 					try {
 						childMod.StaticInitialize();
+						childMod.Initialize();
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}

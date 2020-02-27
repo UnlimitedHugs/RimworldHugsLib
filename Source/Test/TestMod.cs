@@ -26,11 +26,7 @@ namespace HugsLib.Test {
 			Instance = this;
 		}
 
-		public override string LogIdentifier {
-			get { return SettingsIdentifier; }
-		}
-
-		public override string SettingsIdentifier {
+		public override string ModIdentifier {
 			get { return "TestMod"; }
 		}
 
@@ -277,8 +273,8 @@ namespace HugsLib.Test {
 		public static SettingHandle<int> Handle { get; set; }
 		public static bool SettingsChangedCalled { get; set; }
 
-		public override string SettingsIdentifier => "SettingsChangedDetector";
-		public override string LogIdentifier => SettingsIdentifier;
+		public override string ModIdentifier => "SettingsChangedDetector";
+		protected override bool HarmonyAutoPatch => false;
 
 		public override void EarlyInitialize() {
 			Handle = Settings.GetHandle<int>("testHandle", null, null);

@@ -9,7 +9,10 @@ using Verse;
 
 namespace HugsLib {
 	/// <summary>
-	/// The base class for all mods using HugsLib library. All classes extending ModBase will be instantiated automatically by HugsLibController at game initialization.
+	/// The base class for all mods using HugsLib library. All classes extending ModBase will be instantiated 
+	/// automatically by <see cref="HugsLibController"/> at game initialization.
+	/// Can be annotated with <see cref="EarlyInitAttribute"/> to initialize the mod at <see cref="Verse.Mod"/>
+	/// initialization time and have <see cref="EarlyInitialize"/> be called.
 	/// </summary>
 	public abstract class ModBase {
 		public const string HarmonyInstancePrefix = "HugsLib.";
@@ -39,13 +42,15 @@ namespace HugsLib {
 		protected Harmony HarmonyInst { get; set; }
 
 		/// <summary>
-		/// A unique identifier for your mod.
-		/// Valid characters are A-z, 0-9, -, no spaces.
-		/// By default uses the PackageId of the implementing mod or the type name if that is not set.
+		/// A unique identifier used both as <see cref="SettingsIdentifier"/> and <see cref="LogIdentifier"/>.
+		/// Override them separately if different identifiers are needed or no <see cref="ModSettingsPack"/> should be assigned to <see cref="Settings"/>.
+		/// Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
 		/// </summary>
-		[Obsolete("Deprecated since 7.0 (Rimworld 1.1). Use ModBase.ModContentPack.PackageId to uniquely identify mods")]
+		/// <remarks>
+		/// This is no longer used to identify mods since 7.0 (Rimworld 1.1). Use ModBase.ModContentPack.PackageId to that end instead.
+		/// </remarks>
 		public virtual string ModIdentifier {
-			get { return ModContentPack?.PackageId ?? GetType().FullName; } 
+			get { return null; } 
 		}
 		
 		/// <summary>
@@ -55,7 +60,7 @@ namespace HugsLib {
 		/// Returning null will prevent the <see cref="Settings"/> property from being assigned.
 		/// </summary>
 		public virtual string SettingsIdentifier {
-			get { return ModContentPack?.PackageId; } 
+			get { return ModIdentifier ?? ModContentPack?.PackageId; } 
 		}
 		
 		/// <summary>
@@ -64,7 +69,7 @@ namespace HugsLib {
 		/// By default uses the non-lowercase PackageId of the implementing mod or the type name if that is not set.
 		/// </summary>
 		public virtual string LogIdentifier {
-			get { return ModContentPack?.PackageIdPlayerFacing ?? GetType().FullName; } 
+			get { return ModIdentifier ?? ModContentPack?.PackageIdPlayerFacing ?? GetType().FullName; } 
 		}
 
 		/// <summary>
@@ -147,12 +152,20 @@ namespace HugsLib {
 		public virtual void EarlyInitialize() {
 		}
 
+		[Obsolete("Override EarlyInitialize instead (typo).")]
+		public virtual void EarlyInitalize() {
+		}
+
 		/// <summary>
 		/// Called when HugsLib receives the <see cref="StaticConstructorOnStartup"/> call.
 		/// Load order among mods implementing <see cref="ModBase"/> is respected.
 		/// Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
 		/// </summary>
 		public virtual void StaticInitialize() {
+		}
+
+		[Obsolete("Override StaticInitialize instead (more descriptive name).")]
+		public virtual void Initialize() {
 		}
 
 		/// <summary>
