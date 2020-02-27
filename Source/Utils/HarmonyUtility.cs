@@ -13,17 +13,33 @@ namespace HugsLib.Utils {
 		private const int DefaultPatchPriority = 400;
 		
 		/// <summary>
-		/// Produces a human-readable list of all patched methods and their respective patches.
+		/// Produces a human-readable list of all methods patched by all Harmony instances and their respective patches.
+		/// </summary>
+		public static string DescribeAllPatchedMethods() {
+			try {
+				return DescribePatchedMethodsList(Harmony.GetAllPatchedMethods());
+			} catch (Exception e) {
+				return "Could not retrieve patched methods from the Harmony library:\n" + e;
+			}
+		}
+
+		/// <summary>
+		/// Produces a human-readable list of all methods patched by a single Harmony instance and their respective patches.
 		/// </summary>
 		/// <param name="instance">A Harmony instance that can be queried for patch information.</param>
 		public static string DescribePatchedMethods(Harmony instance) {
 			try {
-				IEnumerable<MethodBase> patchedMethods;
-				try {
-					patchedMethods = instance.GetPatchedMethods();
-				} catch (Exception e) {
-					return "Could not retrieve patched methods from the Harmony library:\n" + e;
-				}
+				return DescribePatchedMethodsList(instance.GetPatchedMethods());
+			} catch (Exception e) {
+				return $"Could not retrieve patched methods from Harmony instance (id: {instance.Id}):\n{e}";
+			}
+		}
+
+		/// <summary>
+		/// Produces a human-readable list of Harmony patches on a given set of methods.
+		/// </summary>
+		public static string DescribePatchedMethodsList(IEnumerable<MethodBase> patchedMethods) {
+			try {
 				var methodList = patchedMethods.ToList();
 				// generate method name strings so we can sort the patches alphabetically
 				var namedMethodList = new List<NameMethodPair>(methodList.Count);

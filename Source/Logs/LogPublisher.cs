@@ -354,7 +354,7 @@ namespace HugsLib.Logs {
 
 		private string ListHarmonyPatches() {
 			var harmonyInstance = HugsLibController.Instance.HarmonyInst;
-			var patchListing = HarmonyUtility.DescribePatchedMethods(harmonyInstance);
+			var patchListing = HarmonyUtility.DescribeAllPatchedMethods();
 
 			return string.Concat("Active Harmony patches:\n",
 				patchListing,
