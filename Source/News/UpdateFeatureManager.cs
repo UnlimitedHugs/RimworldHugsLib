@@ -20,7 +20,7 @@ namespace HugsLib.News {
 			get { return "LastSeenNews.xml"; }
 		}
 
-		// the highest news item version we have previously displayed for a mod packageId
+		// the highest news item version we have previously displayed for a UpdateFeatureDef.OwningModId
 		private readonly Dictionary<string, Version> highestSeenVersions = new Dictionary<string, Version>();
 
 		private SettingHandle<IgnoredNewsIds> IgnoredNewsProvidersSetting { get; set; }
@@ -49,7 +49,7 @@ namespace HugsLib.News {
 				} else {
 					// try to find defs newer than already featured, exclude ignored mods, remember highest found version
 					defsToShow = EnumerateFeatureDefsWithMoreRecentVersions(allNewsFeatureDefs, highestSeenVersions)
-						.Where(def => !NewsProviderPackageIdIsIgnored(def.modContentPack.PackageId))
+						.Where(def => !NewsProviderOwningModIdIsIgnored(def.OwningModId))
 						.ToList();
 					UpdateMostRecentKnownFeatureVersions(defsToShow, highestSeenVersions);
 				}
@@ -66,33 +66,32 @@ namespace HugsLib.News {
 		private static IEnumerable<UpdateFeatureDef> EnumerateFeatureDefsWithMoreRecentVersions(
 			IEnumerable<UpdateFeatureDef> featureDefs, Dictionary<string, Version> highestSeenVersions) {
 			foreach (var featureDef in featureDefs) {
-				var ownerPackageId = featureDef.modContentPack?.PackageId;
-				if (!ownerPackageId.NullOrEmpty()) {
-					var highestSeenVersion = highestSeenVersions.TryGetValue(ownerPackageId);
-					if (highestSeenVersion == null || featureDef.VersionParsed > highestSeenVersion) {
+				var ownerId = featureDef.OwningModId;
+				if (!ownerId.NullOrEmpty()) {
+					var highestSeenVersion = highestSeenVersions.TryGetValue(ownerId);
+					if (highestSeenVersion == null || featureDef.Version > highestSeenVersion) {
 						yield return featureDef;
 					}
 				}
 			}
 		}
 
-		private bool NewsProviderPackageIdIsIgnored(string packageId) {
-			return IgnoredNewsProvidersSetting.Value.Contains(packageId);
+		private bool NewsProviderOwningModIdIsIgnored(string ownerId) {
+			return IgnoredNewsProvidersSetting.Value.Contains(ownerId);
 		}
 
 		private static void UpdateMostRecentKnownFeatureVersions(
 			IEnumerable<UpdateFeatureDef> shownNewsFeatureDefs, Dictionary<string, Version> highestSeenVersions) {
 			foreach (var featureDef in shownNewsFeatureDefs) {
-				var ownerPackageId = featureDef.modContentPack.PackageId;
-				highestSeenVersions[ownerPackageId] = featureDef.VersionParsed;
+				highestSeenVersions[featureDef.OwningModId] = featureDef.Version;
 			}
 		}
 
 		private static void SortFeatureDefsByModNameAndVersion(List<UpdateFeatureDef> featureDefs) {
-			// sort defs by modNameReadable first, VersionParsed of the news item second
+			// sort defs by modNameReadable first, Version of the news item second
 			featureDefs.Sort((def1, def2) => def1.modNameReadable != def2.modNameReadable
 				? string.Compare(def1.modNameReadable, def2.modNameReadable, StringComparison.Ordinal)
-				: def1.VersionParsed.CompareTo(def2.VersionParsed));
+				: def1.Version.CompareTo(def2.Version));
 		}
 
 		internal void RegisterSettings(ModSettingsPack pack) {
@@ -133,28 +132,28 @@ namespace HugsLib.News {
 
 		public class IgnoredNewsIds : SettingHandleConvertible {
 			private const char SerializationSeparator = '|';
-			private HashSet<string> ignoredPackageIds = new HashSet<string>();
+			private HashSet<string> ignoredOwnerIds = new HashSet<string>();
 
-			public bool Contains(string packageId) {
-				return ignoredPackageIds.Contains(packageId);
+			public bool Contains(string ownerId) {
+				return ignoredOwnerIds.Contains(ownerId);
 			}
 
-			public void SetIgnored(string packageId, bool ignore) {
-				var changed = ignore ? ignoredPackageIds.Add(packageId) : ignoredPackageIds.Remove(packageId);
+			public void SetIgnored(string ownerId, bool ignore) {
+				var changed = ignore ? ignoredOwnerIds.Add(ownerId) : ignoredOwnerIds.Remove(ownerId);
 				if (changed) HugsLibController.SettingsManager.SaveChanges();
 			}
 
 			public override bool ShouldBeSaved {
-				get { return ignoredPackageIds.Count > 0; }
+				get { return ignoredOwnerIds.Count > 0; }
 			}
 
 			public override void FromString(string settingValue) {
 				if (string.IsNullOrEmpty(settingValue)) return;
-				ignoredPackageIds = new HashSet<string>(settingValue.Split(SerializationSeparator));
+				ignoredOwnerIds = new HashSet<string>(settingValue.Split(SerializationSeparator));
 			}
 
 			public override string ToString() {
-				return ignoredPackageIds.Join(SerializationSeparator.ToString());
+				return ignoredOwnerIds.Join(SerializationSeparator.ToString());
 			}
 		}
 
@@ -173,7 +172,7 @@ namespace HugsLib.News {
 				// Overall, we'll stick as much as we can to the vanilla def loading experience, albeit without patches.
 				// Patch metadata has already been cleared, and parsing it again would add too much overhead.
 				// First, gather all XML nodes that represent an UpdateFeatureDef, and remember where they came from
-				// We can't parse them info defs the spot, because there are abstract nodes and inheritance to consider.
+				// We can't parse them info defs on the spot, because there are abstract nodes and inheritance to consider.
 				var newsItemNodes = new List<(ModContentPack pack, XmlNode node)>();
 				foreach (var modContentPack in LoadedModManager.RunningMods) {
 					// this also handles versioned folder shenanigans
@@ -204,10 +203,6 @@ namespace HugsLib.News {
 						if (pack == null) {
 							HugsLibController.Logger.Warning($"{nameof(UpdateFeatureDef)} with defName \"{def.defName}\" " +
 															$"has unknown {nameof(ModContentPack)}. Discarding def.");
-						} else if (featureDef.HasDeprecatedFormat) {
-							HugsLibController.Logger.Warning($"{nameof(UpdateFeatureDef)} by mod {pack.PackageIdPlayerFacing} " +
-															$"with defName \"{def.defName}\" is using deprecated fields modIdentifier " +
-															"and/or assemblyVersion. Discarding def.");
 						} else {
 							def.modContentPack = pack;
 							featureDef.ResolveReferences();

@@ -108,7 +108,7 @@ namespace HugsLib.News {
 				var labelRect = new Rect(togglePos.x + toggleSize, curY,
 					width - EntryTitleLinkWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
 				Text.Font = GameFont.Medium;
-				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.version);
+				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.assemblyVersion);
 				Widgets.Label(labelRect, $"<size={EntryTitleFontSize}>{titleText}</size>");
 				Text.Font = GameFont.Small;
 				if (entry.def.linkUrl != null) {
@@ -139,13 +139,13 @@ namespace HugsLib.News {
 		}
 
 		private void DoIgnoreNewsProviderToggle(Vector2 togglePos, FeatureEntry entry) {
-			var ownerPackageId = entry.def.modContentPack.PackageId;
-			var wasOn = !ignoredNewsProviders.Contains(ownerPackageId);
+			var ownerId = entry.def.OwningModId;
+			var wasOn = !ignoredNewsProviders.Contains(ownerId);
 			var isOn = wasOn;
 			Widgets.Checkbox(togglePos, ref isOn);
 			if (wasOn != isOn) {
 				void ToggleIgnoredState() {
-					ignoredNewsProviders.SetIgnored(ownerPackageId, !isOn);
+					ignoredNewsProviders.SetIgnored(ownerId, !isOn);
 				}
 				if (isOn || HugsLibUtility.ShiftIsHeld) {
 					ToggleIgnoredState();
