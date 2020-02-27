@@ -8,7 +8,6 @@ using HugsLib.Logs;
 using HugsLib.News;
 using HugsLib.Quickstart;
 using HugsLib.Settings;
-using HugsLib.Source.Attrib;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -126,7 +125,8 @@ namespace HugsLib {
 				Logger.Message("version {0}", LibraryVersion);
 				PrepareReflection();
 				ApplyHarmonyPatches();
-				Settings = new ModSettingsManager(OnSettingsChanged);
+				Settings = new ModSettingsManager();
+				Settings.BeforeModSettingsSaved += OnBeforeModSettingsSaved;
 				UpdateFeatures = new UpdateFeatureManager();
 				TickDelayScheduler = new TickDelayScheduler();
 				DistributedTicker = new DistributedTickScheduler();
@@ -148,8 +148,9 @@ namespace HugsLib {
 					var childMod = childMods[i];
 					if (earlyInitializedMods.Contains(childMod)) continue;
 					earlyInitializedMods.Add(childMod);
-					var modId = childMod.ModIdentifier;
+					var modId = childMod.LogIdentifierSafe;
 					try {
+						childMod.EarlyInitialize();
 						childMod.EarlyInitalize();
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
@@ -176,6 +177,7 @@ namespace HugsLib {
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.Initialize();
+				UpdateFeatures.OnStaticConstructorInit();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
@@ -187,7 +189,6 @@ namespace HugsLib {
 			try {
 				initializationInProgress = true; // prevent the Unity events from causing race conditions during async loading
 				CheckForIncludedHugsLibAssembly();
-				ProcessAttributes();
 				EnumerateModAssemblies();
 				EnumerateChildMods(false);
 				for (int i = 0; i < childMods.Count; i++) {
@@ -195,14 +196,14 @@ namespace HugsLib {
 					childMod.ModIsActive = assemblyContentPacks.ContainsKey(childMod.GetType().Assembly);
 					if (initializedMods.Contains(childMod)) continue; // no need to reinitialize already loaded mods
 					initializedMods.Add(childMod);
-					var modId = childMod.ModIdentifier;
+					var modId = childMod.LogIdentifierSafe;
 					try {
+						childMod.StaticInitialize();
 						childMod.Initialize();
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}
 				}
-				InspectUpdateNews();
 				OnDefsLoaded();
 			} catch (Exception e) {
 				Logger.ReportException(e);
@@ -219,7 +220,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].Update();
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 			} catch (Exception e) {
@@ -236,7 +237,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].Tick(currentTick);
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 				TickDelayScheduler.Tick(currentTick);
@@ -253,7 +254,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].FixedUpdate();
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 			} catch (Exception e) {
@@ -270,7 +271,7 @@ namespace HugsLib {
 					try {
 						initializedMods[i].OnGUI();
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier, true);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe, true);
 					}
 				}
 			} catch (Exception e) {
@@ -284,7 +285,7 @@ namespace HugsLib {
 					try {
 						childMods[i].SceneLoaded(scene);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -310,7 +311,7 @@ namespace HugsLib {
 					try {
 						childMods[i].WorldLoaded();
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -324,7 +325,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapGenerated(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -338,7 +339,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapComponentsInitializing(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -368,7 +369,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapLoaded(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 				// show update news dialog
@@ -384,7 +385,7 @@ namespace HugsLib {
 					try {
 						childMods[i].MapDiscarded(map);
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -392,13 +393,16 @@ namespace HugsLib {
 			}
 		}
 
-		private void OnSettingsChanged() {
+		private void OnBeforeModSettingsSaved() {
 			try {
 				for (int i = 0; i < initializedMods.Count; i++) {
 					try {
-						initializedMods[i].SettingsChanged();
+						var mod = initializedMods[i];
+						if (mod.SettingsPackInternalAccess != null && mod.SettingsPackInternalAccess.HasUnsavedChanges) {
+							initializedMods[i].SettingsChanged();
+						}
 					} catch (Exception e) {
-						Logger.ReportException(e, initializedMods[i].ModIdentifier);
+						Logger.ReportException(e, initializedMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
@@ -413,16 +417,12 @@ namespace HugsLib {
 					try {
 						childMods[i].DefsLoaded();
 					} catch (Exception e) {
-						Logger.ReportException(e, childMods[i].ModIdentifier);
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
-		}
-
-		private void ProcessAttributes() {
-			AttributeDetector.ProcessNewTypes();
 		}
 
 		// will run on startup and on reload. On reload it will add newly loaded mods
@@ -439,18 +439,14 @@ namespace HugsLib {
 				var hasEarlyInit = subclass.HasAttribute<EarlyInitAttribute>();
 				if (hasEarlyInit != earlyInitMode) continue;
 				if (childMods.Find(cm => cm.GetType() == subclass) != null) continue; // skip duplicate types present in multiple assemblies
-				ModBase modbase;
 				try {
-					modbase = (ModBase)Activator.CreateInstance(subclass, true);
+					ModBase.CurrentlyProcessedContentPack = pack;
+					var modbase = (ModBase)Activator.CreateInstance(subclass, true);
+					ModBase.CurrentlyProcessedContentPack = null;
 					modbase.ApplyHarmonyPatches();
-					modbase.ModContentPack = pack;
 					modbase.VersionInfo = AssemblyVersionInfo.ReadModAssembly(subclass.Assembly, pack);
-					if (childMods.Find(m => m.ModIdentifier == modbase.ModIdentifier) != null) {
-						Logger.Error("Duplicate mod identifier: " + modbase.ModIdentifier);
-						continue;
-					}
 					childMods.Add(modbase);
-					instantiatedThisRun.Add(modbase.ModIdentifier);
+					instantiatedThisRun.Add(modbase.LogIdentifierSafe);
 				} catch (Exception e) {
 					Logger.ReportException(e, subclass.ToString(), false, "child mod instantiation");
 				}
@@ -461,17 +457,6 @@ namespace HugsLib {
 			}
 		}
 
-		private void InspectUpdateNews() {
-			foreach (var modBase in childMods) {
-				try {
-					var version = modBase.GetVersion();
-					UpdateFeatures.InspectActiveMod(modBase.ModIdentifier, version);
-				} catch (Exception e) {
-					Logger.ReportException(e, modBase.ModIdentifier);
-				}
-			}
-		}
-		
 		private void EnumerateModAssemblies() {
 			assemblyContentPacks = new Dictionary<Assembly, ModContentPack>();
 			foreach (var modContentPack in LoadedModManager.RunningMods) {

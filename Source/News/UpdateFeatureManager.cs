@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.Settings;
@@ -9,17 +10,18 @@ using Verse;
 
 namespace HugsLib.News {
 	/// <summary>
-	/// Stores the last displayed update news item for all mods. Shows the news dialog window when there are not yet displayed news items available.
+	/// Stores the highest displayed update news version for all mods that provide update news via <see cref="UpdateFeatureDef"/>.
+	/// Defs are loaded from the News folder in the root mod directory.
 	/// </summary>
 	public class UpdateFeatureManager : PersistentDataManager {
+		internal const string UpdateFeatureDefFolder = "News/";
 
 		protected override string FileName {
 			get { return "LastSeenNews.xml"; }
 		}
-		// highest version that has displayed features
-		private readonly Dictionary<string, Version> knownVersions = new Dictionary<string, Version>();
-		// current version if higher than last featured
-		private readonly Dictionary<string, Version> freshVersions = new Dictionary<string, Version>();
+
+		// the highest news item version we have previously displayed for a UpdateFeatureDef.OwningModId
+		private readonly Dictionary<string, Version> highestSeenVersions = new Dictionary<string, Version>();
 
 		private SettingHandle<IgnoredNewsIds> IgnoredNewsProvidersSetting { get; set; }
 		private SettingHandle<bool> ShowNewsSetting { get; set; }
@@ -28,54 +30,72 @@ namespace HugsLib.News {
 			LoadData();
 		}
 
+		[Obsolete("Mods no longer need to call in, fresh news are automatically detected based on their defs")]
 		public void InspectActiveMod(string modId, Version currentVersion) {
-			var knownVersion = TryGetKnownVersion(modId);
-			if (knownVersion == null || currentVersion > knownVersion) {
-				var existingFreshVersion = freshVersions.TryGetValue(modId);
-				freshVersions[modId] = existingFreshVersion == null || currentVersion > existingFreshVersion ? 
-					currentVersion : existingFreshVersion;
-			}
 		}
 
+		internal void OnStaticConstructorInit() {
+			UpdateFeatureDefLoader.ReloadNewsFeatureDefs();
+		}
+
+		/// <summary>
+		/// Shows the news dialog window when there are not yet displayed news items available.
+		/// </summary>
+		/// <param name="manuallyOpened">Pass true to disable filtering based on what has 
+		/// and has not been seen and open the dialog with all available news items.</param>
+		/// <returns>true, if there have been found news items that were not displayed before, and the dialog has been opened</returns>
 		public bool TryShowDialog(bool manuallyOpened) {
-			if ((!ShowNewsSetting.Value && !manuallyOpened) || (freshVersions.Count == 0 && !manuallyOpened)) return false;
-			List<UpdateFeatureDef> defsToShow;
-			if (manuallyOpened) {
-				defsToShow = DefDatabase<UpdateFeatureDef>.AllDefs.ToList();
-			} else {
-				// try to pull defs newer than already featured, remember highest pulled version
-				defsToShow = new List<UpdateFeatureDef>();
-				foreach (var freshVersionPair in freshVersions) {
-					var modId = freshVersionPair.Key;
-					if(IgnoredNewsProvidersSetting.Value.Contains(modId)) continue;
-					var freshVersion = freshVersionPair.Value;
-					var knownVersion = TryGetKnownVersion(modId) ?? new Version();
-					Version highestVersionWithFeature = null;
-					foreach (var def in DefDatabase<UpdateFeatureDef>.AllDefs) {
-						if (def.modIdentifier != modId) continue;
-						if (def.Version <= knownVersion || def.Version > freshVersion) continue;
-						defsToShow.Add(def);
-						if (highestVersionWithFeature == null || def.Version > highestVersionWithFeature) highestVersionWithFeature = def.Version;
-					}
-					if (highestVersionWithFeature != null) knownVersions[modId] = highestVersionWithFeature;
+			if (ShowNewsSetting.Value || manuallyOpened) {
+				var allNewsFeatureDefs = DefDatabase<UpdateFeatureDef>.AllDefs;
+				List<UpdateFeatureDef> defsToShow;
+				if (manuallyOpened) {
+					defsToShow = allNewsFeatureDefs.ToList();
+				} else {
+					// try to find defs newer than already featured, exclude ignored mods, remember highest found version
+					defsToShow = EnumerateFeatureDefsWithMoreRecentVersions(allNewsFeatureDefs, highestSeenVersions)
+						.Where(def => !NewsProviderOwningModIdIsIgnored(def.OwningModId))
+						.ToList();
+					UpdateMostRecentKnownFeatureVersions(defsToShow, highestSeenVersions);
 				}
-			}
-			if (defsToShow.Count > 0) {
-				// sort defs by modNameReadable, Version
-				defsToShow.Sort((d1, d2) => {
-					if (d1.modNameReadable == d2.modNameReadable) return d1.Version.CompareTo(d2.Version);
-					return String.Compare(d1.modNameReadable, d2.modNameReadable, StringComparison.Ordinal);
-				});
-				Find.WindowStack.Add(new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting));
-				SaveData();
-				return true;
+				if (defsToShow.Count > 0) {
+					SortFeatureDefsByModNameAndVersion(defsToShow);
+					Find.WindowStack.Add(new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting));
+					SaveData();
+					return true;
+				}
 			}
 			return false;
 		}
 
-		public void ClearSavedData() {
-			knownVersions.Clear();
-			SaveData();
+		private static IEnumerable<UpdateFeatureDef> EnumerateFeatureDefsWithMoreRecentVersions(
+			IEnumerable<UpdateFeatureDef> featureDefs, Dictionary<string, Version> highestSeenVersions) {
+			foreach (var featureDef in featureDefs) {
+				var ownerId = featureDef.OwningModId;
+				if (!ownerId.NullOrEmpty()) {
+					var highestSeenVersion = highestSeenVersions.TryGetValue(ownerId);
+					if (highestSeenVersion == null || featureDef.Version > highestSeenVersion) {
+						yield return featureDef;
+					}
+				}
+			}
+		}
+
+		private bool NewsProviderOwningModIdIsIgnored(string ownerId) {
+			return IgnoredNewsProvidersSetting.Value.Contains(ownerId);
+		}
+
+		private static void UpdateMostRecentKnownFeatureVersions(
+			IEnumerable<UpdateFeatureDef> shownNewsFeatureDefs, Dictionary<string, Version> highestSeenVersions) {
+			foreach (var featureDef in shownNewsFeatureDefs) {
+				highestSeenVersions[featureDef.OwningModId] = featureDef.Version;
+			}
+		}
+
+		private static void SortFeatureDefsByModNameAndVersion(List<UpdateFeatureDef> featureDefs) {
+			// sort defs by modNameReadable first, Version of the news item second
+			featureDefs.Sort((def1, def2) => def1.modNameReadable != def2.modNameReadable
+				? string.Compare(def1.modNameReadable, def2.modNameReadable, StringComparison.Ordinal)
+				: def1.Version.CompareTo(def2.Version));
 		}
 
 		internal void RegisterSettings(ModSettingsPack pack) {
@@ -91,56 +111,116 @@ namespace HugsLib.News {
 				return false;
 			};
 			IgnoredNewsProvidersSetting = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", null, null);
-			if(IgnoredNewsProvidersSetting.Value == null) IgnoredNewsProvidersSetting.Value = new IgnoredNewsIds();
-			IgnoredNewsProvidersSetting.VisibilityPredicate = () => false;
+			if (IgnoredNewsProvidersSetting.Value == null) {
+				IgnoredNewsProvidersSetting.Value = new IgnoredNewsIds();
+				IgnoredNewsProvidersSetting.HasUnsavedChanges = false;
+			}
+			IgnoredNewsProvidersSetting.NeverVisible = true;
+			IgnoredNewsProvidersSetting.Value.Handle = IgnoredNewsProvidersSetting;
 		}
 
 		protected override void LoadFromXml(XDocument xml) {
-			knownVersions.Clear();
-			if(xml.Root == null) throw new Exception("missing root node");
+			highestSeenVersions.Clear();
+			if (xml.Root == null) throw new Exception("missing root node");
 			foreach (var element in xml.Root.Elements()) {
-				knownVersions.Add(element.Name.ToString(), new Version(element.Value));
+				highestSeenVersions.Add(element.Name.ToString(), new Version(element.Value));
 			}
 		}
 
 		protected override void WriteXml(XDocument xml) {
 			var root = new XElement("mods");
 			xml.Add(root);
-			foreach (var pair in knownVersions) {
+			foreach (var pair in highestSeenVersions) {
 				root.Add(new XElement(pair.Key, new XText(pair.Value.ToString())));
 			}
 		}
 
-		private Version TryGetKnownVersion(string modId) {
-			Version knownVersion;
-			knownVersions.TryGetValue(modId, out knownVersion);
-			return knownVersion;
-		}
-
 		public class IgnoredNewsIds : SettingHandleConvertible {
 			private const char SerializationSeparator = '|';
-			private HashSet<string> ignoredModIds = new HashSet<string>();
+			private HashSet<string> ignoredOwnerIds = new HashSet<string>();
 
-			public bool Contains(string modId) {
-				return ignoredModIds.Contains(modId);
+			public SettingHandle<IgnoredNewsIds> Handle { private get; set; }
+
+			public bool Contains(string ownerId) {
+				return ignoredOwnerIds.Contains(ownerId);
 			}
 
-			public void SetIgnored(string modId, bool ignore) {
-				var changed = ignore ? ignoredModIds.Add(modId) : ignoredModIds.Remove(modId);
-				if(changed) HugsLibController.SettingsManager.SaveChanges();
+			public void SetIgnored(string ownerId, bool ignore) {
+				var changed = ignore ? ignoredOwnerIds.Add(ownerId) : ignoredOwnerIds.Remove(ownerId);
+				if (changed) Handle.ForceSaveChanges();
 			}
 
 			public override bool ShouldBeSaved {
-				get { return ignoredModIds.Count > 0; }
+				get { return ignoredOwnerIds.Count > 0; }
 			}
 
 			public override void FromString(string settingValue) {
 				if (string.IsNullOrEmpty(settingValue)) return;
-				ignoredModIds = new HashSet<string>(settingValue.Split(SerializationSeparator));
+				ignoredOwnerIds = new HashSet<string>(settingValue.Split(SerializationSeparator));
 			}
 
 			public override string ToString() {
-				return ignoredModIds.Join(SerializationSeparator.ToString());
+				return ignoredOwnerIds.Join(SerializationSeparator.ToString());
+			}
+		}
+
+		private static class UpdateFeatureDefLoader {
+			public static void ReloadNewsFeatureDefs() {
+				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
+				DefDatabase<UpdateFeatureDef>.Clear();
+				var parsedDefs = LoadAndParseNewsFeatureDefs();
+				DefDatabase<UpdateFeatureDef>.Add(parsedDefs);
+			}
+
+			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
+				XmlInheritance.Clear();
+				// As we're moving the updates out of /Defs and into /News, we can no longer rely on the DefDatabase to magically 
+				// load all the UpdateFeatureDefs. Instead, we'll have to manually point the reader to the relevant folders. 
+				// Overall, we'll stick as much as we can to the vanilla def loading experience, albeit without patches.
+				// Patch metadata has already been cleared, and parsing it again would add too much overhead.
+				// First, gather all XML nodes that represent an UpdateFeatureDef, and remember where they came from
+				// We can't parse them info defs on the spot, because there are abstract nodes and inheritance to consider.
+				var newsItemNodes = new List<(ModContentPack pack, XmlNode node)>();
+				foreach (var modContentPack in LoadedModManager.RunningMods) {
+					// this also handles versioned folder shenanigans
+					var modNewsXmlAssets = DirectXmlLoader.XmlAssetsInModFolder(modContentPack, UpdateFeatureDefFolder);
+					foreach (var xmlAsset in modNewsXmlAssets) {
+						var rootElement = xmlAsset.xmlDoc?.DocumentElement;
+						if (rootElement != null) {
+							foreach (var childNode in rootElement.ChildNodes.OfType<XmlNode>()) {
+								newsItemNodes.Add((modContentPack, childNode));
+							}
+						}
+					}
+				}
+
+				// deal with inheritance
+				foreach (var (_, node) in newsItemNodes) {
+					if (node != null && node.NodeType == XmlNodeType.Element) {
+						XmlInheritance.TryRegister(node, null);
+					}
+				}
+				XmlInheritance.Resolve();
+
+				var parsedFeatureDefs = new List<UpdateFeatureDef>();
+				foreach (var (pack, node) in newsItemNodes) {
+					// parse defs
+					var def = DirectXmlLoader.DefFromNode(node, null);
+					if (def is UpdateFeatureDef featureDef) {
+						if (pack == null) {
+							HugsLibController.Logger.Warning($"{nameof(UpdateFeatureDef)} with defName \"{def.defName}\" " +
+															$"has unknown {nameof(ModContentPack)}. Discarding def.");
+						} else {
+							def.modContentPack = pack;
+							featureDef.ResolveReferences();
+							parsedFeatureDefs.Add(featureDef);
+						}
+					}
+				}
+				
+				XmlInheritance.Clear();
+
+				return parsedFeatureDefs;
 			}
 		}
 	}

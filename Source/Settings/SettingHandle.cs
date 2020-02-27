@@ -43,9 +43,16 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public DrawCustomControl CustomDrawer { get; set; }
 		/// <summary>
-		/// When true, setting will never appear in the menu and can not be reset to default by the player. For serialized data.
+		/// When true, setting will never appear. For serialized data.
+		/// No longer affects value resetting, see <see cref="CanBeReset"/>
 		/// </summary>
 		public bool NeverVisible { get; set; }
+		/// <summary>
+		/// When true (true by default), the setting can be reset to its default value by the player.
+		/// If the handle is visible, this can be done through the right-click menu, or using the "Reset all" button.
+		/// Disabling this is generally not recommended, except for specific use cases (for example, content unlocked by the player).
+		/// </summary>
+		public bool CanBeReset { get; set; } = true;
 		/// <summary>
 		/// When true, will not save this setting to the xml file. Useful in conjunction with CustomDrawer for placing buttons in the settings menu.
 		/// </summary>
@@ -62,14 +69,31 @@ namespace HugsLib.Settings {
 		/// Affects the order in which handles appear in the settings menu. Lower comes first, default is 0.
 		/// </summary>
 		public int DisplayOrder { get; set; }
+		/// <summary>
+		/// Returns true if the <see cref="SettingHandle{T}.Value"/> of this handle has been modified
+		/// after the creation of the handle or the last time its value was saved.
+		/// Automatically resets to false when <see cref="ModSettingsManager"/> saves changes.
+		/// Can be manually toggled when e.g. replacing null with an instance in a <see cref="SettingHandleConvertible"/> handle.
+		/// </summary>
+		public bool HasUnsavedChanges { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
 
 		internal abstract bool ShouldBeSaved { get; }
+		internal ModSettingsPack ParentPack { get; set; }
 
 		public abstract void ResetToDefault();
 		public abstract bool HasDefaultValue();
+
+		/// <summary>
+		/// Marks the handle as modified and forces all settings to be saved.
+		/// This is necessary for <see cref="SettingHandleConvertible"/> values, as changes in reference types cannot be automatically detected.
+		/// </summary>
+		public void ForceSaveChanges() {
+			HasUnsavedChanges = true;
+			ParentPack.SaveChanges();
+		}
 
 		protected SettingHandle() {
 			SpinnerIncrement = 1;
@@ -102,11 +126,13 @@ namespace HugsLib.Settings {
 			set {
 				var prevValue = _value;
 				_value = value;
-				if (OnValueChanged != null && !SafeEquals(prevValue, _value)) {
+				if (!SafeEquals(prevValue, _value)) {
+					HasUnsavedChanges = true;
 					try {
-						OnValueChanged(_value);
+						OnValueChanged?.Invoke(_value);
 					} catch (Exception e) {
-						HugsLibController.Logger.Error("Exception while calling SettingHandle.OnValueChanged. Handle name was: \"{0}\" Value was: \"{1}\". Exception was: {2}", Name, StringValue, e);
+						HugsLibController.Logger.Error("Exception while calling SettingHandle.OnValueChanged. Handle name was: " +
+														"\"{0}\" Value was: \"{1}\". Exception was: {2}", Name, StringValue, e);
 						throw;
 					}
 				}
@@ -167,7 +193,15 @@ namespace HugsLib.Settings {
 		internal override bool ShouldBeSaved {
 			get {
 				var convertible = Value as SettingHandleConvertible;
-				return !(Unsaved || HasDefaultValue() || (convertible != null && !convertible.ShouldBeSaved));
+				bool SkipConvertibleSaving() {
+					try {
+						return convertible != null && !convertible.ShouldBeSaved;
+					} catch (Exception e) {
+						HugsLibController.Logger.ReportException(e);
+						return false;
+					}
+				}
+				return !(Unsaved || HasDefaultValue() || SkipConvertibleSaving());
 			}
 		}
 
@@ -177,6 +211,7 @@ namespace HugsLib.Settings {
 
 		/// <summary>
 		/// Assigns the default value to the Value property.
+		/// Ignores the <see cref="SettingHandle.CanBeReset"/> property.
 		/// </summary>
 		public override void ResetToDefault() {
 			Value = DefaultValue;

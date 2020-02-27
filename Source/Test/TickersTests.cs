@@ -43,7 +43,7 @@ namespace HugsLib.Test {
 			
 		}
 
-		public override void Initialize() {
+		public override void StaticInitialize() {
 			testDef = new TickingThingDef();
 		}
 

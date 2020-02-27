@@ -18,6 +18,7 @@ namespace HugsLib.Utils {
 		/// Returns an existing UWO or creates a new one, adding it to the world.
 		/// </summary>
 		/// <typeparam name="T">Your custom type that extends UtilityWorldObject</typeparam>
+		[Obsolete("It is recommended to transition to Verse.GameComponent or RimWorld.Planet.WorldComponent for data storage")]
 		public static T GetUtilityWorldObject<T>() where T : UtilityWorldObject {
 			var worldObjects = GetHolder();
 			var obj = (T)worldObjects.ObjectsAt(UtilityObjectTile).FirstOrDefault(o => o is T);

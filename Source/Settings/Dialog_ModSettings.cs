@@ -119,7 +119,7 @@ namespace HugsLib.Settings {
 			Text.Font = GameFont.Small;
 			var resetButtonRect = new Rect(0, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (Widgets.ButtonText(resetButtonRect, "HugsLib_settings_resetAll".Translate())) {
-				Find.WindowStack.Add(new Dialog_Confirm("HugsLib_settings_resetAll_prompt".Translate(), ResetAllSettings, true));
+				Find.WindowStack.Add(new Dialog_Confirm("HugsLib_settings_resetAll_prompt".Translate(), ResetHugsLibSettingsForLoadedMods, true));
 			}
 			var closeButtonRect = new Rect(inRect.width - windowButtonSize.x, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (closingScheduled) {
@@ -224,7 +224,7 @@ namespace HugsLib.Settings {
 					if (!handle.Description.NullOrEmpty()) {
 						TooltipHandler.TipRegion(entryRect, handle.Description);
 					}
-					if (Input.GetMouseButtonUp(1)) {
+					if (handle.CanBeReset && Input.GetMouseButtonUp(1)) {
 						var options = new List<FloatMenuOption>(1);
 						options.Add(new FloatMenuOption("HugsLib_settings_resetValue".Translate(), () => {
 							ResetSetting(handle);
@@ -340,8 +340,8 @@ namespace HugsLib.Settings {
 			GUI.color = prevColor;
 		}
 
-		private void ResetAllSettings() {
-			foreach (var pack in listedMods) {
+		private void ResetHugsLibSettingsForLoadedMods() {
+			foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
 				foreach (var handle in pack.Handles) {
 					handle.ResetToDefault();
 				}
@@ -351,6 +351,7 @@ namespace HugsLib.Settings {
 		}
 
 		private void ResetSetting(SettingHandle handle) {
+			if (!handle.CanBeReset) return;
 			handle.ResetToDefault();
 			handleControlInfo[handle] = new HandleControlInfo(handle);
 			settingsHaveChanged = true;

@@ -60,6 +60,10 @@
       <HintPath>..\RimworldManaged\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\RimworldManaged\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RimworldManaged\UnityEngine.IMGUIModule.dll</HintPath>
@@ -80,15 +84,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Source\Attrib\AttributeDetector.cs" />
-    <Compile Include="Source\Attrib\DetectableAttributeHandler.cs" />
-    <Compile Include="Source\Attrib\EarlyInitAttribute.cs" />
-    <Compile Include="Source\Attrib\IDetectableAttribute.cs" />
     <Compile Include="Source\Core\HugsLibMod.cs" />
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
+    <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
+    <Compile Include="Source\Utils\EarlyInitAttribute.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogsOptions.cs" />
     <Compile Include="Source\Logs\LogPublisherOptions.cs" />
     <Compile Include="Source\Patches\DebugWindowsOpener_Patch.cs" />
@@ -136,7 +138,6 @@
     <Compile Include="Source\Settings\ModSettingsPack.cs" />
     <Compile Include="Source\Settings\ModSettingsManager.cs" />
     <Compile Include="Source\Settings\SettingHandle.cs" />
-    <Compile Include="Source\Test\AttributeTests.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
     <Compile Include="Source\Test\TestUWO.cs" />
     <Compile Include="Source\Test\TickersTests.cs" />

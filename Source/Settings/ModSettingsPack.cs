@@ -29,9 +29,29 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public ListPriority DisplayPriority { get; set; }
 		/// <summary>
+		/// Returns true if any handles retrieved from this pack have had their values changed.
+		/// Resets to false after the changes are saved.
+		/// </summary>
+		public bool HasUnsavedChanges {
+			get {
+				for (var i = 0; i < handles.Count; i++) {
+					if (handles[i].HasUnsavedChanges && handles[i].ShouldBeSaved) return true;
+				}
+				return false;
+			} 
+		}
+		/// <summary>
+		/// Enumerates the handles that have been registered with this pack up to this point.
+		/// </summary>
+		public IEnumerable<SettingHandle> Handles {
+			get { return handles; }
+		}
+		/// <summary>
 		/// Set to true to disable the collapsing of setting handles in the Mod Settings dialog.
 		/// </summary>
 		internal bool AlwaysExpandEntry;
+
+		internal ModSettingsManager ParentManager { get; set; }
 
 		private readonly Dictionary<string, string> loadedValues = new Dictionary<string, string>();
 		private readonly List<SettingHandle> handles = new List<SettingHandle>();
@@ -63,6 +83,7 @@ namespace HugsLib.Settings {
 			}
 			if (handle == null) {
 				handle = new SettingHandle<T>(settingName) {Value = defaultValue};
+				handle.ParentPack = this;
 				handles.Add(handle);
 			}
 			handle.DefaultValue = defaultValue;
@@ -81,6 +102,7 @@ namespace HugsLib.Settings {
 					handle.ResetToDefault();
 				}
 			}
+			handle.HasUnsavedChanges = false;
 			return handle;
 		}
 
@@ -138,9 +160,13 @@ namespace HugsLib.Settings {
 			return loadedValues.Remove(name);
 		}
 
-		public IEnumerable<SettingHandle> Handles {
-			get { return handles; }
-		} 
+		/// <summary>
+		/// Prompts the <see cref="ModSettingsManager"/> to save changes if any or the registered 
+		/// <see cref="ModSettingsPack"/>s have handles with unsaved changes
+		/// </summary>
+		public void SaveChanges() {
+			ParentManager.SaveChanges();
+		}
 
 		internal void LoadFromXml(XElement xml) {
 			loadedValues.Clear();
@@ -159,6 +185,7 @@ namespace HugsLib.Settings {
 			foreach (var handle in handles) {
 				if(!handle.ShouldBeSaved) continue;
 				packElem.Add(new XElement(handle.Name, new XText(handle.StringValue)));
+				handle.HasUnsavedChanges = false;
 			}
 		}
 	}

@@ -25,12 +25,12 @@ namespace HugsLib.News {
 		private readonly UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders;
 		private readonly Color TitleLineColor = new Color(0.3f, 0.3f, 0.3f);
 		private readonly Color LinkTextColor = new Color(.7f, .7f, 1f);
-		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>(); 
+		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>();
+		private readonly string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
 		private List<FeatureEntry> entries;
 		private float totalContentHeight = -1;
 		private Vector2 scrollPosition;
-		private List<string> pendingImages;
-		private string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
+		private bool anyImagesPending;
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
@@ -47,7 +47,15 @@ namespace HugsLib.News {
 			resizeable = false;
 			GenerateDrawableEntries(featureDefs);
 		}
-		
+
+		public override void Close(bool doCloseSound = true) {
+			base.Close(doCloseSound);
+			foreach (var resolvedTexture in resolvedImages.Values) {
+				UnityEngine.Object.Destroy(resolvedTexture);
+			}
+			resolvedImages.Clear();
+		}
+
 		public override void DoWindowContents(Rect inRect) {
 			var windowButtonSize = CloseButSize;
 			var contentRect = new Rect(0, 0, inRect.width, inRect.height - (windowButtonSize.y + 10f)).ContractedBy(10f);
@@ -61,7 +69,7 @@ namespace HugsLib.News {
 				TooltipHandler.TipRegion(titleRect, "HugsLib_features_description".Translate());
 			}
 			GenUI.ResetLabelAlign();
-			if (pendingImages == null) {
+			if (!anyImagesPending) {
 				Text.Font = GameFont.Small;
 				var scrollViewRect = new Rect(0f, titleRect.height, contentRect.width, contentRect.height - titleRect.height);
 				var scrollBarVisible = totalContentHeight > scrollViewRect.height;
@@ -101,7 +109,7 @@ namespace HugsLib.News {
 					width - EntryTitleLinkWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
 				Text.Font = GameFont.Medium;
 				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.assemblyVersion);
-				Widgets.Label(labelRect, string.Format("<size={0}>{1}</size>", EntryTitleFontSize, titleText));
+				Widgets.Label(labelRect, $"<size={EntryTitleFontSize}>{titleText}</size>");
 				Text.Font = GameFont.Small;
 				if (entry.def.linkUrl != null) {
 					Text.Anchor = TextAnchor.MiddleCenter;
@@ -111,7 +119,7 @@ namespace HugsLib.News {
 					Widgets.Label(linkRect, "HugsLib_features_link".Translate());
 					GUI.color = prevColor;
 					GenUI.ResetLabelAlign();
-					if (Widgets.ButtonInvisible(linkRect, true)) {
+					if (Widgets.ButtonInvisible(linkRect)) {
 						Application.OpenURL(entry.def.linkUrl);
 					}
 					if (Mouse.IsOver(linkRect)) {
@@ -131,15 +139,19 @@ namespace HugsLib.News {
 		}
 
 		private void DoIgnoreNewsProviderToggle(Vector2 togglePos, FeatureEntry entry) {
-			bool wasOn = !ignoredNewsProviders.Contains(entry.def.modIdentifier), isOn = wasOn;
+			var ownerId = entry.def.OwningModId;
+			var wasOn = !ignoredNewsProviders.Contains(ownerId);
+			var isOn = wasOn;
 			Widgets.Checkbox(togglePos, ref isOn);
 			if (wasOn != isOn) {
-				Action toggleAction = () => ignoredNewsProviders.SetIgnored(entry.def.modIdentifier, !isOn);
+				void ToggleIgnoredState() {
+					ignoredNewsProviders.SetIgnored(ownerId, !isOn);
+				}
 				if (isOn || HugsLibUtility.ShiftIsHeld) {
-					toggleAction();
+					ToggleIgnoredState();
 				} else {
 					Find.WindowStack.Add(new Dialog_Confirm("HugsLib_features_confirmIgnore".Translate(entry.def.modNameReadable), 
-						toggleAction, false,"HugsLib_features_confirmIgnoreTitle".Translate()));
+						ToggleIgnoredState, false,"HugsLib_features_confirmIgnoreTitle".Translate()));
 				}
 			}
 			var tooltipRect = new Rect(togglePos.x, togglePos.y, Widgets.CheckboxSize, Widgets.CheckboxSize);
@@ -161,36 +173,50 @@ namespace HugsLib.News {
 
 		private void GenerateDrawableEntries(List<UpdateFeatureDef> defs) {
 			entries = new List<FeatureEntry>(defs.Count);
-			pendingImages = new List<string>();
+			var requiredImagePairs = new List<(ModContentPack pack, string fileName)>();
 			foreach (var def in defs) {
-				entries.Add(new FeatureEntry(def, ParseEntryContent(def.content)));
+				entries.Add(new FeatureEntry(def, ParseEntryContent(def.content, def.trimWhitespace, out IEnumerable<string> requiredImages)));
+				foreach (var imageFileName in requiredImages) {
+					requiredImagePairs.Add((def.modContentPack, imageFileName));
+				}
 			}
-			LongEventHandler.ExecuteWhenFinished(ResolveImages);
+			if (requiredImagePairs.Count > 0) {
+				anyImagesPending = true;
+				var requiredImagesGroupedByMod = requiredImagePairs
+					.GroupBy(pair => pair.pack, pair => pair.fileName);
+				HugsLibController.Instance.DoLater.DoNextUpdate(() => {
+					// this must be done in the main thread due to Unity API calls
+					foreach (var group in requiredImagesGroupedByMod) {
+						ResolveImagesForMod(group.Key, group);
+					}
+					anyImagesPending = false;
+				});
+			}
 		}
 
-		private void ResolveImages() {
-			foreach (var imageName in pendingImages) {
-				var tex = ContentFinder<Texture2D>.Get(imageName, false);
-				if (tex == null) {
-					HugsLibController.Logger.Warning("No texture named {0} for use in update feature text", imageName);
-					tex = ContentFinder<Texture2D>.Get(BaseContent.BadTexPath);
-				}
-				resolvedImages[imageName] = tex;
+		private void ResolveImagesForMod(ModContentPack mod, IEnumerable<string> imageFileNames) {
+			foreach (var nameTexturePair in UpdateFeatureImageLoader.LoadImagesForMod(mod, imageFileNames)) {
+				resolvedImages[nameTexturePair.Key] = nameTexturePair.Value;
 			}
-			pendingImages = null;
 		}
 		
-		private List<DescriptionSegment> ParseEntryContent(string content) {
+		private List<DescriptionSegment> ParseEntryContent(string content, bool trimWhitespace, out IEnumerable<string> requiredImages) {
 			const char SegmentSeparator = '|';
 			const char ArgumentSeparator = ':';
 			const char ListSeparator = ',';
 			const string ImageSegmentTag = "img:";
 			const string CaptionSegmentTag = "caption:";
+			var requiredImagesList = new List<string>();
+			requiredImages = requiredImagesList;
 			try {
 				content = content.Replace("\\n", "\n");
 				var segmentStrings = content.Split(SegmentSeparator);
 				var segmentList = new List<DescriptionSegment>();
-				foreach (var segmentString in segmentStrings) {
+				foreach (var contentSegmentString in segmentStrings) {
+					var segmentString = contentSegmentString;
+					if (trimWhitespace) {
+						segmentString = segmentString.Trim();
+					}
 					DescriptionSegment.SegmentType segmentType;
 					string[] images = null;
 					string text = null;
@@ -200,7 +226,7 @@ namespace HugsLib.News {
 						if (parts[1].Length == 0) continue;
 						images = parts[1].Split(ListSeparator).Where(s => s.Length > 0).ToArray();
 						for (int i = 0; i < images.Length; i++) {
-							pendingImages.Add(images[i]);
+							requiredImagesList.Add(images[i]);
 						}
 					} else if (segmentString.StartsWith(CaptionSegmentTag)) {
 						if (segmentList.Count == 0 || segmentList[segmentList.Count - 1].type != DescriptionSegment.SegmentType.Image) {
@@ -216,6 +242,9 @@ namespace HugsLib.News {
 					} else {
 						segmentType = DescriptionSegment.SegmentType.Text;
 						text = segmentString;
+					}
+					if (text != null && trimWhitespace) {
+						text = text.Trim();
 					}
 					var seg = new DescriptionSegment(segmentType) {imageNames = images, text = text};
 					segmentList.Add(seg);

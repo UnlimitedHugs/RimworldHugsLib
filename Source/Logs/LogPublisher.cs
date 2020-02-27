@@ -56,7 +56,7 @@ namespace HugsLib.Logs {
 					OnUpload = OnPublishConfirmed,
 					OnCopy = CopyToClipboard,
 					OnOptionsToggled = UpdateCustomOptionsUsage,
-					OnPostClose = () => HugsLibController.Instance.Settings.SaveChanges()
+					OnPostClose = () => optionsHandle.ForceSaveChanges()
 				});
 			} else {
 				ShowPublishDialog();
@@ -354,7 +354,7 @@ namespace HugsLib.Logs {
 
 		private string ListHarmonyPatches() {
 			var harmonyInstance = HugsLibController.Instance.HarmonyInst;
-			var patchListing = HarmonyUtility.DescribePatchedMethods(harmonyInstance);
+			var patchListing = HarmonyUtility.DescribeAllPatchedMethods();
 
 			return string.Concat("Active Harmony patches:\n",
 				patchListing,
@@ -382,7 +382,7 @@ namespace HugsLib.Logs {
 			var builder = new StringBuilder();
 			builder.Append("Loaded mods:\n");
 			foreach (var modContentPack in LoadedModManager.RunningMods) {
-				builder.Append(modContentPack.Name);
+				builder.AppendFormat("{0}({1})", modContentPack.Name, modContentPack.PackageIdPlayerFacing);
 				var versionFile = VersionFile.TryParseVersionFile(modContentPack);
 				if (versionFile != null && versionFile.OverrideVersion != null) {
 					builder.AppendFormat("[ov:{0}]: ", versionFile.OverrideVersion);
@@ -459,7 +459,7 @@ namespace HugsLib.Logs {
 		internal static void RegisterSettings(ModSettingsPack pack) {
 			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", null, null);
 			if (optionsHandle.Value == null) optionsHandle.Value = new LogPublisherOptions();
-			optionsHandle.VisibilityPredicate = () => false; // invisible, but can be reset by "Reset all settings"
+			optionsHandle.NeverVisible = true;
 		}
 	}
 }
