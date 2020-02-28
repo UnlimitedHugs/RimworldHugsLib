@@ -176,7 +176,10 @@ namespace HugsLib {
 		public virtual void StaticInitialize() {
 		}
 
-		[Obsolete("Override StaticInitialize instead (more descriptive name).")]
+		/// <summary>
+		/// An alias for <see cref="StaticInitialize"/>, both or either can be used,
+		/// although <see cref="StaticInitialize"/> makes for clearer code by indicating when the method is called.
+		/// </summary>
 		public virtual void Initialize() {
 		}
 

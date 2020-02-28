@@ -276,7 +276,7 @@ namespace HugsLib.Test {
 		public override string ModIdentifier => "SettingsChangedDetector";
 		protected override bool HarmonyAutoPatch => false;
 
-		public override void EarlyInitialize() {
+		public override void Initialize() {
 			Handle = Settings.GetHandle<int>("testHandle", null, null);
 			Handle.NeverVisible = true;
 		}
