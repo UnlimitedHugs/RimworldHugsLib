@@ -386,6 +386,12 @@
             Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
             </summary>
         </member>
+        <member name="M:HugsLib.ModBase.Initialize">
+            <summary>
+            An alias for <see cref="M:HugsLib.ModBase.StaticInitialize"/>, both or either can be used,
+            although <see cref="M:HugsLib.ModBase.StaticInitialize"/> makes for clearer code by indicating when the method is called.
+            </summary>
+        </member>
         <member name="M:HugsLib.ModBase.Tick(System.Int32)">
             <summary>
             Called on each tick when in Play scene
