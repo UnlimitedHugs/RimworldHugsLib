@@ -230,6 +230,14 @@ namespace HugsLib.Test {
 			Assert(settingsChangedCalled == false, "our mod not notified");
 			Assert(TestModSettingsChangedDetector.SettingsChangedCalled, "foreign mod notified");
 
+			settingsChangedCalled = false;
+			Assert(handle.Value != handle.DefaultValue, "has non-default value");
+			Assert(handle.HasUnsavedChanges == false, "saved before default value");
+			handle.Value = handle.DefaultValue;
+			Settings.SaveChanges();
+			Assert(handle.HasUnsavedChanges == false, "default value handle after has no unsaved changes");
+			Assert(settingsChangedCalled, "default value propagated save");
+
 			HugsLibController.SettingsManager.AfterModSettingsSaved -= OnControllerSaved;
 		}
 

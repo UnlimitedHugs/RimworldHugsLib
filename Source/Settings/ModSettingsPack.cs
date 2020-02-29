@@ -35,7 +35,7 @@ namespace HugsLib.Settings {
 		public bool HasUnsavedChanges {
 			get {
 				for (var i = 0; i < handles.Count; i++) {
-					if (handles[i].HasUnsavedChanges && handles[i].ShouldBeSaved) return true;
+					if (handles[i].HasUnsavedChanges) return true;
 				}
 				return false;
 			} 
@@ -183,9 +183,10 @@ namespace HugsLib.Settings {
 				packElem.Add(new XElement(loadedValue.Key, new XText(loadedValue.Value)));
 			}
 			foreach (var handle in handles) {
-				if(!handle.ShouldBeSaved) continue;
-				packElem.Add(new XElement(handle.Name, new XText(handle.StringValue)));
 				handle.HasUnsavedChanges = false;
+				if (handle.ShouldBeSaved) {
+					packElem.Add(new XElement(handle.Name, new XText(handle.StringValue)));
+				}
 			}
 		}
 	}
