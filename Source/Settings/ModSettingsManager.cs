@@ -48,10 +48,11 @@ namespace HugsLib.Settings {
 		}
 
 		/// <summary>
-		/// Retrieves the ModSettingsPack for a given mod identifier.
+		/// Retrieves the <see cref="ModSettingsPack"/> for a given mod identifier.
 		/// </summary>
 		/// <param name="modId">The unique identifier of the mod that owns the pack</param>
-		/// <param name="displayModName">A display name of the mod owning the pack. This will be displayed in the Mod Settings dialog.</param>
+		/// <param name="displayModName">If not null, assigns the <see cref="ModSettingsPack.EntryName"/> property of the pack.
+		/// This will be displayed in the Mod Settings dialog as a header.</param>
 		public ModSettingsPack GetModSettings(string modId, string displayModName = null) {
 			if(!IsValidElementName(modId)) throw new Exception("Invalid name for mod settings group: "+modId);
 			ModSettingsPack pack = null;
@@ -62,12 +63,11 @@ namespace HugsLib.Settings {
 				}
 			}
 			if (pack == null) {
-				pack = new ModSettingsPack(modId) {
-					EntryName = displayModName
-				};
-				packs.Add(pack);
+				pack = InstantiatePack(modId);
 			}
-			pack.ParentManager = this;
+			if (displayModName != null) {
+				pack.EntryName = displayModName;
+			}
 			return pack;
 		}
 
@@ -110,8 +110,7 @@ namespace HugsLib.Settings {
 			packs.Clear();
 			if(xml.Root == null) throw new NullReferenceException("Missing root node");
 			foreach (var childNode in xml.Root.Elements()) {
-				var pack = new ModSettingsPack(childNode.Name.ToString());
-				packs.Add(pack);
+				var pack = InstantiatePack(childNode.Name.ToString());
 				pack.LoadFromXml(childNode);
 			}
 		}
@@ -122,6 +121,14 @@ namespace HugsLib.Settings {
 			foreach (var modSettingPack in packs) {
 				modSettingPack.WriteXml(root);
 			}
+		}
+
+		private ModSettingsPack InstantiatePack(string modId) {
+			var pack = new ModSettingsPack(modId) {
+				ParentManager = this
+			};
+			packs.Add(pack);
+			return pack;
 		}
 	}
 }

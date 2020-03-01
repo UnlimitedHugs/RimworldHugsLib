@@ -695,10 +695,11 @@
         </member>
         <member name="M:HugsLib.Settings.ModSettingsManager.GetModSettings(System.String,System.String)">
             <summary>
-            Retrieves the ModSettingsPack for a given mod identifier.
+            Retrieves the <see cref="T:HugsLib.Settings.ModSettingsPack"/> for a given mod identifier.
             </summary>
             <param name="modId">The unique identifier of the mod that owns the pack</param>
-            <param name="displayModName">A display name of the mod owning the pack. This will be displayed in the Mod Settings dialog.</param>
+            <param name="displayModName">If not null, assigns the <see cref="P:HugsLib.Settings.ModSettingsPack.EntryName"/> property of the pack.
+            This will be displayed in the Mod Settings dialog as a header.</param>
         </member>
         <member name="M:HugsLib.Settings.ModSettingsManager.SaveChanges">
             <summary>
