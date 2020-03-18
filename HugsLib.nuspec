@@ -6,11 +6,11 @@
 		<title>HugsLib</title>
 		<authors>UnlimitedHugs</authors>
 		<owners>UnlimitedHugs</owners>
-		<licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+		<license type="expression">MIT</license>
 		<projectUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/</projectUrl>
-		<iconUrl>https://i.imgur.com/I8h73KH.png</iconUrl>
+		<icon>ArtSource/NuGetIcon.png</icon>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>A lightweight shared library for Rimworld modding. Includes the Harmony library by Andreas Pardeike.</description>
+		<description>A lightweight shared library for Rimworld modding.</description>
 		<summary>A lightweight shared library for Rimworld modding.</summary>
 		<releaseNotes>Switched to main workshop item</releaseNotes>
 		<copyright>Copyright 2017</copyright>
