@@ -75,27 +75,32 @@ namespace HugsLib {
 
 		public override void ResolveReferences() {
 			base.ResolveReferences();
-			if (!modIdentifier.NullOrEmpty() && !PersistentDataManager.IsValidElementName(modIdentifier)) {
-				ReportError("modIdentifier has invalid format. Must start with a letter and contain any of [A-z, 0-9, -, _, :]");
-			}
-			if (defName == null) {
-				defName = modIdentifier + assemblyVersion;
-			}
-			if (modNameReadable == null) ReportError("modNameReadable must be set");
-			Exception versionFailure = null;
 			try {
-				if (assemblyVersion == null) throw new Exception("assemblyVersion must be defined");
-				Version = new Version(assemblyVersion);
+				if (!modIdentifier.NullOrEmpty() && !PersistentDataManager.IsValidElementName(modIdentifier)) {
+					throw new Exception($"{nameof(modIdentifier)} value has invalid format. " +
+										"Must start with a letter and contain any of [A-z, 0-9, -, _, :].");
+				}
+				if (defName == null) {
+					defName = modIdentifier + assemblyVersion;
+				}
+				if (modNameReadable == null) {
+					throw new Exception($"{nameof(modNameReadable)} value must be set.");
+				}
+				try {
+					if (string.IsNullOrEmpty(assemblyVersion)) {
+						throw new Exception("No value specified.");
+					}
+					Version = new Version(assemblyVersion);
+				} catch (Exception e) {
+					Version = new Version();
+					throw new Exception($"{nameof(assemblyVersion)} value is not valid.", e);
+				}
+				if (content == null) {
+					throw new Exception($"{nameof(content)} value must be set.");
+				}
 			} catch (Exception e) {
-				Version = new Version();
-				versionFailure = e;
+				throw new Exception($"{nameof(UpdateFeatureDef)} contains invalid data.", e);
 			}
-			if (versionFailure != null) ReportError("assemblyVersion parsing failed: " + versionFailure);
-			if (content == null) ReportError("content must be set");
-		}
-
-		private void ReportError(string message) {
-			Log.Error($"UpdateFeatureDef (defName: {defName}) contains invalid data: {message}");
 		}
 	}
 }
