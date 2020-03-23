@@ -87,7 +87,11 @@ namespace HugsLib.News {
 		private static void UpdateMostRecentKnownFeatureVersions(
 			IEnumerable<UpdateFeatureDef> shownNewsFeatureDefs, Dictionary<string, Version> highestSeenVersions) {
 			foreach (var featureDef in shownNewsFeatureDefs) {
-				highestSeenVersions[featureDef.OwningModId] = featureDef.Version;
+				var ownerId = featureDef.OwningModId;
+				var highestSeenVersion = highestSeenVersions.TryGetValue(ownerId);
+				if (highestSeenVersion == null || featureDef.Version > highestSeenVersion) {
+					highestSeenVersions[ownerId] = featureDef.Version;
+				}
 			}
 		}
 
