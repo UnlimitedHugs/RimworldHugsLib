@@ -195,9 +195,9 @@ namespace HugsLib.News {
 				}
 
 				// deal with inheritance
-				foreach (var (_, node) in newsItemNodes) {
+				foreach (var (modContent, node) in newsItemNodes) {
 					if (node != null && node.NodeType == XmlNodeType.Element) {
-						XmlInheritance.TryRegister(node, null);
+						XmlInheritance.TryRegister(node, modContent);
 					}
 				}
 				XmlInheritance.Resolve();
