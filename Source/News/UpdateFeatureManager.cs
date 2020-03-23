@@ -34,8 +34,10 @@ namespace HugsLib.News {
 		public void InspectActiveMod(string modId, Version currentVersion) {
 		}
 
-		internal void OnStaticConstructorInit() {
-			UpdateFeatureDefLoader.ReloadNewsFeatureDefs();
+		internal void OnBeforeLanguageDataInjected() {
+			// we could inject translation data manually at static constructor initialization
+			// but the language injector would report our news defs as 'not found'
+			UpdateFeatureDefLoader.LoadUpdateFeatureDefs();
 		}
 
 		/// <summary>
@@ -169,11 +171,10 @@ namespace HugsLib.News {
 		}
 
 		private static class UpdateFeatureDefLoader {
-			public static void ReloadNewsFeatureDefs() {
-				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
-				DefDatabase<UpdateFeatureDef>.Clear();
+
+			public static void LoadUpdateFeatureDefs() {
 				var parsedDefs = LoadAndParseNewsFeatureDefs();
-				DefDatabase<UpdateFeatureDef>.Add(parsedDefs);
+				ReinitUpdateFeatureDefDatabase(parsedDefs);
 			}
 
 			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
@@ -233,6 +234,12 @@ namespace HugsLib.News {
 				XmlInheritance.Clear();
 
 				return parsedFeatureDefs;
+			}
+
+			private static void ReinitUpdateFeatureDefDatabase(IEnumerable<UpdateFeatureDef> defs) {
+				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
+				DefDatabase<UpdateFeatureDef>.Clear();
+				DefDatabase<UpdateFeatureDef>.Add(defs);
 			}
 
 			private static string GetExceptionChainMessage(Exception e) {

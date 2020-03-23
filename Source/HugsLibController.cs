@@ -177,11 +177,14 @@ namespace HugsLib {
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.Initialize();
-				UpdateFeatures.OnStaticConstructorInit();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
 			}
+		}
+
+		public void OnBeforeLanguageDataInjected() {
+			UpdateFeatures.OnBeforeLanguageDataInjected();
 		}
 
 		// executed both at startup and after a def reload

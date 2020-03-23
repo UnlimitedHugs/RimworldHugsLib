@@ -91,6 +91,7 @@
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
+    <Compile Include="Source\Patches\LoadedLanguage_InjectAfterImpliedDefs_Patch.cs" />
     <Compile Include="Source\Utils\EarlyInitAttribute.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogsOptions.cs" />
     <Compile Include="Source\Logs\LogPublisherOptions.cs" />
