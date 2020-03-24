@@ -2,21 +2,18 @@
 <package >
 	<metadata>
 		<id>UnlimitedHugs.Rimworld.HugsLib</id>
-		<version>4.0.1</version>
+		<version>1.0.0</version>
 		<title>HugsLib</title>
 		<authors>UnlimitedHugs</authors>
 		<owners>UnlimitedHugs</owners>
 		<license type="expression">MIT</license>
 		<projectUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/</projectUrl>
-		<icon>ArtSource/NuGetIcon.png</icon>
+		<iconUrl>https://i.imgur.com/I8h73KH.png</iconUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>A lightweight shared library for Rimworld modding.</description>
 		<summary>A lightweight shared library for Rimworld modding.</summary>
-		<releaseNotes>Switched to main workshop item</releaseNotes>
+		<releaseNotes>notes</releaseNotes>
 		<copyright>Copyright 2017</copyright>
 		<tags>Rimworld Mod</tags>
 	</metadata>
-	<files>
-		<file src=".\Mods\HugsLib\Assemblies\0Harmony.dll" target="lib/net35" />
-	</files>
 </package>
