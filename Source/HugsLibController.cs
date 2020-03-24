@@ -128,6 +128,7 @@ namespace HugsLib {
 				Settings = new ModSettingsManager();
 				Settings.BeforeModSettingsSaved += OnBeforeModSettingsSaved;
 				UpdateFeatures = new UpdateFeatureManager();
+				UpdateFeatures.OnEarlyInitialize();
 				TickDelayScheduler = new TickDelayScheduler();
 				DistributedTicker = new DistributedTickScheduler();
 				DoLater = new DoLaterScheduler();
@@ -177,7 +178,6 @@ namespace HugsLib {
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.Initialize();
-				UpdateFeatures.OnStaticConstructorInit();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);

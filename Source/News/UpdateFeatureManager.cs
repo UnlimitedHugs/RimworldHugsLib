@@ -34,8 +34,10 @@ namespace HugsLib.News {
 		public void InspectActiveMod(string modId, Version currentVersion) {
 		}
 
-		internal void OnStaticConstructorInit() {
-			UpdateFeatureDefLoader.ReloadNewsFeatureDefs();
+		internal void OnEarlyInitialize() {
+			// this should put us just before backstory loading in the DoPlayLoad cycle
+			// we inject our defs early on to take advantage of the stock translation injection system
+			LongEventHandler.ExecuteWhenFinished(UpdateFeatureDefLoader.LoadUpdateFeatureDefs);
 		}
 
 		/// <summary>
@@ -87,7 +89,11 @@ namespace HugsLib.News {
 		private static void UpdateMostRecentKnownFeatureVersions(
 			IEnumerable<UpdateFeatureDef> shownNewsFeatureDefs, Dictionary<string, Version> highestSeenVersions) {
 			foreach (var featureDef in shownNewsFeatureDefs) {
-				highestSeenVersions[featureDef.OwningModId] = featureDef.Version;
+				var ownerId = featureDef.OwningModId;
+				var highestSeenVersion = highestSeenVersions.TryGetValue(ownerId);
+				if (highestSeenVersion == null || featureDef.Version > highestSeenVersion) {
+					highestSeenVersions[ownerId] = featureDef.Version;
+				}
 			}
 		}
 
@@ -165,11 +171,10 @@ namespace HugsLib.News {
 		}
 
 		private static class UpdateFeatureDefLoader {
-			public static void ReloadNewsFeatureDefs() {
-				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
-				DefDatabase<UpdateFeatureDef>.Clear();
+
+			public static void LoadUpdateFeatureDefs() {
 				var parsedDefs = LoadAndParseNewsFeatureDefs();
-				DefDatabase<UpdateFeatureDef>.Add(parsedDefs);
+				ReinitUpdateFeatureDefDatabase(parsedDefs);
 			}
 
 			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
@@ -179,48 +184,71 @@ namespace HugsLib.News {
 				// Overall, we'll stick as much as we can to the vanilla def loading experience, albeit without patches.
 				// Patch metadata has already been cleared, and parsing it again would add too much overhead.
 				// First, gather all XML nodes that represent an UpdateFeatureDef, and remember where they came from
-				// We can't parse them info defs on the spot, because there are abstract nodes and inheritance to consider.
-				var newsItemNodes = new List<(ModContentPack pack, XmlNode node)>();
+				// We can't parse them info defs on the spot, because there is inheritance to consider.
+				var newsItemNodes = new List<(ModContentPack pack, XmlNode node, LoadableXmlAsset asset)>();
 				foreach (var modContentPack in LoadedModManager.RunningMods) {
-					// this also handles versioned folder shenanigans
-					var modNewsXmlAssets = DirectXmlLoader.XmlAssetsInModFolder(modContentPack, UpdateFeatureDefFolder);
-					foreach (var xmlAsset in modNewsXmlAssets) {
-						var rootElement = xmlAsset.xmlDoc?.DocumentElement;
-						if (rootElement != null) {
-							foreach (var childNode in rootElement.ChildNodes.OfType<XmlNode>()) {
-								newsItemNodes.Add((modContentPack, childNode));
+					try {
+						var modNewsXmlAssets = DirectXmlLoader.XmlAssetsInModFolder(modContentPack, UpdateFeatureDefFolder);
+						foreach (var xmlAsset in modNewsXmlAssets) {
+							var rootElement = xmlAsset.xmlDoc?.DocumentElement;
+							if (rootElement != null) {
+								foreach (var childNode in rootElement.ChildNodes.OfType<XmlNode>()) {
+									newsItemNodes.Add((modContentPack, childNode, xmlAsset));
+								}
 							}
 						}
+					} catch (Exception e) {
+						HugsLibController.Logger.Error("Failed to load UpdateFeatureDefs for mod " +
+														$"{modContentPack.PackageIdPlayerFacing}: {e}");
+						throw;
 					}
 				}
 
 				// deal with inheritance
-				foreach (var (_, node) in newsItemNodes) {
+				foreach (var (modContent, node, _) in newsItemNodes) {
 					if (node != null && node.NodeType == XmlNodeType.Element) {
-						XmlInheritance.TryRegister(node, null);
+						XmlInheritance.TryRegister(node, modContent);
 					}
 				}
 				XmlInheritance.Resolve();
 
 				var parsedFeatureDefs = new List<UpdateFeatureDef>();
-				foreach (var (pack, node) in newsItemNodes) {
+				foreach (var (pack, node, asset) in newsItemNodes) {
 					// parse defs
-					var def = DirectXmlLoader.DefFromNode(node, null);
-					if (def is UpdateFeatureDef featureDef) {
-						if (pack == null) {
-							HugsLibController.Logger.Warning($"{nameof(UpdateFeatureDef)} with defName \"{def.defName}\" " +
-															$"has unknown {nameof(ModContentPack)}. Discarding def.");
-						} else {
+					try {
+						var def = DirectXmlLoader.DefFromNode(node, asset) as UpdateFeatureDef;
+						if (def != null) {
 							def.modContentPack = pack;
-							featureDef.ResolveReferences();
-							parsedFeatureDefs.Add(featureDef);
+							def.ResolveReferences();
+							parsedFeatureDefs.Add(def);
 						}
+					} catch (Exception e) {
+						HugsLibController.Logger.Error($"Failed to parse UpdateFeatureDef from mod {pack.PackageIdPlayerFacing}:\n" +
+														$"{GetExceptionChainMessage(e)}\n" +
+														$"Context: {node?.OuterXml.ToStringSafe()}\n" +
+														$"File: {asset?.FullFilePath.ToStringSafe()}\n" +
+														$"Exception: {e}");
 					}
 				}
 				
 				XmlInheritance.Clear();
 
 				return parsedFeatureDefs;
+			}
+
+			private static void ReinitUpdateFeatureDefDatabase(IEnumerable<UpdateFeatureDef> defs) {
+				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
+				DefDatabase<UpdateFeatureDef>.Clear();
+				DefDatabase<UpdateFeatureDef>.Add(defs);
+			}
+
+			private static string GetExceptionChainMessage(Exception e) {
+				var message = e.Message;
+				while (e.InnerException != null) {
+					e = e.InnerException;
+					message += $" -> {e.Message}";
+				}
+				return message;
 			}
 		}
 	}
