@@ -34,10 +34,10 @@ namespace HugsLib.News {
 		public void InspectActiveMod(string modId, Version currentVersion) {
 		}
 
-		internal void OnBeforeLanguageDataInjected() {
-			// we could inject translation data manually at static constructor initialization
-			// but the language injector would report our news defs as 'not found'
-			UpdateFeatureDefLoader.LoadUpdateFeatureDefs();
+		internal void OnEarlyInitialize() {
+			// this should put us just before backstory loading in the DoPlayLoad cycle
+			// we inject our defs early on to take advantage of the stock translation injection system
+			LongEventHandler.ExecuteWhenFinished(UpdateFeatureDefLoader.LoadUpdateFeatureDefs);
 		}
 
 		/// <summary>

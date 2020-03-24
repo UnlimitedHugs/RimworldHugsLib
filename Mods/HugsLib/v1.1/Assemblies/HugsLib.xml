@@ -84,11 +84,49 @@
             and has not been seen and open the dialog with all available news items.</param>
             <returns>true, if there have been found news items that were not displayed before, and the dialog has been opened</returns>
         </member>
-        <member name="T:HugsLib.Patches.LoadedLanguage_InjectAfterImpliedDefs_Patch">
+        <member name="T:HugsLib.EarlyInitAttribute">
             <summary>
-            Immediately before def translation injection is a good place to inject our custom-loaded 
-            <see cref="T:HugsLib.UpdateFeatureDef"/>s as it takes advantage of the vanilla translation mechanism.
+            Used to indicate that a <see cref="T:HugsLib.ModBase"/> type should be instantiated at the earliest moment possible.
+            Specifically, when <see cref="T:Verse.Mod"/> classes are instantiated (see <see cref="T:Verse.PlayDataLoader"/>.DoPlayLoad()).
+            If <see cref="P:HugsLib.ModBase.HarmonyAutoPatch"/> is true, Harmony patching will also happen at that time.
             </summary>
+        </member>
+        <member name="T:HugsLib.Logs.Dialog_PublishLogs">
+            <summary>
+            The front-end for LogPublisher.
+            Shows the status of the upload operation, provides controls and shows the produced URL.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogPublisher">
+            <summary>
+            Collects the game logs and loaded mods and posts the information on GitHub as a gist.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogWindowExtensions">
+            <summary>
+            Allows adding custom buttons to the EditWindow_Log window.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetAlignMode">
+            <summary>
+            Alignment side for custom widgets.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetDrawer">
+            <summary>
+            Callback to draw log window widgets in.
+            </summary>
+            <param name="logWindow">The log window being dawn.</param>
+            <param name="widgetArea">Window area for custom widgets.</param>
+            <param name="selectedLogMessage">The currently selected log message, or null.</param>
+            <param name="widgetRow">Draw your widget using this to automatically align it with the others.</param>
+        </member>
+        <member name="M:HugsLib.Logs.LogWindowExtensions.AddLogWindowWidget(HugsLib.Logs.LogWindowExtensions.WidgetDrawer,HugsLib.Logs.LogWindowExtensions.WidgetAlignMode)">
+            <summary>
+            Adds a new drawing callback to the log window widget drawer.
+            </summary>
+            <param name="drawerDelegate">The delegate called each OnGUI to draw the widget.</param>
+            <param name="align">The side of the WidgetRow this widget should be drawn into.</param>
         </member>
         <member name="T:HugsLib.Patches.DebugWindowsOpener_Patch">
             <summary>
@@ -174,50 +212,6 @@
             Hooks into the flow of the vanilla MonoBehavior.OnGUI()
             This allows to take advantage of automatic UI scaling and prevents GUI updates during a loading screen.
             </summary>
-        </member>
-        <member name="T:HugsLib.EarlyInitAttribute">
-            <summary>
-            Used to indicate that a <see cref="T:HugsLib.ModBase"/> type should be instantiated at the earliest moment possible.
-            Specifically, when <see cref="T:Verse.Mod"/> classes are instantiated (see <see cref="T:Verse.PlayDataLoader"/>.DoPlayLoad()).
-            If <see cref="P:HugsLib.ModBase.HarmonyAutoPatch"/> is true, Harmony patching will also happen at that time.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.Dialog_PublishLogs">
-            <summary>
-            The front-end for LogPublisher.
-            Shows the status of the upload operation, provides controls and shows the produced URL.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogPublisher">
-            <summary>
-            Collects the game logs and loaded mods and posts the information on GitHub as a gist.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogWindowExtensions">
-            <summary>
-            Allows adding custom buttons to the EditWindow_Log window.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetAlignMode">
-            <summary>
-            Alignment side for custom widgets.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Logs.LogWindowExtensions.WidgetDrawer">
-            <summary>
-            Callback to draw log window widgets in.
-            </summary>
-            <param name="logWindow">The log window being dawn.</param>
-            <param name="widgetArea">Window area for custom widgets.</param>
-            <param name="selectedLogMessage">The currently selected log message, or null.</param>
-            <param name="widgetRow">Draw your widget using this to automatically align it with the others.</param>
-        </member>
-        <member name="M:HugsLib.Logs.LogWindowExtensions.AddLogWindowWidget(HugsLib.Logs.LogWindowExtensions.WidgetDrawer,HugsLib.Logs.LogWindowExtensions.WidgetAlignMode)">
-            <summary>
-            Adds a new drawing callback to the log window widget drawer.
-            </summary>
-            <param name="drawerDelegate">The delegate called each OnGUI to draw the widget.</param>
-            <param name="align">The side of the WidgetRow this widget should be drawn into.</param>
         </member>
         <member name="T:HugsLib.Quickstart.Dialog_QuickstartSettings">
             <summary>

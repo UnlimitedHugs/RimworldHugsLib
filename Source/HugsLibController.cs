@@ -128,6 +128,7 @@ namespace HugsLib {
 				Settings = new ModSettingsManager();
 				Settings.BeforeModSettingsSaved += OnBeforeModSettingsSaved;
 				UpdateFeatures = new UpdateFeatureManager();
+				UpdateFeatures.OnEarlyInitialize();
 				TickDelayScheduler = new TickDelayScheduler();
 				DistributedTicker = new DistributedTickScheduler();
 				DoLater = new DoLaterScheduler();
@@ -181,10 +182,6 @@ namespace HugsLib {
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
 			}
-		}
-
-		public void OnBeforeLanguageDataInjected() {
-			UpdateFeatures.OnBeforeLanguageDataInjected();
 		}
 
 		// executed both at startup and after a def reload
