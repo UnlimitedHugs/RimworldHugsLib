@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
 	<metadata>
 		<id>UnlimitedHugs.Rimworld.HugsLib</id>
 		<version>1.0.0</version>
@@ -8,7 +8,7 @@
 		<owners>UnlimitedHugs</owners>
 		<license type="expression">MIT</license>
 		<projectUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/</projectUrl>
-		<iconUrl>https://i.imgur.com/I8h73KH.png</iconUrl>
+		<icon>images\icon.png</icon>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>A lightweight shared library for Rimworld modding.</description>
 		<summary>A lightweight shared library for Rimworld modding.</summary>
@@ -16,4 +16,7 @@
 		<copyright>Copyright 2017</copyright>
 		<tags>Rimworld Mod</tags>
 	</metadata>
+	<files>
+		<file src="ArtSource\NuGetIcon.png" target="images\icon.png" />
+	</files>
 </package>
