@@ -15,13 +15,13 @@ namespace HugsLib.Utils {
 		/// <param name="overrideLocation">The full path to the assembly file, if <see cref="Assembly.Location"/> is not set</param>
 		/// <returns>An <see cref="AssemblyVersionInfo"/> with only AssemblyVersion set if an exception was encountered</returns>
 		public static AssemblyVersionInfo ReadAssembly(Assembly assembly, string overrideLocation = null) {
-			if (assembly == null) throw new ArgumentNullException("assembly");
+			if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 			try {
 				var assemblyFilePath = overrideLocation ?? assembly.Location;
 				var fileInfo = FileVersionInfo.GetVersionInfo(assemblyFilePath);
 				return new AssemblyVersionInfo(
 					assembly.GetName().Version,
-					TryParseVersionString(fileInfo.FileVersion)
+					new Version(fileInfo.FileVersion)
 				);
 			} catch (Exception) {
 				return new AssemblyVersionInfo(assembly.GetName().Version, null);
@@ -30,26 +30,18 @@ namespace HugsLib.Utils {
 
 		/// <summary>
 		/// Reads assembly version information for a mod assembly.
+		/// Mod assemblies require special treatment, since they are loaded from byte arrays and their <see cref="Assembly.Location"/> is null.
 		/// </summary>
 		/// <param name="assembly">The assembly to read</param>
 		/// <param name="contentPack">The content pack the assembly was loaded from</param>
 		/// <returns>See <see cref="ReadAssembly"/></returns>
 		public static AssemblyVersionInfo ReadModAssembly(Assembly assembly, ModContentPack contentPack) {
-			if (assembly == null) throw new ArgumentNullException("assembly");
+			if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 			var fileHandle = HugsLibUtility.TryGetModAssemblyFileInfo(assembly.GetName().Name, contentPack);
-			var fullFilePath = fileHandle != null ? fileHandle.FullName : null;
+			var fullFilePath = fileHandle?.FullName;
 			return ReadAssembly(assembly, fullFilePath);
 		}
 
-		private static Version TryParseVersionString(string version) {
-			if (!string.IsNullOrEmpty(version)) {
-				try {
-					return new Version(version);
-				} catch (ArgumentException) {}
-			}
-			return null;
-		}
-		
 		public readonly Version AssemblyVersion;
 		public readonly Version AssemblyFileVersion;
 
@@ -58,19 +50,24 @@ namespace HugsLib.Utils {
 		}
 
 		public AssemblyVersionInfo(Version assemblyVersion, Version assemblyFileVersion) {
-			AssemblyVersion = assemblyVersion ?? throw new ArgumentNullException("assemblyVersion");
+			AssemblyVersion = assemblyVersion ?? throw new ArgumentNullException(nameof(assemblyVersion));
 			AssemblyFileVersion = assemblyFileVersion;
 		}
 
 		public override string ToString() {
-			return ToString(true);
+			if (AssemblyFileVersion == null) {
+				return $"{ToSemanticString(AssemblyVersion)} [no FileVersionInfo]";
+			} else if(AssemblyFileVersion == AssemblyVersion) {
+				return ToSemanticString(AssemblyVersion);
+			} else {
+				return $"av:{ToSemanticString(AssemblyVersion)},fv:{ToSemanticString(AssemblyFileVersion)}";
+			}
 		}
 
-		private string ToString(bool assemblyVersionIsBaseline) {
-			var fileVersion = !assemblyVersionIsBaseline || (AssemblyFileVersion != null && AssemblyFileVersion > AssemblyVersion) ? 
-				AssemblyFileVersion : null;
-			return fileVersion == null ? AssemblyVersion.ToString() : 
-				string.Format("av:{0},fv:{1}", AssemblyVersion, fileVersion);
+		private string ToSemanticString(Version v) {
+			if (v == null) return "unknown";
+			var versionFieldCount = v.Revision > 0 ? 4 : 3;
+			return v.ToString(versionFieldCount);
 		}
 	}
 }

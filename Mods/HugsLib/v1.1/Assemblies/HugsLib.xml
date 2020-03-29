@@ -862,6 +862,7 @@
         <member name="M:HugsLib.Utils.AssemblyVersionInfo.ReadModAssembly(System.Reflection.Assembly,Verse.ModContentPack)">
             <summary>
             Reads assembly version information for a mod assembly.
+            Mod assemblies require special treatment, since they are loaded from byte arrays and their <see cref="P:System.Reflection.Assembly.Location"/> is null.
             </summary>
             <param name="assembly">The assembly to read</param>
             <param name="contentPack">The content pack the assembly was loaded from</param>
