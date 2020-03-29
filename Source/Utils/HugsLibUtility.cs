@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using JetBrains.Annotations;
 using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -301,14 +302,12 @@ namespace HugsLib.Utils {
 		/// <param name="assemblyName">The <see cref="AssemblyName.Name"/> of the assembly</param>
 		/// <param name="contentPack">The content pack the assembly was presumably loaded from</param>
 		/// <returns>Returns null if the file is not found</returns>
-		public static FileInfo GetModAssemblyFileInfo(string assemblyName, ModContentPack contentPack) {
-			const string AssembliesFolderName = "Assemblies", AssemblyFileExtension = ".dll";
-			var directory = new DirectoryInfo(Path.Combine(
-				GenFilePaths.ModsFolderPath, Path.Combine(contentPack.RootDir, AssembliesFolderName)));
-			if (directory.Exists) {
-				return directory.GetFiles(assemblyName + AssemblyFileExtension, SearchOption.AllDirectories).FirstOrDefault();
-			}
-			return null;
+		public static FileInfo GetModAssemblyFileInfo(string assemblyName, [NotNull] ModContentPack contentPack) {
+			if (contentPack == null) throw new ArgumentNullException(nameof(contentPack));
+			const string AssembliesFolderName = "Assemblies";
+			var expectedAssemblyFileName = $"{assemblyName}.dll"; 
+			var modAssemblyFolderFiles = ModContentPack.GetAllFilesForMod(contentPack, AssembliesFolderName);
+			return modAssemblyFolderFiles.Values.FirstOrDefault(f => f.Name == expectedAssemblyFileName);
 		}
 
 		/// <summary>
