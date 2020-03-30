@@ -64,10 +64,16 @@ namespace HugsLib.Utils {
 			}
 		}
 
-		private string ToSemanticString(Version v) {
+		private static string ToSemanticString(Version v) {
 			if (v == null) return "unknown";
-			var versionFieldCount = v.Revision > 0 ? 4 : 3;
-			return v.ToString(versionFieldCount);
+			// System.Version parts: Major.Minor.Build.Revision
+			if (v.Build < 0) {
+				return $"{v.ToString(2)}.0";
+			} else if (v.Revision <= 0) {
+				return v.ToString(3);
+			} else {
+				return v.ToString(4);
+			}
 		}
 	}
 }
