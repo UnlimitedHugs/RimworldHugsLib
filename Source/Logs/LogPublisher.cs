@@ -383,12 +383,9 @@ namespace HugsLib.Logs {
 			builder.Append("Loaded mods:\n");
 			foreach (var modContentPack in LoadedModManager.RunningMods) {
 				builder.AppendFormat("{0}({1})", modContentPack.Name, modContentPack.PackageIdPlayerFacing);
-				var versionFile = VersionFile.TryParseVersionFile(modContentPack);
-				if (versionFile != null && versionFile.OverrideVersion != null) {
-					builder.AppendFormat("[ov:{0}]: ", versionFile.OverrideVersion);
-				} else {
-					builder.Append(": ");
-				}
+				TryAppendOverrideVersion(builder, modContentPack);
+				TryAppendManifestVersion(builder, modContentPack);
+				builder.Append(": ");
 				var firstAssembly = true;
 				var anyAssemblies = false;
 				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
@@ -406,6 +403,20 @@ namespace HugsLib.Logs {
 				builder.Append("\n");
 			}
 			return builder.ToString();
+		}
+
+		private static void TryAppendOverrideVersion(StringBuilder builder, ModContentPack modContentPack) {
+			var versionFile = VersionFile.TryParseVersionFile(modContentPack);
+			if (versionFile != null && versionFile.OverrideVersion != null) {
+				builder.AppendFormat("[ov:{0}]", versionFile.OverrideVersion);
+			}
+		}
+
+		private static void TryAppendManifestVersion(StringBuilder builder, ModContentPack modContentPack) {
+			var manifestFile = ManifestFile.TryParse(modContentPack);
+			if (manifestFile != null && manifestFile.Version != null) {
+				builder.AppendFormat("[mv:{0}]", manifestFile.Version);
+			}
 		}
 
 		// sanitizes a string for valid inclusion in JSON

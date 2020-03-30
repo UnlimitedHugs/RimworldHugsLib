@@ -26,7 +26,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>NU5128</NoWarn>
-	<Prefer32Bit>false</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -89,6 +89,7 @@
     <Compile Include="Source\Core\HugsLibMod.cs" />
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
+    <Compile Include="Source\Core\ManifestFile.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />

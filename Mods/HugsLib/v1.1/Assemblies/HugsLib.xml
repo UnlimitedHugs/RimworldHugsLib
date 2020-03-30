@@ -20,6 +20,28 @@
             Ensures that the library comes after Core in the load order and displays a warning dialog otherwise.
             </summary>
         </member>
+        <member name="T:HugsLib.Core.ManifestFile">
+            <summary>
+            Provides support for reading version information from Manifest.xml files.
+            These files are used in mods by Fluffy and a a few other authors.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Core.ManifestFile.TryParse(Verse.ModContentPack,System.Boolean)">
+            <summary>
+            Attempts to read and parse the manifest file for a mod.
+            </summary>
+            <returns>
+            Returns null if reading or parsing fails for any reason.
+            </returns>
+        </member>
+        <member name="M:HugsLib.Core.ManifestFile.Parse(Verse.ModContentPack)">
+            <summary>
+            Reads and parses the manifest file for a mod.
+            </summary>
+            <returns>
+            Returns null if the file does not exist.
+            </returns>
+        </member>
         <member name="T:HugsLib.Core.QuickRestarter">
             <summary>
             Checks for Dev mode and bypasses the Restart message box.
