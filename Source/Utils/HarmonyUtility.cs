@@ -102,8 +102,7 @@ namespace HugsLib.Utils {
 		/// <returns></returns>
 		public static string DescribeHarmonyVersions(Harmony instance) {
 			try {
-				Version currentVersion;
-				var modVersionPairs = Harmony.VersionInfo(out currentVersion);
+				var modVersionPairs = Harmony.VersionInfo(out _);
 				return "Harmony versions present: " + 
 					modVersionPairs.GroupBy(kv => kv.Value, kv => kv.Key).OrderByDescending(grp => grp.Key)
 					.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");

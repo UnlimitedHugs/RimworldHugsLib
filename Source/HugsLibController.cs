@@ -152,7 +152,9 @@ namespace HugsLib {
 					var modId = childMod.LogIdentifierSafe;
 					try {
 						childMod.EarlyInitialize();
+						#pragma warning disable 618 // Obsolete warning
 						childMod.EarlyInitalize();
+						#pragma warning restore 618
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}
@@ -469,6 +471,7 @@ namespace HugsLib {
 		// Ensure that no other mod has accidentally included the dll
 		private void CheckForIncludedHugsLibAssembly() {
 			var controllerTypeName = GetType().FullName;
+			if(controllerTypeName == null) throw new NullReferenceException();
 			foreach (var modContentPack in LoadedModManager.RunningMods) {
 				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
 					if (loadedAssembly.GetType(controllerTypeName, false) != null && modContentPack.Name != ModPackName) {

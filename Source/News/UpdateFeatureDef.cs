@@ -1,7 +1,7 @@
 ﻿using System;
 using HugsLib.Core;
 using Verse;
-// ReSharper disable UnassignedField.Global
+// ReSharper disable UnassignedField.Global CheckNamespace
 
 namespace HugsLib {
 	/// <summary>

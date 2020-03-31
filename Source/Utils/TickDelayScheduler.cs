@@ -6,7 +6,7 @@ namespace HugsLib.Utils {
 	/// <summary>
 	/// A performance-friendly way to execute code at arbitrary tick intervals.
 	/// Optimized for one-off timed callbacks with variable callback delay. 
-	/// Use DistributedTickScheduler instead if you have many recipients with recurring callbacks & constant time.
+	/// Use DistributedTickScheduler instead if you have many recipients with recurring callbacks and constant time.
 	/// Callbacks are called at tick time, which means a game must be loaded and running for them to be processed.
 	/// </summary>
 	public class TickDelayScheduler {

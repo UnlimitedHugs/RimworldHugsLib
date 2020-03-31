@@ -252,313 +252,10 @@
             Wraps settings related to the Quickstart system for storage in a SettingHandle.
             </summary>
         </member>
-        <member name="T:HugsLib.Source.Settings.SettingHandleConvertibleUtility">
+        <member name="T:HugsLib.Settings.Dialog_VanillaModSettings">
             <summary>
-            Utility methods for SettingHandleConvertible data objects.
-            These are useful for packing and unpacking your custom fields into a string without bothering with manual serialization.
-            </summary>
-        </member>
-        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.DeserializeValuesFromString(System.String,System.Object)">
-            <summary>
-            Deserializes an XML string into an existing object instance.
-            </summary>
-            <param name="serializedValues">The serialized values to fill the object with</param>
-            <param name="targetObject">The object to receive the deserialized values</param>
-        </member>
-        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.SerializeValuesToString(System.Object)">
-            <summary>
-            Serializes an object into a compact XML string.
-            Whitespace and namespace declarations are omitted.
-            Make sure the object is annotated with SerializableAttribute and the fields to serialize with XmlElementAttribute.
-            </summary>
-            <param name="targetObject">The object to serialize</param>
-        </member>
-        <member name="T:HugsLib.Shell.Shell">
-            <summary>
-            Commands start a new process on the target machine using platform specific commands and args to pass to the shell.
-            Refer to the Microsoft documentation for dotNet 3.5 for more info on a process.
-            https://msdn.microsoft.com/en-us/library/system.diagnostics.process(v=vs.90).aspx
-            </summary>
-        </member>
-        <member name="T:HugsLib.Shell.ShellOpenDirectory">
-            <summary>
-            A command to open a directory in the systems default file explorer.
-            Since Unity's OpenUrl() is broken on OS X, we can use a shell to do it correctly.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Shell.ShellOpenLog">
-            <summary>
-            A Command to open the log file in the systems default text editor.
-            </summary>
-        </member>
-        <member name="T:HugsLib.Shell.ShellRestartRimWorld">
-            <summary>
-            A Command to cleanly restart RimWorld on the target machine.
-            </summary>
-        </member>
-        <member name="T:HugsLib.HugsLibController">
-            <summary>
-            The hub of the library. Instantiates classes that extend ModBase and forwards some of the more useful events to them.
-            The assembly version of the library should reflect the current major Rimworld version, i.e.: 0.18.0.0 for B18.
-            This gives us the ability to release updates to the library without breaking compatibility with the mods that implement it.
-            See Core.HugsLibMod for the entry point.
-            </summary>
-        </member>
-        <member name="T:HugsLib.ModBase">
-            <summary>
-            The base class for all mods using HugsLib library. All classes extending ModBase will be instantiated 
-            automatically by <see cref="T:HugsLib.HugsLibController"/> at game initialization.
-            Can be annotated with <see cref="T:HugsLib.EarlyInitAttribute"/> to initialize the mod at <see cref="T:Verse.Mod"/>
-            initialization time and have <see cref="M:HugsLib.ModBase.EarlyInitialize"/> be called.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.Logger">
-            <summary>
-            This can be used to log messages specific to your mod.
-            It will prefix everything with your ModIdentifier.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.Settings">
-            <summary>
-            The ModSettingsPack specific to your mod.
-            Use this to create settings handles that represent the values of saved settings.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.HarmonyAutoPatch">
-            <summary>
-            Override this and return false to prevent a Harmony instance from being automatically created and scanning your assembly for patches.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.HarmonyInst">
-            <summary>
-            The reference to Harmony instance that applied the patches in your assembly.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.ModIdentifier">
-            <summary>
-            A unique identifier used both as <see cref="P:HugsLib.ModBase.SettingsIdentifier"/> and <see cref="P:HugsLib.ModBase.LogIdentifier"/>.
-            Override them separately if different identifiers are needed or no <see cref="T:HugsLib.Settings.ModSettingsPack"/> should be assigned to <see cref="P:HugsLib.ModBase.Settings"/>.
-            Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
-            </summary>
-            <remarks>
-            This is no longer used to identify mods since 7.0 (Rimworld 1.1). Use ModBase.ModContentPack.PackageId to that end instead.
-            </remarks>
-        </member>
-        <member name="P:HugsLib.ModBase.SettingsIdentifier">
-            <summary>
-            A unique identifier to use as a key when settings are stored for this mod by <see cref="T:HugsLib.Settings.ModSettingsManager"/>.
-            Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
-            By default uses the PackageId of the implementing mod.
-            Returning null will prevent the <see cref="P:HugsLib.ModBase.Settings"/> property from being assigned.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.LogIdentifier">
-            <summary>
-            A readable identifier for the mod, used as a prefix by <see cref="P:HugsLib.ModBase.Logger"/> and in various error messages.
-            Appear as "[LogIdentifier] message" when using <see cref="P:HugsLib.ModBase.Logger"/>.
-            By default uses the non-lowercase PackageId of the implementing mod or the type name if that is not set.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.LogIdentifierSafe">
-            <summary>
-            The null-checked version of <see cref="P:HugsLib.ModBase.LogIdentifier"/>. 
-            Returns the type name if <see cref="P:HugsLib.ModBase.LogIdentifier"/> is null.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.ModContentPack">
-            <summary>
-            The content pack for the mod containing the assembly this class belongs to
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.ModIsActive">
-            <summary>
-            Can be false if the mod was enabled at game start and then disabled in the mods menu.
-            Always true, unless the <see cref="T:Verse.ModContentPack"/> of the declaring mod can't be 
-            identified for some unexpected reason.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.VersionInfo">
-            <summary>
-            Contains the AssemblyVersion and AssemblyFileVersion of the mod. Used by <see cref="M:HugsLib.ModBase.GetVersion"/>.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.CurrentlyProcessedContentPack">
-            <summary>
-            Added to avoid breaking mod compatibility during the 7.0 update.
-            TODO: kill this during the next major update
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.GetVersion">
-            <summary>
-            Return the override version from the Version.xml file if specified, 
-            or the higher one between AssemblyVersion and AssemblyFileVersion
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.EarlyInitialize">
-            <summary>
-            Called during HugsLib <see cref="T:Verse.Mod"/> instantiation, accounting for mod load order. 
-            Load order among mods implementing <see cref="T:HugsLib.ModBase"/> is respected.
-            and only if the implementing class is annotated with <see cref="T:HugsLib.EarlyInitAttribute"/>.
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.StaticInitialize">
-            <summary>
-            Called when HugsLib receives the <see cref="T:Verse.StaticConstructorOnStartup"/> call.
-            Load order among mods implementing <see cref="T:HugsLib.ModBase"/> is respected.
-            Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.Initialize">
-            <summary>
-            An alias for <see cref="M:HugsLib.ModBase.StaticInitialize"/>, both or either can be used,
-            although <see cref="M:HugsLib.ModBase.StaticInitialize"/> makes for clearer code by indicating when the method is called.
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.Tick(System.Int32)">
-            <summary>
-            Called on each tick when in Play scene
-            </summary>
-            <param name="currentTick">The sequential number of the tick being processed</param>
-        </member>
-        <member name="M:HugsLib.ModBase.Update">
-            <summary>
-            Called each frame
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.FixedUpdate">
-            <summary>
-            Called each unity physics update
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.OnGUI">
-            <summary>
-            Called on each unity gui event, after UIRoot.UIRootOnGUI.
-            Respects UI scaling and screen fading. Will not be called during loading screens.
-            This is a good place to listen for hotkey events.
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.WorldLoaded">
-            <summary>
-            Called when GameState.Playing has been entered and the world is fully loaded in the Play scene.
-            Will not be called during world generation and landing site selection.
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.MapComponentsInitializing(Verse.Map)">
-            <summary>
-            Called right after Map.ConstructComponents() (before MapLoaded)
-            </summary>
-            <param name="map">The map being initialized</param>
-        </member>
-        <member name="M:HugsLib.ModBase.MapGenerated(Verse.Map)">
-            <summary>
-            Called right after a new map has been generated.
-            This is the equivalent of MapComponent.MapGenerated().
-            </summary>
-            <param name="map">The new map that has just finished generating</param>
-        </member>
-        <member name="M:HugsLib.ModBase.MapLoaded(Verse.Map)">
-            <summary>
-            Called when the map was fully loaded
-            </summary>
-            <param name="map">The map that has finished loading</param>
-        </member>
-        <member name="M:HugsLib.ModBase.MapDiscarded(Verse.Map)">
-            <summary>
-            Called after a map has been abandoned or otherwise made inaccessible.
-            Works on player bases, encounter maps, destroyed faction bases, etc.
-            </summary>
-            <param name="map">The map that has been discarded</param>
-        </member>
-        <member name="M:HugsLib.ModBase.SceneLoaded(UnityEngine.SceneManagement.Scene)">
-            <summary>
-            Called after each scene change
-            </summary>
-            <param name="scene">The scene that has been loaded</param>
-        </member>
-        <member name="M:HugsLib.ModBase.SettingsChanged">
-            <summary>
-            Called after settings menu changes have been confirmed.
-            This is called for all mods, regardless if their own settings have been modified, or not.
-            </summary>
-        </member>
-        <member name="M:HugsLib.ModBase.DefsLoaded">
-            <summary>
-            Called after StaticInitialize and when defs have been reloaded. This is a good place to inject defs.
-            Get your settings handles here, so that the labels will properly update on language change.
-            If the mod is disabled after being loaded, this method will STILL execute. Use ModIsActive to check.
-            </summary>
-            <remarks>
-            There is no scenario in which defs are reloaded without the game restarting, save for a mod manually initiating a reload. 
-            When def reloading is not an issue, anything done by this method can be safely done in StaticInitialize.
-            </remarks>
-        </member>
-        <member name="T:HugsLib.UpdateFeatureDef">
-            <summary>
-            Describes a single update news item.
-            Recommended to be placed in the /News folder in the root directory of the mod.
-            Can be loaded from the /Defs folder, but any <see cref="T:HugsLib.UpdateFeatureDef"/> placed 
-            in the /News  folder will unload all <see cref="T:HugsLib.UpdateFeatureDef"/>s loaded from /Defs.
-            </summary>
-        </member>
-        <member name="F:HugsLib.UpdateFeatureDef.modIdentifier">
-            <summary>
-            An optional unique identifier to reference the mod that adds this news item.
-            If not set, the PackageId of the mod will be used.<para/>
-            Must start with a letter and contain any of [A-z, 0-9, -, _, :]
-            </summary>
-            <remarks>
-            Used to preserve compatibility with pre-RW1.1 HugsLib news data, such as already displayed news items and ignored news providers.<para/>
-            Previously used to reference a BodBase.ModIdentifier which had to be loaded for the defining news def to be displayed.
-            </remarks>
-        </member>
-        <member name="F:HugsLib.UpdateFeatureDef.modNameReadable">
-            <summary>
-            Displayed in the title of the news item
-            </summary>
-        </member>
-        <member name="F:HugsLib.UpdateFeatureDef.titleOverride">
-            <summary>
-            Optional complete replacement for the news item title
-            </summary>
-        </member>
-        <member name="F:HugsLib.UpdateFeatureDef.assemblyVersion">
-            <summary>
-            The version number associated with the news item. Format: major.minor.patch<para/>
-            Used to sort news items and determine which items have not been displayed yet.
-            </summary>
-            <remarks>
-            For example, after an item with version 3.2.1 has been displayed, adding an item with version 3.2.0 will not cause the 
-            New Mod Features dialog to automatically open. However, both items will still appear the next time the dialog is opened.<para/>
-            The version of the mod adding the news item is no longer required to be equal or higher for a news item to be displayed.
-            </remarks>
-        </member>
-        <member name="F:HugsLib.UpdateFeatureDef.content">
-            <summary>
-            The text of the news item. Can contain text and images, supports Unity html markup (only recommended for highlighting).<para/>
-            The text can contain the following formatting markers:<para/>
-            |               -> (pipe) splits the content into segments. A segment can be a paragraph or image sequence<para/>
-            img:name1,name2 -> Displays a horizontal image sequence. Image names are file names without the extension.<para/>
-            caption:text    -> Attaches a text paragraph on the right side of the preceding image<para/>
-            Everything else is treated as plain text and creates a paragraph.<para/>
-            </summary>
-            <example>Paragraph1|Paragraph2|img:singleImage|caption:caption\ntext|img:sequence1,sequence2|More text</example>
-        </member>
-        <member name="F:HugsLib.UpdateFeatureDef.trimWhitespace">
-            <summary>
-            When set to true (true by default), leading and trailing whitespace characters (spaces, tabs, newlines)
-            are removed from content captions and paragraphs.
-            This makes it easier lay out your content and not have to cram everything into one line.
-            </summary>
-        </member>
-        <member name="F:HugsLib.UpdateFeatureDef.linkUrl">
-            <summary>
-            Optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.
-            </summary>
-        </member>
-        <member name="P:HugsLib.UpdateFeatureDef.OwningModId">
-            <summary>
-            Returns the Id of the owning mod. 
-            <see cref="F:HugsLib.UpdateFeatureDef.modIdentifier"/> is used if defined, and ModContentPack.PackageId otherwise.
+            Displays custom settings controls for mods that use the vanilla mod settings system.
+            The dialog shows the controls for a single mod only and is opened through Dialog_ModSettings.
             </summary>
         </member>
         <member name="T:HugsLib.Settings.Dialog_ModSettings">
@@ -868,6 +565,315 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:HugsLib.Source.Settings.SettingHandleConvertibleUtility">
+            <summary>
+            Utility methods for SettingHandleConvertible data objects.
+            These are useful for packing and unpacking your custom fields into a string without bothering with manual serialization.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.DeserializeValuesFromString(System.String,System.Object)">
+            <summary>
+            Deserializes an XML string into an existing object instance.
+            </summary>
+            <param name="serializedValues">The serialized values to fill the object with</param>
+            <param name="targetObject">The object to receive the deserialized values</param>
+        </member>
+        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.SerializeValuesToString(System.Object)">
+            <summary>
+            Serializes an object into a compact XML string.
+            Whitespace and namespace declarations are omitted.
+            Make sure the object is annotated with SerializableAttribute and the fields to serialize with XmlElementAttribute.
+            </summary>
+            <param name="targetObject">The object to serialize</param>
+        </member>
+        <member name="T:HugsLib.Shell.Shell">
+            <summary>
+            Commands start a new process on the target machine using platform specific commands and args to pass to the shell.
+            Refer to the Microsoft documentation for dotNet 3.5 for more info on a process.
+            https://msdn.microsoft.com/en-us/library/system.diagnostics.process(v=vs.90).aspx
+            </summary>
+        </member>
+        <member name="T:HugsLib.Shell.ShellOpenDirectory">
+            <summary>
+            A command to open a directory in the systems default file explorer.
+            Since Unity's OpenUrl() is broken on OS X, we can use a shell to do it correctly.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Shell.ShellOpenLog">
+            <summary>
+            A Command to open the log file in the systems default text editor.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Shell.ShellRestartRimWorld">
+            <summary>
+            A Command to cleanly restart RimWorld on the target machine.
+            </summary>
+        </member>
+        <member name="T:HugsLib.HugsLibController">
+            <summary>
+            The hub of the library. Instantiates classes that extend ModBase and forwards some of the more useful events to them.
+            The assembly version of the library should reflect the current major Rimworld version, i.e.: 0.18.0.0 for B18.
+            This gives us the ability to release updates to the library without breaking compatibility with the mods that implement it.
+            See Core.HugsLibMod for the entry point.
+            </summary>
+        </member>
+        <member name="T:HugsLib.ModBase">
+            <summary>
+            The base class for all mods using HugsLib library. All classes extending ModBase will be instantiated 
+            automatically by <see cref="T:HugsLib.HugsLibController"/> at game initialization.
+            Can be annotated with <see cref="T:HugsLib.EarlyInitAttribute"/> to initialize the mod at <see cref="T:Verse.Mod"/>
+            initialization time and have <see cref="M:HugsLib.ModBase.EarlyInitialize"/> be called.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.Logger">
+            <summary>
+            This can be used to log messages specific to your mod.
+            It will prefix everything with your ModIdentifier.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.Settings">
+            <summary>
+            The ModSettingsPack specific to your mod.
+            Use this to create settings handles that represent the values of saved settings.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.HarmonyAutoPatch">
+            <summary>
+            Override this and return false to prevent a Harmony instance from being automatically created and scanning your assembly for patches.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.HarmonyInst">
+            <summary>
+            The reference to Harmony instance that applied the patches in your assembly.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.ModIdentifier">
+            <summary>
+            A unique identifier used both as <see cref="P:HugsLib.ModBase.SettingsIdentifier"/> and <see cref="P:HugsLib.ModBase.LogIdentifier"/>.
+            Override them separately if different identifiers are needed or no <see cref="T:HugsLib.Settings.ModSettingsPack"/> should be assigned to <see cref="P:HugsLib.ModBase.Settings"/>.
+            Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
+            </summary>
+            <remarks>
+            This is no longer used to identify mods since 7.0 (Rimworld 1.1). Use ModBase.ModContentPack.PackageId to that end instead.
+            </remarks>
+        </member>
+        <member name="P:HugsLib.ModBase.SettingsIdentifier">
+            <summary>
+            A unique identifier to use as a key when settings are stored for this mod by <see cref="T:HugsLib.Settings.ModSettingsManager"/>.
+            Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
+            By default uses the PackageId of the implementing mod.
+            Returning null will prevent the <see cref="P:HugsLib.ModBase.Settings"/> property from being assigned.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.LogIdentifier">
+            <summary>
+            A readable identifier for the mod, used as a prefix by <see cref="P:HugsLib.ModBase.Logger"/> and in various error messages.
+            Appear as "[LogIdentifier] message" when using <see cref="P:HugsLib.ModBase.Logger"/>.
+            By default uses the non-lowercase PackageId of the implementing mod or the type name if that is not set.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.LogIdentifierSafe">
+            <summary>
+            The null-checked version of <see cref="P:HugsLib.ModBase.LogIdentifier"/>. 
+            Returns the type name if <see cref="P:HugsLib.ModBase.LogIdentifier"/> is null.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.ModContentPack">
+            <summary>
+            The content pack for the mod containing the assembly this class belongs to
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.ModIsActive">
+            <summary>
+            Can be false if the mod was enabled at game start and then disabled in the mods menu.
+            Always true, unless the <see cref="T:Verse.ModContentPack"/> of the declaring mod can't be 
+            identified for some unexpected reason.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.VersionInfo">
+            <summary>
+            Contains the AssemblyVersion and AssemblyFileVersion of the mod. Used by <see cref="M:HugsLib.ModBase.GetVersion"/>.
+            </summary>
+        </member>
+        <member name="P:HugsLib.ModBase.CurrentlyProcessedContentPack">
+            <summary>
+            Added to avoid breaking mod compatibility during the 7.0 update.
+            TODO: kill this during the next major update
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.GetVersion">
+            <summary>
+            Return the override version from the Version.xml file if specified, 
+            or the higher one between AssemblyVersion and AssemblyFileVersion
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.EarlyInitialize">
+            <summary>
+            Called during HugsLib <see cref="T:Verse.Mod"/> instantiation, accounting for mod load order. 
+            Load order among mods implementing <see cref="T:HugsLib.ModBase"/> is respected.
+            and only if the implementing class is annotated with <see cref="T:HugsLib.EarlyInitAttribute"/>.
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.StaticInitialize">
+            <summary>
+            Called when HugsLib receives the <see cref="T:Verse.StaticConstructorOnStartup"/> call.
+            Load order among mods implementing <see cref="T:HugsLib.ModBase"/> is respected.
+            Called after the static constructors for non-HugsLib mods have executed. Is not called again on def reload
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.Initialize">
+            <summary>
+            An alias for <see cref="M:HugsLib.ModBase.StaticInitialize"/>, both or either can be used,
+            although <see cref="M:HugsLib.ModBase.StaticInitialize"/> makes for clearer code by indicating when the method is called.
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.Tick(System.Int32)">
+            <summary>
+            Called on each tick when in Play scene
+            </summary>
+            <param name="currentTick">The sequential number of the tick being processed</param>
+        </member>
+        <member name="M:HugsLib.ModBase.Update">
+            <summary>
+            Called each frame
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.FixedUpdate">
+            <summary>
+            Called each unity physics update
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.OnGUI">
+            <summary>
+            Called on each unity gui event, after UIRoot.UIRootOnGUI.
+            Respects UI scaling and screen fading. Will not be called during loading screens.
+            This is a good place to listen for hotkey events.
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.WorldLoaded">
+            <summary>
+            Called when GameState.Playing has been entered and the world is fully loaded in the Play scene.
+            Will not be called during world generation and landing site selection.
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.MapComponentsInitializing(Verse.Map)">
+            <summary>
+            Called right after Map.ConstructComponents() (before MapLoaded)
+            </summary>
+            <param name="map">The map being initialized</param>
+        </member>
+        <member name="M:HugsLib.ModBase.MapGenerated(Verse.Map)">
+            <summary>
+            Called right after a new map has been generated.
+            This is the equivalent of MapComponent.MapGenerated().
+            </summary>
+            <param name="map">The new map that has just finished generating</param>
+        </member>
+        <member name="M:HugsLib.ModBase.MapLoaded(Verse.Map)">
+            <summary>
+            Called when the map was fully loaded
+            </summary>
+            <param name="map">The map that has finished loading</param>
+        </member>
+        <member name="M:HugsLib.ModBase.MapDiscarded(Verse.Map)">
+            <summary>
+            Called after a map has been abandoned or otherwise made inaccessible.
+            Works on player bases, encounter maps, destroyed faction bases, etc.
+            </summary>
+            <param name="map">The map that has been discarded</param>
+        </member>
+        <member name="M:HugsLib.ModBase.SceneLoaded(UnityEngine.SceneManagement.Scene)">
+            <summary>
+            Called after each scene change
+            </summary>
+            <param name="scene">The scene that has been loaded</param>
+        </member>
+        <member name="M:HugsLib.ModBase.SettingsChanged">
+            <summary>
+            Called after settings menu changes have been confirmed.
+            This is called for all mods, regardless if their own settings have been modified, or not.
+            </summary>
+        </member>
+        <member name="M:HugsLib.ModBase.DefsLoaded">
+            <summary>
+            Called after StaticInitialize and when defs have been reloaded. This is a good place to inject defs.
+            Get your settings handles here, so that the labels will properly update on language change.
+            If the mod is disabled after being loaded, this method will STILL execute. Use ModIsActive to check.
+            </summary>
+            <remarks>
+            There is no scenario in which defs are reloaded without the game restarting, save for a mod manually initiating a reload. 
+            When def reloading is not an issue, anything done by this method can be safely done in StaticInitialize.
+            </remarks>
+        </member>
+        <member name="T:HugsLib.UpdateFeatureDef">
+            <summary>
+            Describes a single update news item.
+            Recommended to be placed in the /News folder in the root directory of the mod.
+            Can be loaded from the /Defs folder, but any <see cref="T:HugsLib.UpdateFeatureDef"/> placed 
+            in the /News  folder will unload all <see cref="T:HugsLib.UpdateFeatureDef"/>s loaded from /Defs.
+            </summary>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.modIdentifier">
+            <summary>
+            An optional unique identifier to reference the mod that adds this news item.
+            If not set, the PackageId of the mod will be used.<para/>
+            Must start with a letter and contain any of [A-z, 0-9, -, _, :]
+            </summary>
+            <remarks>
+            Used to preserve compatibility with pre-RW1.1 HugsLib news data, such as already displayed news items and ignored news providers.<para/>
+            Previously used to reference a BodBase.ModIdentifier which had to be loaded for the defining news def to be displayed.
+            </remarks>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.modNameReadable">
+            <summary>
+            Displayed in the title of the news item
+            </summary>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.titleOverride">
+            <summary>
+            Optional complete replacement for the news item title
+            </summary>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.assemblyVersion">
+            <summary>
+            The version number associated with the news item. Format: major.minor.patch<para/>
+            Used to sort news items and determine which items have not been displayed yet.
+            </summary>
+            <remarks>
+            For example, after an item with version 3.2.1 has been displayed, adding an item with version 3.2.0 will not cause the 
+            New Mod Features dialog to automatically open. However, both items will still appear the next time the dialog is opened.<para/>
+            The version of the mod adding the news item is no longer required to be equal or higher for a news item to be displayed.
+            </remarks>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.content">
+            <summary>
+            The text of the news item. Can contain text and images, supports Unity html markup (only recommended for highlighting).<para/>
+            The text can contain the following formatting markers:<para/>
+            |               -> (pipe) splits the content into segments. A segment can be a paragraph or image sequence<para/>
+            img:name1,name2 -> Displays a horizontal image sequence. Image names are file names without the extension.<para/>
+            caption:text    -> Attaches a text paragraph on the right side of the preceding image<para/>
+            Everything else is treated as plain text and creates a paragraph.<para/>
+            </summary>
+            <example>Paragraph1|Paragraph2|img:singleImage|caption:caption\ntext|img:sequence1,sequence2|More text</example>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.trimWhitespace">
+            <summary>
+            When set to true (true by default), leading and trailing whitespace characters (spaces, tabs, newlines)
+            are removed from content captions and paragraphs.
+            This makes it easier lay out your content and not have to cram everything into one line.
+            </summary>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.linkUrl">
+            <summary>
+            Optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.
+            </summary>
+        </member>
+        <member name="P:HugsLib.UpdateFeatureDef.OwningModId">
+            <summary>
+            Returns the Id of the owning mod. 
+            <see cref="F:HugsLib.UpdateFeatureDef.modIdentifier"/> is used if defined, and ModContentPack.PackageId otherwise.
+            </summary>
+        </member>
         <member name="T:HugsLib.Utils.AssemblyVersionInfo">
             <summary>
             Provides a convenient way to read, compare and print out the assembly version and file version of assemblies.
@@ -918,7 +924,14 @@
             </summary>
             <param name="action">The callback receives the map that has finished loading</param>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:HugsLib.Utils.TickDelayScheduler" -->
+        <member name="T:HugsLib.Utils.TickDelayScheduler">
+            <summary>
+            A performance-friendly way to execute code at arbitrary tick intervals.
+            Optimized for one-off timed callbacks with variable callback delay. 
+            Use DistributedTickScheduler instead if you have many recipients with recurring callbacks and constant time.
+            Callbacks are called at tick time, which means a game must be loaded and running for them to be processed.
+            </summary>
+        </member>
         <member name="M:HugsLib.Utils.TickDelayScheduler.ScheduleCallback(System.Action,System.Int32,Verse.Thing,System.Boolean)">
             <summary>
             Registers a delegate to be called in a given number of ticks.
@@ -1289,12 +1302,6 @@
             Returns an existing UWO or creates a new one, adding it to the world.
             </summary>
             <typeparam name="T">Your custom type that extends UtilityWorldObject</typeparam>
-        </member>
-        <member name="T:RimWorld.Dialog_VanillaModSettings">
-            <summary>
-            Displays custom settings controls for mods that use the vanilla mod settings system.
-            The dialog shows the controls for a single mod only and is opened through Dialog_ModSettings.
-            </summary>
         </member>
     </members>
 </doc>
