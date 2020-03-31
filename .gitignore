@@ -10,6 +10,7 @@ Debug/
 Release/
 packages/
 .vs/
+.idea/
 *.opensdf
 *.tlog
 *.log
