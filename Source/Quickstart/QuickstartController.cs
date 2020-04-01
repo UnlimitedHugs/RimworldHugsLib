@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using HarmonyLib;
 using HugsLib.Settings;
 using HugsLib.Utils;
@@ -33,6 +34,7 @@ namespace HugsLib.Quickstart {
 		private static Type quickStarterType;
 		private static FieldInfo quickStartedField;
 		private static SettingHandle<QuickstartSettings> handle;
+		private static bool quickstartPending;
 		private static bool mapGenerationPending;
 
 		public static void InitateMapGeneration() {
@@ -73,17 +75,33 @@ namespace HugsLib.Quickstart {
 			if (quickStartedField == null) HugsLibController.Logger.Error("QuickStarter.quickStarted field not found");
 		}
 
-		internal static void Initialize() {
-			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = ContentFinder<Texture2D>.Get("quickstartIcon"));
-			EnumerateMapSizes();
-			if (Prefs.DevMode) {
-				LongEventHandler.QueueLongEvent(SetupForQuickstart, null, false, null);
+		internal static void OnEarlyInitialize(ModSettingsPack librarySettings) {
+			PrepareSettings(librarySettings);
+			if (Settings.OperationMode != QuickstartSettings.QuickstartMode.Disabled) {
+				quickstartPending = true;
 			}
 		}
 
-		internal static void RegisterSettings(ModSettingsPack settings) {
-			handle = settings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
-			handle.NeverVisible = true;
+		internal static void OnLateInitialize() {
+			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = ContentFinder<Texture2D>.Get("quickstartIcon"));
+			EnumerateMapSizes();
+			if (Prefs.DevMode) {
+				LongEventHandler.QueueLongEvent(InitiateQuickstart, null, false, null);
+			}
+		}
+
+		internal static void OnGUIUnfiltered() {
+			if (!quickstartPending) return;
+			StatusBox.OnGUI(Settings);
+			if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Space) {
+				quickstartPending = false;
+				HugsLibController.Logger.Warning("Quickstart aborted: Space key was pressed.");
+				if (HugsLibUtility.ShiftIsHeld) {
+					Settings.OperationMode = QuickstartSettings.QuickstartMode.Disabled;
+					LongEventHandler.ExecuteWhenFinished(SaveSettings);
+				}
+				Event.current.Use();
+			}
 		}
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {
@@ -114,13 +132,16 @@ namespace HugsLib.Quickstart {
 			return mapGenerationPending ? Settings.MapSizeToGen : original;
 		}
 
-		private static void SetupForQuickstart() {
+		private static void PrepareSettings(ModSettingsPack librarySettings) {
+			handle = librarySettings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
+			handle.NeverVisible = true;
+		}
+
+		private static void InitiateQuickstart() {
+			if(!quickstartPending) return;
+			quickstartPending = false;
 			try {
 				if (Settings.OperationMode == QuickstartSettings.QuickstartMode.Disabled) return;
-				if (HugsLibUtility.ShiftIsHeld) {
-					HugsLibController.Logger.Warning("Quickstart aborted: Shift key was held.");
-					return;
-				}
 				CheckForErrorsAndWarnings();
 				if (Settings.OperationMode == QuickstartSettings.QuickstartMode.GenerateMap) {
 					if (GenCommandLine.CommandLineArgPassed("quicktest")) {
@@ -162,7 +183,7 @@ namespace HugsLib.Quickstart {
 					case 300: desc = "MapSizeLarge".Translate(); break;
 					case 350: desc = "MapSizeExtreme".Translate(); break;
 				}
-				var label = string.Format("{0}x{0}", size) + (desc != null ? string.Format(" ({0})", desc) : "");
+				var label = string.Format("{0}x{0}", size) + (desc != null ? $" ({desc})" : "");
 				MapSizes.Add(new MapSizeEntry(size, label));
 			}
 			SnapSettingsMapSizeToClosestValue(Settings, MapSizes);
@@ -192,6 +213,61 @@ namespace HugsLib.Quickstart {
 			public MapSizeEntry(int size, string label) {
 				Size = size;
 				Label = label;
+			}
+		}
+
+		private static class StatusBox {
+			private static readonly Vector2 StatusRectSize = new Vector2(240f, 75f);
+			private static readonly Vector2 StatusRectPadding = new Vector2(26f, 18f);
+
+			public static void OnGUI(QuickstartSettings settings) {
+				var statusText = GetStatusBoxText(settings);
+				var boxRect = GetStatusBoxRect(statusText);
+				DrawStatusBox(boxRect, statusText);
+			}
+
+			private static string GetStatusBoxText(QuickstartSettings settings) {
+				var sb = new StringBuilder("HugsLib quickstarter preparing to\n");
+				switch (settings.OperationMode) {
+					case QuickstartSettings.QuickstartMode.LoadMap:
+						sb.AppendFormat("load save file: {0}\n", settings.SaveFileToLoad);
+						break;
+					case QuickstartSettings.QuickstartMode.GenerateMap:
+						sb.AppendFormat("generate map: {0} ({1}x{1})\n", 
+							settings.ScenarioToGen, settings.MapSizeToGen
+						);
+						break;
+					default:
+						return $"Unhandled {nameof(QuickstartSettings.QuickstartMode)}: {settings.OperationMode}";
+				}
+				sb.AppendLine();
+				sb.Append("<color=#777777>");
+				sb.AppendLine("Press Space to abort");
+				sb.Append("Press Shift+Space to disable");
+				sb.Append("</color>");
+				return sb.ToString();
+			}
+
+			private static Rect GetStatusBoxRect(string statusText) {
+				var statusTextSize = Text.CalcSize(statusText);
+				var boxWidth = Mathf.Max(StatusRectSize.x, statusTextSize.x + StatusRectPadding.x * 2f);
+				var boxHeight = Mathf.Max(StatusRectSize.y, statusTextSize.y + StatusRectPadding.y * 2f);
+				var boxRect = new Rect(
+					(UI.screenWidth - boxWidth) / 2f,
+					(UI.screenHeight / 2f - boxHeight) / 2f,
+					boxWidth, boxHeight
+				);
+				boxRect = boxRect.Rounded();
+				return boxRect;
+			}
+
+			private static void DrawStatusBox(Rect rect, string statusText) {
+				Widgets.DrawShadowAround(rect);
+				Widgets.DrawWindowBackground(rect);
+				var prevAnchor = Text.Anchor;
+				Text.Anchor = TextAnchor.MiddleCenter;
+				Widgets.Label(rect, statusText);
+				Text.Anchor = prevAnchor;
 			}
 		}
 	}

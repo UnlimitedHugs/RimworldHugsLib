@@ -133,6 +133,8 @@ namespace HugsLib {
 				DistributedTicker = new DistributedTickScheduler();
 				DoLater = new DoLaterScheduler();
 				LogUploader = new LogPublisher();
+				var librarySettings = Settings.GetModSettings(ModIdentifier);
+				QuickstartController.OnEarlyInitialize(librarySettings);
 				LoadOrderChecker.ValidateLoadOrder();
 				EnumerateModAssemblies();
 				EarlyInitializeChildMods();
@@ -179,7 +181,7 @@ namespace HugsLib {
 				}
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
-				QuickstartController.Initialize();
+				QuickstartController.OnLateInitialize();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
@@ -282,6 +284,7 @@ namespace HugsLib {
 		}
 
 		internal void OnGUIUnfiltered() {
+			QuickstartController.OnGUIUnfiltered();
 		}
 
 		internal void OnSceneLoaded(Scene scene) {
@@ -509,7 +512,6 @@ namespace HugsLib {
 				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
 				pack.AlwaysExpandEntry = true;
 				UpdateFeatures.RegisterSettings(pack);
-				QuickstartController.RegisterSettings(pack);
 				LogPublisher.RegisterSettings(pack);
 			} catch (Exception e) {
 				Logger.ReportException(e);
