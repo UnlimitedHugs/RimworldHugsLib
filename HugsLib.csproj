@@ -110,7 +110,7 @@
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
     <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
-    <Compile Include="Source\Patches\UIRoot_Patch.cs" />
+    <Compile Include="Source\Patches\Root_OnGUI_Patch.cs" />
     <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />
     <Compile Include="Source\Quickstart\QuickstartController.cs" />
     <Compile Include="Source\Quickstart\QuickstartSettings.cs" />

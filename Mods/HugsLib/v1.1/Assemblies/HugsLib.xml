@@ -229,10 +229,11 @@
             Hooks into the flow of the vanilla MonoBehavior.Update()
             </summary>
         </member>
-        <member name="T:HugsLib.Patches.UIRoot_Patch">
+        <member name="T:HugsLib.Patches.Root_OnGUI_Patch">
             <summary>
             Hooks into the flow of the vanilla MonoBehavior.OnGUI()
-            This allows to take advantage of automatic UI scaling and prevents GUI updates during a loading screen.
+            This allows to take advantage of automatic UI scaling (called after <see cref="M:Verse.UI.ApplyUIScale"/>)
+            and prevents GUI updates during a loading screen.
             </summary>
         </member>
         <member name="T:HugsLib.Quickstart.Dialog_QuickstartSettings">

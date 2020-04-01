@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -279,6 +279,9 @@ namespace HugsLib {
 			} catch (Exception e) {
 				Logger.ReportException(e, null, true);
 			}
+		}
+
+		internal void OnGUIUnfiltered() {
 		}
 
 		internal void OnSceneLoaded(Scene scene) {
