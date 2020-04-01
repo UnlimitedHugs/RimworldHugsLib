@@ -173,6 +173,7 @@ namespace HugsLib.News {
 		private static class UpdateFeatureDefLoader {
 
 			public static void LoadUpdateFeatureDefs() {
+				ResetUpdateFeatureDefTranslations();
 				var parsedDefs = LoadAndParseNewsFeatureDefs();
 				ReinitUpdateFeatureDefDatabase(parsedDefs);
 			}
@@ -234,6 +235,20 @@ namespace HugsLib.News {
 				XmlInheritance.Clear();
 
 				return parsedFeatureDefs;
+			}
+
+			private static void ResetUpdateFeatureDefTranslations() {
+				// translations might have already been applied to news defs inherited from 1.0
+				// through the versioning system, and must be reset so they can be applied again
+				if(LanguageDatabase.activeLanguage == null) return;
+				foreach (var defInjection in LanguageDatabase.activeLanguage.defInjections) {
+					if (defInjection.defType == typeof(UpdateFeatureDef)) {
+						foreach (var injection in defInjection.injections) {
+							injection.Value.injected = false;
+						}
+						defInjection.loadErrors.Clear();
+					}
+				}
 			}
 
 			private static void ReinitUpdateFeatureDefDatabase(IEnumerable<UpdateFeatureDef> defs) {
