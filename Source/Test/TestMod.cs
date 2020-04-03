@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using HugsLib.Settings;
 using HugsLib.Source.Settings;
+using HugsLib.Spotter;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -157,6 +158,7 @@ namespace HugsLib.Test {
 				return false;
 			};
 			TestSettingsHasUnsavedChanges();
+			ModSpottingTests.Run();
 			TestCustomTypeSetting();
 			TestGiveShortHash();
 			//TestConditionalVisibilitySettings();	

@@ -106,6 +106,49 @@
             and has not been seen and open the dialog with all available news items.</param>
             <returns>true, if there have been found news items that were not displayed before, and the dialog has been opened</returns>
         </member>
+        <member name="T:HugsLib.Spotter.ICurrentDateTimeSource">
+            <summary>
+            Allows to inject arbitrary timestamps into <see cref="T:HugsLib.Spotter.ModSpottingManager"/> entries. Used in unit testing.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Spotter.ModSpottingManager">
+            <summary>
+            Keeps track of mod packageIds that ever were loaded together with HugsLib
+            by the player and the first/last time they were seen.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Spotter.ModSpottingManager.MakeFirstTimeSeen(System.String)">
+            <summary>
+            Forces a packageId to be considered as first time seen during the current run.
+            Causes changes to be written to disk.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
+        </member>
+        <member name="M:HugsLib.Spotter.ModSpottingManager.FirstTimeSeen(System.String)">
+            <summary>
+            Returns true if the provided packageId was recorded for the first time during the current run.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
+        </member>
+        <member name="M:HugsLib.Spotter.ModSpottingManager.TryGetLastSeenTime(System.String)">
+            <summary>
+            Returns the previous time the provided packageId has been recorded.
+            Returns null if packageId is unknown or the current run is the first time the packageId has been recorded.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
+        </member>
+        <member name="M:HugsLib.Spotter.ModSpottingManager.TryGetFirstSeenTime(System.String)">
+            <summary>
+            Returns the first time the provided packageId has been recorded.
+            Return null if the packageId has never been seen running together with HugsLib.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
+        </member>
+        <member name="T:HugsLib.Spotter.ModSpottingManager.TrackingEntry">
+            <summary>
+            Used by <see cref="T:HugsLib.Spotter.ModSpottingManager"/> to track mod packageIds loaded from the XML file. 
+            </summary>
+        </member>
         <member name="T:HugsLib.EarlyInitAttribute">
             <summary>
             Used to indicate that a <see cref="T:HugsLib.ModBase"/> type should be instantiated at the earliest moment possible.

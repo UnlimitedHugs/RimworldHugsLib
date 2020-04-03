@@ -8,6 +8,7 @@ using HugsLib.Logs;
 using HugsLib.News;
 using HugsLib.Quickstart;
 using HugsLib.Settings;
+using HugsLib.Spotter;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -112,6 +113,7 @@ namespace HugsLib {
 		public DistributedTickScheduler DistributedTicker { get; private set; }
 		public DoLaterScheduler DoLater { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
+		public ModSpottingManager ModSpotter { get; private set; }
 
 		internal Harmony HarmonyInst { get; private set; }
 
@@ -135,6 +137,8 @@ namespace HugsLib {
 				LogUploader = new LogPublisher();
 				var librarySettings = Settings.GetModSettings(ModIdentifier);
 				QuickstartController.OnEarlyInitialize(librarySettings);
+				ModSpotter = new ModSpottingManager();
+				ModSpotter.OnEarlyInitialize();
 				LoadOrderChecker.ValidateLoadOrder();
 				EnumerateModAssemblies();
 				EarlyInitializeChildMods();

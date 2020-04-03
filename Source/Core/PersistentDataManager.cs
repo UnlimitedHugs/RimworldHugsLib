@@ -29,6 +29,10 @@ namespace HugsLib.Core {
 			get { return "HugsLib"; }
 		}
 
+		protected virtual bool SuppressLoadSaveExceptions {
+			get { return true; }
+		}
+		
 		protected virtual bool DisplayLoadSaveWarnings {
 			get { return true; }
 		}
@@ -40,7 +44,12 @@ namespace HugsLib.Core {
 				var doc = XDocument.Load(filePath);
 				LoadFromXml(doc);
 			} catch (Exception ex) {
-				if(DisplayLoadSaveWarnings) HugsLibController.Logger.Warning("Exception loading xml from " + filePath + ". Loading defaults instead. Exception was: " + ex);
+				if (DisplayLoadSaveWarnings) {
+					HugsLibController.Logger.Warning("Exception loading xml from " + filePath + ". " +
+													"Loading defaults instead. Exception was: " + ex
+					);
+				}
+				if (!SuppressLoadSaveExceptions) throw;
 			}
 		}
 
@@ -51,7 +60,10 @@ namespace HugsLib.Core {
 				WriteXml(doc);
 				doc.Save(filePath);
 			} catch (Exception ex) {
-				if (DisplayLoadSaveWarnings) HugsLibController.Logger.Warning("Failed to save xml to " + filePath + ". Exception was: " + ex);
+				if (DisplayLoadSaveWarnings) {
+					HugsLibController.Logger.Warning("Failed to save xml to " + filePath + ". Exception was: " + ex);
+				}
+				if (!SuppressLoadSaveExceptions) throw;
 			}
 		}
 
