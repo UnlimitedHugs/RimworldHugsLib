@@ -17,6 +17,7 @@ namespace HugsLib.Spotter {
 				NewForceFirstTimeSeenTest();
 				OldForceFirstTimeSeenTest();
 				ChangingModSetTest();
+				CaseInsensitivePackageIdTest();
 			} catch (Exception e) {
 				HugsLibController.Logger.Error(
 					$"{nameof(ModSpottingTests)} assert failed: {e.Message}\n{e.StackTrace}"
@@ -103,6 +104,14 @@ namespace HugsLib.Spotter {
 			AssertEqual(1, spotter.TryGetLastSeenTime("one")?.Year, "one last seen at 3");
 			AssertEqual(2, spotter.TryGetLastSeenTime("two")?.Year, "two last seen at 3");
 			Assert(spotter.FirstTimeSeen("four"), "four seen first time at 3");
+		}
+
+		private static void CaseInsensitivePackageIdTest() {
+			var packageIds = new[] {"Author.oNe"};
+			var spotter = PrepareSpotter(1, true, packageIds);
+			Assert(spotter.FirstTimeSeen("Author.oNe"), "one same case");
+			Assert(spotter.FirstTimeSeen("author.OnE"), "one different case");
+			Assert(!spotter.TryGetFirstSeenTime("Author.0ne").HasValue, "unrelated id not seen");
 		}
 
 		private static void Assert(bool condition, string expectedMessage) {
