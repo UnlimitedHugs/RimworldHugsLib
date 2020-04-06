@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using HugsLib.Core;
 using HugsLib.Logs;
@@ -13,6 +14,8 @@ using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Verse;
+
+[assembly:InternalsVisibleTo("HugsLibTests")]
 
 namespace HugsLib {
 	/// <summary>
