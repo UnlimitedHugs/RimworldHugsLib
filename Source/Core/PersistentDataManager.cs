@@ -18,7 +18,9 @@ namespace HugsLib.Core {
 				return false;
 			}
 		}
-		
+
+		protected string OverrideFilePath { get; set; }
+
 		protected abstract string FileName { get; }
 
 		protected abstract void LoadFromXml(XDocument xml);
@@ -68,6 +70,7 @@ namespace HugsLib.Core {
 		}
 
 		private string GetSettingsFilePath(string fileName) {
+			if (OverrideFilePath != null) return OverrideFilePath;
 			string path = Path.Combine(GenFilePaths.SaveDataFolderPath, FolderName);
 			var directoryInfo = new DirectoryInfo(path);
 			if (!directoryInfo.Exists) {

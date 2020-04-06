@@ -95,7 +95,6 @@
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\Spotter\CurrentDateTimeSource.cs" />
     <Compile Include="Source\Spotter\ModSpottingManager.cs" />
-    <Compile Include="Source\Spotter\ModSpottingTests.cs" />
     <Compile Include="Source\Spotter\TrackingEntry.cs" />
     <Compile Include="Source\Utils\EarlyInitAttribute.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogsOptions.cs" />

@@ -12,14 +12,13 @@ namespace HugsLib.Spotter {
 	/// by the player and the first/last time they were seen.
 	/// </summary>
 	public partial class ModSpottingManager : PersistentDataManager {
-		private readonly string overrideFileName;
 		private readonly Dictionary<string, TrackingEntry> entries = 
 			new Dictionary<string, TrackingEntry>(StringComparer.OrdinalIgnoreCase);
 		private bool erroredOnLoad;
 		private Task inspectTask;
 
 		protected override string FileName {
-			get { return overrideFileName ?? "SpottedMods.xml"; }
+			get { return "SpottedMods.xml"; }
 		}
 		
 		protected override bool SuppressLoadSaveExceptions {
@@ -31,8 +30,8 @@ namespace HugsLib.Spotter {
 		internal ModSpottingManager() {
 		}
 
-		internal ModSpottingManager(string overrideFileName) {
-			this.overrideFileName = overrideFileName;
+		internal ModSpottingManager(string overrideFilePath) {
+			OverrideFilePath = overrideFilePath;
 		}
 		
 		/// <summary>

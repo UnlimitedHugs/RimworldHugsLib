@@ -158,7 +158,6 @@ namespace HugsLib.Test {
 				return false;
 			};
 			TestSettingsHasUnsavedChanges();
-			ModSpottingTests.Run();
 			TestCustomTypeSetting();
 			TestGiveShortHash();
 			//TestConditionalVisibilitySettings();	
