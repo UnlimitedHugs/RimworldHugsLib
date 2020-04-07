@@ -70,7 +70,7 @@ namespace HugsLib {
 		/// Specifies which players of the mod the news item should be only shown to- new players, returning players, or both.
 		/// Defaults to <see cref="UpdateFeatureTargetAudience.ReturningPlayers"/>.
 		/// </summary>
-		public UpdateFeatureTargetAudience targetAudience = UpdateFeatureTargetAudience.AllPlayers;
+		public UpdateFeatureTargetAudience targetAudience = UpdateFeatureTargetAudience.ReturningPlayers;
 		
 		public Version Version { get; set; }
 
