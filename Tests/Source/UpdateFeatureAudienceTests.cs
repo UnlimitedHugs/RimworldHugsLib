@@ -6,6 +6,7 @@ using HugsLib.News;
 using NUnit.Framework;
 
 namespace HugsLibTests {
+	[TestFixture]
 	public class UpdateFeatureAudienceTests {
 		private readonly UpdateFeatureDef[] defs = {
 			new UpdateFeatureDef {

@@ -5,6 +5,7 @@ using HugsLib.Spotter;
 using NUnit.Framework;
 
 namespace HugsLibTests {
+	[TestFixture]
 	public class ModSpottingManagerTests {
 		private FileInfo testingFile;
 
