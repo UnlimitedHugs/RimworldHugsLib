@@ -4,6 +4,13 @@ using Verse;
 // ReSharper disable UnassignedField.Global CheckNamespace
 
 namespace HugsLib {
+	[Flags]
+	public enum UpdateFeatureTargetAudience {
+		ReturningPlayers = 1,
+		NewPlayers = 2,
+		AllPlayers = ReturningPlayers | NewPlayers
+	}
+	
 	/// <summary>
 	/// Describes a single update news item.
 	/// Recommended to be placed in the /News folder in the root directory of the mod.
@@ -59,8 +66,15 @@ namespace HugsLib {
 		/// Optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.
 		/// </summary>
 		public string linkUrl;
+		/// <summary>
+		/// Specifies which players of the mod the news item should be only shown to- new players, returning players, or both.
+		/// Defaults to <see cref="UpdateFeatureTargetAudience.ReturningPlayers"/>.
+		/// </summary>
+		public UpdateFeatureTargetAudience targetAudience = UpdateFeatureTargetAudience.AllPlayers;
 		
 		public Version Version { get; set; }
+
+		internal string OverridePackageId { get; set; }
 
 		/// <summary>
 		/// Returns the Id of the owning mod. 
@@ -70,6 +84,14 @@ namespace HugsLib {
 			get {
 				if(!modIdentifier.NullOrEmpty()) return modIdentifier;
 				return modContentPack?.PackageId;
+			}
+		}
+
+		internal string OwningPackageId {
+			get {
+				return OverridePackageId ?? modContentPack?.PackageIdPlayerFacing 
+					?? throw new InvalidOperationException($"{nameof(UpdateFeatureDef)} \"{defName}\" " +
+														$"has a null {nameof(modContentPack)}"); 
 			}
 		}
 

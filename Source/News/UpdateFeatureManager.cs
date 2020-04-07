@@ -50,19 +50,30 @@ namespace HugsLib.News {
 			if (ShowNewsSetting.Value || manuallyOpened) {
 				var allNewsFeatureDefs = DefDatabase<UpdateFeatureDef>.AllDefs;
 				List<UpdateFeatureDef> defsToShow;
+				bool seenVersionsNeedSaving;
 				if (manuallyOpened) {
 					defsToShow = allNewsFeatureDefs.ToList();
+					seenVersionsNeedSaving = true;
 				} else {
-					// try to find defs newer than already featured, exclude ignored mods, remember highest found version
-					defsToShow = EnumerateFeatureDefsWithMoreRecentVersions(allNewsFeatureDefs, highestSeenVersions)
-						.Where(def => !NewsProviderOwningModIdIsIgnored(def.OwningModId))
-						.ToList();
-					UpdateMostRecentKnownFeatureVersions(defsToShow, highestSeenVersions);
+					var filteredByVersion = EnumerateFeatureDefsWithMoreRecentVersions(allNewsFeatureDefs, highestSeenVersions)
+							.Where(def => !NewsProviderOwningModIdIsIgnored(def.OwningModId))
+							.ToArray();SaveData();
+					
+					UpdateMostRecentKnownFeatureVersions(filteredByVersion, highestSeenVersions);
+					seenVersionsNeedSaving = filteredByVersion.Length > 0;
+					
+					var filteredByAudience = FilterFeatureDefsByMatchingAudience(filteredByVersion,
+						HugsLibController.Instance.ModSpotter.FirstTimeSeen,
+						e => HugsLibController.Logger.ReportException(e)
+					);
+					defsToShow = filteredByAudience.ToList();
+				}
+				if (seenVersionsNeedSaving) {
+					SaveData();
 				}
 				if (defsToShow.Count > 0) {
 					SortFeatureDefsByModNameAndVersion(defsToShow);
 					Find.WindowStack.Add(new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting));
-					SaveData();
 					return true;
 				}
 			}
@@ -93,6 +104,26 @@ namespace HugsLib.News {
 				var highestSeenVersion = highestSeenVersions.TryGetValue(ownerId);
 				if (highestSeenVersion == null || featureDef.Version > highestSeenVersion) {
 					highestSeenVersions[ownerId] = featureDef.Version;
+				}
+			}
+		}
+
+		internal static IEnumerable<UpdateFeatureDef> FilterFeatureDefsByMatchingAudience(
+			IEnumerable<UpdateFeatureDef> featureDefs, Predicate<string> packageIdFirstTimeSeen, Action<Exception> exceptionReporter) {
+			foreach (var featureDef in featureDefs) {
+				bool firstTimeSeen;
+				try {
+					var owningPackageId = featureDef.OwningPackageId;
+					firstTimeSeen = packageIdFirstTimeSeen(owningPackageId);
+				} catch (Exception e) {
+					exceptionReporter(e);
+					continue;
+				}
+				var requiredTargetAudienceFlag = firstTimeSeen
+					? UpdateFeatureTargetAudience.NewPlayers
+					: UpdateFeatureTargetAudience.ReturningPlayers;
+				if ((featureDef.targetAudience & requiredTargetAudienceFlag) != 0) {
+					yield return featureDef;
 				}
 			}
 		}
