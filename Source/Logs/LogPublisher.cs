@@ -97,9 +97,7 @@ namespace HugsLib.Logs {
 			HugsLibController.Logger.Message(collatedData);
 			HugsLibUtility.CopyToClipboard(collatedData);
 			MockUpload();
-			return;
-#endif
-
+#else
 			if (collatedData == null) {
 				ErrorMessage = "Failed to collect data";
 				FinalizeUpload(false);
@@ -122,6 +120,7 @@ namespace HugsLib.Logs {
 			} catch (Exception e) {
 				onRequestFailed(e);
 			}
+#endif
 		}
 
 		public void CopyToClipboard() {
