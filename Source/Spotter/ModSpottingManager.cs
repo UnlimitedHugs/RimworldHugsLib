@@ -89,7 +89,6 @@ namespace HugsLib.Spotter {
 
 		internal void OnEarlyInitialize() {
 			// We don't need the results of this operation right away, so we can happily offload it to a worker thread.
-			// Operation must finish by static initialization time to be ready for UpdateFeatureManager queries.
 			RunInspectPackageIdsBackgroundTask(
 				ModsConfig.ActiveModsInLoadOrder.Select(m => m.PackageIdPlayerFacing)
 			);
