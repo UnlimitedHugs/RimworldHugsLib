@@ -145,7 +145,6 @@
     <Compile Include="Source\Settings\ModSettingsManager.cs" />
     <Compile Include="Source\Settings\SettingHandle.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
-    <Compile Include="Source\Test\TestUWO.cs" />
     <Compile Include="Source\Test\TickersTests.cs" />
     <Compile Include="Source\Test\VanillaMod.cs" />
     <Compile Include="Source\Utils\AssemblyVersionInfo.cs" />

@@ -100,8 +100,6 @@ namespace HugsLib.Test {
 
 		public override void WorldLoaded() {
 			Logger.Message("WorldLoaded");
-			UtilityWorldObjectManager.GetUtilityWorldObject<TestUWO1>().UpdateAndReport();
-			UtilityWorldObjectManager.GetUtilityWorldObject<TestUWO2>().UpdateAndReport();
 		}
 
 		public override void MapComponentsInitializing(Map map) {
