@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HugsLib.Utils;
@@ -13,8 +13,8 @@ namespace HugsLib.News {
 		private const float HeaderLabelHeight = 40f; 
 		private const float EntryTitleLabelHeight = 40f;
 		private const float EntryTitleLabelPadding = 4f;
+		private const float EntryTitleLinkPadding = 7f;
 		private const float EntryTitleHeight = EntryTitleLabelHeight + EntryTitleLabelPadding;
-		private const float EntryTitleLinkWidth = 40f;
 		private const float EntryContentIndent = 4f;
 		private const float EntryFooterHeight = 16f;
 		private const float ScrollBarWidthMargin = 18f;
@@ -27,6 +27,7 @@ namespace HugsLib.News {
 		private readonly Color LinkTextColor = new Color(.7f, .7f, 1f);
 		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>();
 		private readonly string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
+		private readonly float linkTextWidth;
 		private List<FeatureEntry> entries;
 		private float totalContentHeight = -1;
 		private Vector2 scrollPosition;
@@ -45,6 +46,7 @@ namespace HugsLib.News {
 			draggable = true;
 			absorbInputAroundWindow = false;
 			resizeable = false;
+			linkTextWidth = GetLinkTextWidth() + EntryTitleLinkPadding * 2f;
 			GenerateDrawableEntries(featureDefs);
 		}
 
@@ -106,14 +108,14 @@ namespace HugsLib.News {
 				var togglePos = new Vector2(EntryTitleLabelPadding, curY + (EntryTitleLabelHeight / 2f - toggleSize / 2f));
 				DoIgnoreNewsProviderToggle(togglePos, entry);
 				var labelRect = new Rect(togglePos.x + toggleSize, curY,
-					width - EntryTitleLinkWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
+					width - linkTextWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
 				Text.Font = GameFont.Medium;
 				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.assemblyVersion);
 				Widgets.Label(labelRect, $"<size={EntryTitleFontSize}>{titleText}</size>");
 				Text.Font = GameFont.Small;
 				if (entry.def.linkUrl != null) {
 					Text.Anchor = TextAnchor.MiddleCenter;
-					var linkRect = new Rect(width - EntryTitleLinkWidth, curY, EntryTitleLinkWidth, EntryTitleLabelHeight);
+					var linkRect = new Rect(width - linkTextWidth, curY, linkTextWidth, EntryTitleLabelHeight);
 					var prevColor = GUI.color;
 					GUI.color = LinkTextColor;
 					Widgets.Label(linkRect, "HugsLib_features_link".Translate());
@@ -271,6 +273,14 @@ namespace HugsLib.News {
 				this.def = def;
 				this.segments = segments;
 			}
+		}
+
+		private static float GetLinkTextWidth() {
+			var prevFont = Text.Font;
+			Text.Font = GameFont.Small;
+			var width = Text.CalcSize("HugsLib_features_link".Translate()).x;
+			Text.Font = prevFont;
+			return width;
 		}
 
 		private class DescriptionSegment {
