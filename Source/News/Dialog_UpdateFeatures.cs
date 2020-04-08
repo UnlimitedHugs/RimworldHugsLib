@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using HugsLib.Utils;
@@ -126,7 +126,8 @@ namespace HugsLib.News {
 					}
 					if (Mouse.IsOver(linkRect)) {
 						Widgets.DrawHighlight(linkRect);
-						TooltipHandler.TipRegion(linkRect, "HugsLib_features_linkDesc".Translate(entry.def.linkUrl));
+						var descriptionText = "HugsLib_features_linkDesc".Translate();
+						TooltipHandler.TipRegion(linkRect, descriptionText.Replace("{0}", entry.def.linkUrl));
 					}
 				}
 			}
