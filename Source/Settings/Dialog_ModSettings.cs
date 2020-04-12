@@ -32,6 +32,7 @@ namespace HugsLib.Settings {
 		private readonly Dictionary<Type, SettingsHandleDrawer> handleDrawers;
 
 		private float totalContentHeight;
+		// TodoMajor: remove this field, leverage the change detection system built into SettingHandle
 		private bool settingsHaveChanged;
 		private string currentlyDrawnEntry;
 		private bool closingScheduled;
@@ -212,6 +213,11 @@ namespace HugsLib.Settings {
 				} else {
 					try {
 						valueChanged = handle.CustomDrawer(controlRect);
+						if (valueChanged && handle.ValueType.IsClass) {
+							// required for SettingHandleConvertible values to be eligible for saving,
+							// since changes in reference-type values can't be automatically detected
+							handle.HasUnsavedChanges = true;
+						}
 					} catch (Exception e) {
 						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.CustomDrawer");
 					}
