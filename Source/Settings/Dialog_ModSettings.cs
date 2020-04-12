@@ -15,7 +15,6 @@ namespace HugsLib.Settings {
 		private const float TitleLabelHeight = 40f;
 		private const float ModEntryLabelHeight = 40f;
 		private const float ModEntryLabelPadding = 4f;
-		private const float ModEntryHeight = ModEntryLabelHeight + ModEntryLabelPadding;
 		private const float ModEntryShowSettingsButtonHeight = 34f;
 		private const float HandleEntryPadding = 3f;
 		private const float HandleEntryHeight = 34f;
@@ -205,10 +204,9 @@ namespace HugsLib.Settings {
 				GenUI.ResetLabelAlign();
 				bool valueChanged = false;
 				if (handle.CustomDrawer == null) {
-					SettingsHandleDrawer drawer;
 					var handleType = handle.ValueType;
 					if (handleType.IsEnum) handleType = typeof(Enum);
-					handleDrawers.TryGetValue(handleType, out drawer);
+					handleDrawers.TryGetValue(handleType, out var drawer);
 					if (drawer == null) drawer = defaultHandleDrawer;
 					valueChanged = drawer(handle, controlRect, handleControlInfo[handle]);
 				} else {
@@ -224,10 +222,11 @@ namespace HugsLib.Settings {
 						TooltipHandler.TipRegion(entryRect, handle.Description);
 					}
 					if (handle.CanBeReset && Input.GetMouseButtonUp(1)) {
-						var options = new List<FloatMenuOption>(1);
-						options.Add(new FloatMenuOption("HugsLib_settings_resetValue".Translate(), () => {
-							ResetSetting(handle);
-						}));
+						var options = new List<FloatMenuOption>(1) {
+							new FloatMenuOption("HugsLib_settings_resetValue".Translate(),
+								() => { ResetSetting(handle); }
+							)
+						};
 						Find.WindowStack.Add(new FloatMenu(options));
 					}
 				}
@@ -275,16 +274,14 @@ namespace HugsLib.Settings {
 			var rightButtonRect = new Rect(controlRect.x + controlRect.width - buttonSize, controlRect.y, buttonSize, buttonSize);
 			var changed = false;
 			if (Widgets.ButtonText(leftButtonRect, "-")) {
-				int parsed;
-				if (int.TryParse(info.inputValue, out parsed)) {
+				if (int.TryParse(info.inputValue, out var parsed)) {
 					info.inputValue = (parsed - handle.SpinnerIncrement).ToString();
 				}
 				info.validationScheduled = true;
 				changed = true;
 			}
 			if (Widgets.ButtonText(rightButtonRect, "+")) {
-				int parsed;
-				if (int.TryParse(info.inputValue, out parsed)) {
+				if (int.TryParse(info.inputValue, out var parsed)) {
 					info.inputValue = (parsed + handle.SpinnerIncrement).ToString();
 				}
 				info.validationScheduled = true;
@@ -366,8 +363,9 @@ namespace HugsLib.Settings {
 				// get HugsLib settings packs
 				foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
 					try {
-						var entry = new ModEntry(pack.EntryName, pack, null);
-						entry.DisplayPriority = pack.DisplayPriority;
+						var entry = new ModEntry(pack.EntryName, pack, null) {
+							DisplayPriority = pack.DisplayPriority
+						};
 						listedMods.Add(entry);
 					} catch (Exception e) {
 						HugsLibController.Logger.Error("Exception while enumerating HugsLib settings for {0}: {1}", pack.ModId, e);
