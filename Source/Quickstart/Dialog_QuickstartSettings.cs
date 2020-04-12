@@ -49,7 +49,6 @@ namespace HugsLib.Quickstart {
 			const float subListingRowHeight = 30f;
 			const float checkboxListingWidth = 280f;
 			const float listingColumnSpacing = 17f;
-			const string shiftTip = "Hold Shift while starting up to prevent the quickstart.";
 			var settings = QuickstartController.Settings;
 			var mainListing = new Listing_Standard();
 			mainListing.verticalSpacing = mainListingSpacing;
@@ -62,7 +61,7 @@ namespace HugsLib.Quickstart {
 			OperationModeRadioButton(mainListing, radioLabelInset, "Quickstart off", settings, QuickstartSettings.QuickstartMode.Disabled, 
 				"Quickstart functionality is disabled.\nThe game starts normally.");
 			OperationModeRadioButton(mainListing, radioLabelInset, "Quickstart: load save file", settings, QuickstartSettings.QuickstartMode.LoadMap,
-				"Load the selected saved game right after launch.\n"+shiftTip);
+				"Load the selected saved game right after launch.");
 			var expectedHeight = categoryPadding * 2 + (subListingRowHeight + subListingSpacing) * 1;
 			MakeSubListing(mainListing, 0, expectedHeight, categoryPadding, categoryInset, subListingSpacing, (sub, width) => {
 				sub.ColumnWidth = subListingLabelWidth;
@@ -75,7 +74,7 @@ namespace HugsLib.Quickstart {
 				MakeSelectSaveButton(sub, settings);
 			});
 			OperationModeRadioButton(mainListing, radioLabelInset, "Quickstart: generate map", settings, QuickstartSettings.QuickstartMode.GenerateMap,
-				"Generate a new map right after launch.\nWorks the same as using the \"quicktest\" command line option.\n" + shiftTip);
+				"Generate a new map right after launch.\nWorks the same as using the \"quicktest\" command line option.");
 			expectedHeight = categoryPadding * 2 + (subListingRowHeight + subListingSpacing) * 2;
 			MakeSubListing(mainListing, 0, expectedHeight, categoryPadding, categoryInset, subListingSpacing, (sub, width) => {
 				sub.ColumnWidth = subListingLabelWidth;
