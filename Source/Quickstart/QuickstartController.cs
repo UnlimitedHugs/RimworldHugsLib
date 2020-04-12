@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -107,7 +107,10 @@ namespace HugsLib.Quickstart {
 		}
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {
-			if (widgets.ButtonIcon(quickstartIconTex, "Open the quickstart settings.\n\nThis lets you automatically generate a map or load an existing save when the game is started.\nShift-click to quick-generate a new map.")) {
+			const string quickstartButtonTooltip = "Open the quickstart settings.\n\n" +
+				"This lets you automatically generate a map or load an existing save when the game is started.\n" +
+				"Shift-click to quick-generate a new map.";
+			if (widgets.ButtonIcon(quickstartIconTex, quickstartButtonTooltip)) {
 				var stack = Find.WindowStack;
 				if (HugsLibUtility.ShiftIsHeld) {
 					stack.TryRemove(typeof(Dialog_QuickstartSettings));
