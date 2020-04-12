@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
 using RimWorld;
@@ -29,7 +30,8 @@ namespace HugsLib.Quickstart {
 				return handle.Value ?? (handle.Value = new QuickstartSettings());
 			}
 		}
-
+		
+		// TodoMajor: remove this field
 		private static Texture2D quickstartIconTex;
 		private static Type quickStarterType;
 		private static FieldInfo quickStartedField;
@@ -83,7 +85,7 @@ namespace HugsLib.Quickstart {
 		}
 
 		internal static void OnLateInitialize() {
-			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = ContentFinder<Texture2D>.Get("quickstartIcon"));
+			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = HugsLibTextures.quickstartIcon);
 			EnumerateMapSizes();
 			if (Prefs.DevMode) {
 				LongEventHandler.QueueLongEvent(InitiateQuickstart, null, false, null);

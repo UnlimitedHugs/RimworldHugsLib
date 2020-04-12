@@ -10,6 +10,11 @@
             Instantiated by the game at the start of DoPlayLoad().
             </summary>
         </member>
+        <member name="T:HugsLib.Core.HugsLibTextures">
+            <summary>
+            Loads and stores textures from the HugsLib /Textures folder
+            </summary>
+        </member>
         <member name="T:HugsLib.Core.KeyBindingHandler">
             <summary>
             Handles the key presses for key bindings added by HugsLib
@@ -910,6 +915,12 @@
         <member name="F:HugsLib.UpdateFeatureDef.linkUrl">
             <summary>
             Optional link to a forum post/info page for this update, or the whole mod. Displayed in the news item title.
+            </summary>
+        </member>
+        <member name="F:HugsLib.UpdateFeatureDef.targetAudience">
+            <summary>
+            Specifies which players of the mod the news item should be only shown to- new players, returning players, or both.
+            Defaults to <see cref="F:HugsLib.UpdateFeatureTargetAudience.ReturningPlayers"/>.
             </summary>
         </member>
         <member name="P:HugsLib.UpdateFeatureDef.OwningModId">
