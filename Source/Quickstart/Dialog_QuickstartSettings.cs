@@ -169,7 +169,7 @@ namespace HugsLib.Quickstart {
 				Find.WindowStack.Add(menu);
 			}
 			if (Widgets.ButtonText(rightHalf, "Load now")) {
-				if (!HugsLibUtility.ShiftIsHeld) {
+				if (HugsLibUtility.ShiftIsHeld) {
 					settings.OperationMode = QuickstartSettings.QuickstartMode.LoadMap;
 				}
 				QuickstartController.InitateSaveLoading();
@@ -193,7 +193,7 @@ namespace HugsLib.Quickstart {
 				Find.WindowStack.Add(menu);
 			}
 			if (Widgets.ButtonText(rightHalf, "Generate now")) {
-				if (!HugsLibUtility.ShiftIsHeld) {
+				if (HugsLibUtility.ShiftIsHeld) {
 					settings.OperationMode = QuickstartSettings.QuickstartMode.GenerateMap;
 				}
 				QuickstartController.InitateMapGeneration();
