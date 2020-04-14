@@ -25,12 +25,13 @@
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
+        <DebugType>full</DebugType>
         <Optimize>true</Optimize>
         <OutputPath>bin\Release\</OutputPath>
         <DefineConstants>TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp, Version=1.1.7394.39959, Culture=neutral, PublicKeyToken=null">
@@ -50,6 +51,8 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Source\CallbackSchedulerTests.cs" />
+        <Compile Include="Source\DistributedTickSchedulerTests.cs" />
         <Compile Include="Source\ModSpottingManagerTests.cs" />
         <Compile Include="Source\UpdateFeatureAudienceTests.cs" />
     </ItemGroup>
