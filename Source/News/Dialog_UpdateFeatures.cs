@@ -40,7 +40,7 @@ namespace HugsLib.News {
 		public Dialog_UpdateFeatures(List<UpdateFeatureDef> featureDefs, UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) {
 			this.ignoredNewsProviders = ignoredNewsProviders;
 			closeOnCancel = true;
-			doCloseButton = true;
+			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;
 			draggable = true;
@@ -59,8 +59,10 @@ namespace HugsLib.News {
 		}
 
 		public override void DoWindowContents(Rect inRect) {
-			var windowButtonSize = CloseButSize;
-			var contentRect = new Rect(0, 0, inRect.width, inRect.height - (windowButtonSize.y + 10f)).ContractedBy(10f);
+			const float contentRectInset = 10f;
+			var bottomButtonRowHeight = CloseButSize.y; 
+			var bottomPadding = bottomButtonRowHeight + (Margin - contentRectInset);
+			var contentRect = new Rect(0, 0, inRect.width, inRect.height - bottomPadding).ContractedBy(contentRectInset);
 			GUI.BeginGroup(contentRect);
 			var titleRect = new Rect(0f, 0f, contentRect.width, HeaderLabelHeight);
 			Text.Font = GameFont.Medium;
@@ -100,8 +102,23 @@ namespace HugsLib.News {
 				Widgets.EndScrollView();
 			}
 			GUI.EndGroup();
+			DrawBottomButtonRow(inRect.BottomPartPixels(bottomButtonRowHeight));
 		}
 
+		protected virtual void DrawBottomButtonRow(Rect inRect) {
+			var closeButtonRect = new Rect(
+				inRect.width / 2f - CloseButSize.x / 2f, inRect.y,
+				CloseButSize.x, CloseButSize.y
+			);
+			DrawCloseButton(closeButtonRect);
+		}
+
+		protected void DrawCloseButton(Rect inRect) {
+			if (Widgets.ButtonText(inRect, "CloseButton".Translate())) {
+				Close();
+			}
+		}
+		
 		private void DrawEntryTitle(FeatureEntry entry, float width, ref float curY, bool skipDrawing) {
 			if (!skipDrawing) {
 				const float toggleSize = Widgets.CheckboxSize;

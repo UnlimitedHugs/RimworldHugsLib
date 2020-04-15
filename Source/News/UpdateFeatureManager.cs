@@ -73,7 +73,10 @@ namespace HugsLib.News {
 				}
 				if (defsToShow.Count > 0) {
 					SortFeatureDefsByModNameAndVersion(defsToShow);
-					Find.WindowStack.Add(new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting));
+					var newsDialog = manuallyOpened
+						? new Dialog_UpdateFeaturesFiltered(defsToShow, IgnoredNewsProvidersSetting)
+						: new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting);
+					Find.WindowStack.Add(newsDialog);
 					return true;
 				}
 			}

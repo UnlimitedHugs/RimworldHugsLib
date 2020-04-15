@@ -93,6 +93,7 @@
     <Compile Include="Source\Core\ManifestFile.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
+    <Compile Include="Source\News\Dialog_UpdateFeaturesFiltered.cs" />
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\Spotter\CurrentDateTimeSource.cs" />
     <Compile Include="Source\Spotter\ModSpottingManager.cs" />

@@ -29,6 +29,9 @@
 	<HugsLib_features_ignoreTooltip>Notify about future updates from this mod</HugsLib_features_ignoreTooltip>
 	<HugsLib_features_confirmIgnoreTitle>Confirm</HugsLib_features_confirmIgnoreTitle>
 	<HugsLib_features_confirmIgnore>Ignore future update news from {0}?\n\nCan be re-enabled in Mod Options &gt; All mod update news</HugsLib_features_confirmIgnore>
+	<HugsLib_features_filterBtn>Filter by mod</HugsLib_features_filterBtn>
+	<HugsLib_features_filterStatus>Current filter: {0}</HugsLib_features_filterStatus>
+	<HugsLib_features_filterAllMods>All mods</HugsLib_features_filterAllMods>
 
 	<HugsLib_copiedToClipboard>Copied to clipboard.</HugsLib_copiedToClipboard>
 	

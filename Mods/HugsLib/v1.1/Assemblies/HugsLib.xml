@@ -92,6 +92,11 @@
             VersionShort is no longer used by HugsLib internally, and the type is retained for backwards compatibility.
             </summary>
         </member>
+        <member name="T:HugsLib.News.Dialog_UpdateFeaturesFiltered">
+            <summary>
+            The extended update news dialog, with filtering by mod and a menu button in entry headers for dev mode actions.
+            </summary>
+        </member>
         <member name="T:HugsLib.News.Dialog_UpdateFeatures">
             <summary>
             Displays a list to update feature defs with basic image and formatting support. See <see cref="T:HugsLib.UpdateFeatureDef"/> for proper syntax.
