@@ -47,15 +47,12 @@ namespace HugsLib.News {
 			absorbInputAroundWindow = false;
 			resizeable = false;
 			linkTextWidth = GetLinkTextWidth() + EntryTitleLinkPadding * 2f;
-			GenerateDrawableEntries(featureDefs);
+			InstallUpdateFeatureDefs(featureDefs);
 		}
 
 		public override void Close(bool doCloseSound = true) {
 			base.Close(doCloseSound);
-			foreach (var resolvedTexture in resolvedImages.Values) {
-				UnityEngine.Object.Destroy(resolvedTexture);
-			}
-			resolvedImages.Clear();
+			DestroyLoadedImages();
 		}
 
 		public override void DoWindowContents(Rect inRect) {
@@ -105,6 +102,16 @@ namespace HugsLib.News {
 			DrawBottomButtonRow(inRect.BottomPartPixels(bottomButtonRowHeight));
 		}
 
+		protected void InstallUpdateFeatureDefs(List<UpdateFeatureDef> featureDefs) {
+			DestroyLoadedImages();
+			GenerateDrawableEntries(featureDefs);
+			totalContentHeight = -1;
+		}
+
+		protected void ResetScrollPosition() {
+			scrollPosition = Vector2.zero;
+		}
+		
 		protected virtual void DrawBottomButtonRow(Rect inRect) {
 			var closeButtonRect = new Rect(
 				inRect.width / 2f - CloseButSize.x / 2f, inRect.y,
@@ -220,6 +227,13 @@ namespace HugsLib.News {
 			}
 		}
 		
+		private void DestroyLoadedImages() {
+			foreach (var resolvedTexture in resolvedImages.Values) {
+				UnityEngine.Object.Destroy(resolvedTexture);
+			}
+			resolvedImages.Clear();
+		}
+
 		private List<DescriptionSegment> ParseEntryContent(string content, bool trimWhitespace, out IEnumerable<string> requiredImages) {
 			const char SegmentSeparator = '|';
 			const char ArgumentSeparator = ':';
