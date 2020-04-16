@@ -35,16 +35,23 @@ namespace HugsLib.Spotter {
 		}
 		
 		/// <summary>
-		/// Forces a packageId to be considered as first time seen during the current run.
-		/// Causes changes to be written to disk.
+		/// Toggles the "first time seen" status of a packageId until the game is restarted.
+		/// If the status is modified, changes are immediately written to disk.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Throws on null packageId</exception>
-		public void MakeFirstTimeSeen(string packageId) {
+		public void ToggleFirstTimeSeen(string packageId, bool setFirstTimeSeen) {
 			if (packageId == null) throw new ArgumentNullException(nameof(packageId));
 			WaitForInspectionCompletion();
 			var now = DateTimeSource.Now;
-			entries[packageId] = new TrackingEntry(packageId, now, now);
-			SaveEntries();
+			var currentlyFirstTimeSeen = FirstTimeSeen(packageId);
+			if (setFirstTimeSeen != currentlyFirstTimeSeen) {
+				var entry = new TrackingEntry(packageId, now, now);
+				entries[packageId] = entry;
+				if (!setFirstTimeSeen) {
+					entry.PreviouslyLastSeen = now;
+				}
+				SaveEntries();
+			}
 		}
 		
 		/// <summary>

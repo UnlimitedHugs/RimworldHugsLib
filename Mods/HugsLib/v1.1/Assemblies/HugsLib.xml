@@ -132,10 +132,10 @@
             by the player and the first/last time they were seen.
             </summary>
         </member>
-        <member name="M:HugsLib.Spotter.ModSpottingManager.MakeFirstTimeSeen(System.String)">
+        <member name="M:HugsLib.Spotter.ModSpottingManager.ToggleFirstTimeSeen(System.String,System.Boolean)">
             <summary>
-            Forces a packageId to be considered as first time seen during the current run.
-            Causes changes to be written to disk.
+            Toggles the "first time seen" status of a packageId until the game is restarted.
+            If the status is modified, changes are immediately written to disk.
             </summary>
             <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
         </member>

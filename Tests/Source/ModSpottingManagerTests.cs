@@ -58,7 +58,7 @@ namespace HugsLibTests {
 			var packageIds = new[] {"one", "two"};
 			var spotter = PrepareSpotter(1, true, packageIds);
 			Assert.IsTrue(!spotter.TryGetFirstSeenTime("three").HasValue, "three not seen before");
-			spotter.MakeFirstTimeSeen("three");
+			spotter.ToggleFirstTimeSeen("three", true);
 			Assert.IsTrue(spotter.FirstTimeSeen("three"), "three first time seen after");
 
 			spotter = PrepareSpotter(2, false, packageIds);
@@ -74,7 +74,7 @@ namespace HugsLibTests {
 			var spotter = PrepareSpotter(2, false, packageIds);
 			Assert.IsTrue(spotter.TryGetFirstSeenTime("one").HasValue, "one seen before");
 			Assert.IsTrue(!spotter.FirstTimeSeen("one"), "one not first time seen before");
-			spotter.MakeFirstTimeSeen("one");
+			spotter.ToggleFirstTimeSeen("one", true);
 			Assert.IsTrue(spotter.FirstTimeSeen("one"), "one first time seen after");
 
 			spotter = PrepareSpotter(3, false, packageIds);
@@ -111,6 +111,27 @@ namespace HugsLibTests {
 			Assert.IsTrue(spotter.FirstTimeSeen("Author.oNe"), "one same case");
 			Assert.IsTrue(spotter.FirstTimeSeen("author.OnE"), "one different case");
 			Assert.IsTrue(!spotter.TryGetFirstSeenTime("Author.0ne").HasValue, "unrelated id not seen");
+		}
+
+		[Test]
+		public void ToggleFirstTimeSeen() {
+			var packageIds = new[] {"one"};
+			var spotter = PrepareSpotter(1, true, packageIds);
+			Assert.IsTrue(spotter.FirstTimeSeen("one"), "one first time seen before");
+			spotter.ToggleFirstTimeSeen("one", true);
+			Assert.IsTrue(spotter.FirstTimeSeen("one"), "one first time seen 1");
+			spotter.ToggleFirstTimeSeen("one", false);
+			Assert.IsFalse(spotter.FirstTimeSeen("one"), "one not first time seen 2");
+			spotter.ToggleFirstTimeSeen("one", false);
+			Assert.IsFalse(spotter.FirstTimeSeen("one"), "one not first time seen 3");
+
+			spotter = PrepareSpotter(2, false, packageIds);
+			Assert.IsFalse(spotter.FirstTimeSeen("one"), "one not first time seen after reload 1");
+			spotter.ToggleFirstTimeSeen("one", true);
+			Assert.IsTrue(spotter.FirstTimeSeen("one"), "one toggled after reload");
+
+			spotter = PrepareSpotter(3, false, packageIds);
+			Assert.IsFalse(spotter.FirstTimeSeen("one"), "one not first time seen after reload 2");
 		}
 
 		private ModSpottingManager PrepareSpotter(int currentYear, bool deleteFile, IEnumerable<string> packageIds) {
