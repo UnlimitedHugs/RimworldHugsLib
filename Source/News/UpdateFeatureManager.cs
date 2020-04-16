@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -57,8 +57,7 @@ namespace HugsLib.News {
 				} else {
 					var filteredByVersion = EnumerateFeatureDefsWithMoreRecentVersions(allNewsFeatureDefs, highestSeenVersions)
 							.Where(def => !NewsProviderOwningModIdIsIgnored(def.OwningModId))
-							.ToArray();SaveData();
-					
+							.ToArray();
 					UpdateMostRecentKnownFeatureVersions(filteredByVersion, highestSeenVersions);
 					seenVersionsNeedSaving = filteredByVersion.Length > 0;
 					
