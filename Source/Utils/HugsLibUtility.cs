@@ -347,6 +347,13 @@ namespace HugsLib.Utils {
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
 		}
 
+		internal static string ToSemanticString(this Version v, string nullFallback = "unknown") {
+			if (v == null) return nullFallback;
+			// System.Version parts: Major.Minor.Build.Revision
+			return v.Build < 0 
+				? $"{v.ToString(2)}.0" 
+				: v.ToString(v.Revision <= 0 ? 3 : 4);
+		}
 	}
 
 
