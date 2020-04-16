@@ -1,10 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.Settings;
+using HugsLib.Spotter;
 using HugsLib.Utils;
 using Verse;
 
@@ -73,7 +74,8 @@ namespace HugsLib.News {
 				if (defsToShow.Count > 0) {
 					SortFeatureDefsByModNameAndVersion(defsToShow);
 					var newsDialog = manuallyOpened
-						? new Dialog_UpdateFeaturesFiltered(defsToShow, IgnoredNewsProvidersSetting)
+						? new Dialog_UpdateFeaturesFiltered(defsToShow, IgnoredNewsProvidersSetting, 
+							new UpdateNewsDevActionProvider(this, HugsLibController.Instance.ModSpotter))
 						: new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting);
 					Find.WindowStack.Add(newsDialog);
 					return true;
@@ -110,6 +112,22 @@ namespace HugsLib.News {
 			}
 		}
 
+		private void SetLastSeenNewsVersionForMod(string ownerId, Version version) {
+			var changesNeedSaving = false;
+			if (version != null) {
+				highestSeenVersions[ownerId] = version;
+				changesNeedSaving = true;
+			} else {
+				if (highestSeenVersions.ContainsKey(ownerId)) {
+					highestSeenVersions.Remove(ownerId);
+					changesNeedSaving = true;
+				}
+			}
+			if (changesNeedSaving) {
+				SaveData();
+			}
+		}
+		
 		internal static IEnumerable<UpdateFeatureDef> FilterFeatureDefsByMatchingAudience(
 			IEnumerable<UpdateFeatureDef> featureDefs, Predicate<string> packageIdFirstTimeSeen, Action<Exception> exceptionReporter) {
 			foreach (var featureDef in featureDefs) {
@@ -174,7 +192,7 @@ namespace HugsLib.News {
 			}
 		}
 
-		public class IgnoredNewsIds : SettingHandleConvertible {
+		public class IgnoredNewsIds : SettingHandleConvertible, IIgnoredNewsProviderStore {
 			private const char SerializationSeparator = '|';
 			private HashSet<string> ignoredOwnerIds = new HashSet<string>();
 
@@ -209,6 +227,25 @@ namespace HugsLib.News {
 				ResetUpdateFeatureDefTranslations();
 				var parsedDefs = LoadAndParseNewsFeatureDefs();
 				ReinitUpdateFeatureDefDatabase(parsedDefs);
+			}
+
+			public static void ReloadAllUpdateFeatureDefs() {
+				LoadUpdateFeatureDefs();
+				InjectTranslationsIntoUpdateFeatureDefs();
+			}
+
+			private static void InjectTranslationsIntoUpdateFeatureDefs() {
+				if(LanguageDatabase.activeLanguage == null) return;
+				var updateFeatureDefInjections = LanguageDatabase.activeLanguage.defInjections
+					.Where(i => i.defType == typeof(UpdateFeatureDef));
+                foreach (var injectionPackage in updateFeatureDefInjections) {
+                	try {
+                		injectionPackage.InjectIntoDefs(true);
+                	} catch (Exception e) {
+                		HugsLibController.Logger.Warning(
+                			$"Error while injecting translations into {nameof(UpdateFeatureDef)}: {e}");
+                	}
+                }
 			}
 
 			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
@@ -299,5 +336,37 @@ namespace HugsLib.News {
 				return message;
 			}
 		}
+
+		private class UpdateNewsDevActionProvider : IUpdateNewsDevActions {
+			private readonly UpdateFeatureManager news;
+			private readonly ModSpottingManager spotter;
+			public UpdateNewsDevActionProvider(UpdateFeatureManager news, ModSpottingManager spotter) {
+				this.news = news;
+				this.spotter = spotter;
+			}
+			public bool GetFirstTimeUserStatus(string packageId) {
+				return spotter.FirstTimeSeen(packageId);
+			}
+			public Version GetLastSeenNewsVersion(string modIdentifier) {
+				return news.highestSeenVersions.TryGetValue(modIdentifier);
+			}
+			public void ReloadAllUpdateFeatureDefs() {
+				UpdateFeatureDefLoader.ReloadAllUpdateFeatureDefs();
+			}
+			public bool TryShowAutomaticNewsPopupDialog() {
+				return news.TryShowDialog(false);
+			}
+			public void SetLastSeenNewsVersion(string modIdentifier, Version version) {
+				news.SetLastSeenNewsVersionForMod(modIdentifier, version);
+			}
+			public void ToggleFirstTimeUserStatus(string packageId) {
+				var newStatus = !spotter.FirstTimeSeen(packageId);
+				spotter.ToggleFirstTimeSeen(packageId, newStatus);
+			}
+		}
+	}
+
+	internal interface IIgnoredNewsProviderStore {
+		bool Contains(string providerId);
 	}
 }

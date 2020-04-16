@@ -1,5 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using HugsLib.Core;
 using UnityEngine;
 using Verse;
 
@@ -7,19 +8,20 @@ namespace HugsLib.News {
 	/// <summary>
 	/// The extended update news dialog, with filtering by mod and a menu button in entry headers for dev mode actions.
 	/// </summary>
-	public class Dialog_UpdateFeaturesFiltered : Dialog_UpdateFeatures {
+	internal class Dialog_UpdateFeaturesFiltered : Dialog_UpdateFeatures {
 		private readonly List<UpdateFeatureDef> fullDefList;
-		private readonly UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders;
+		private readonly IIgnoredNewsProviderStore ignoredNewsProviders;
 		private readonly string filterButtonLabel;
 		private readonly string allModsFilterLabel;
 		private readonly TaggedString currentFilterReadout;
 		private readonly TaggedString dropdownEntryTemplate;
 		private readonly TaggedString ignoredModLabelSuffix;
 		private readonly UpdateFeatureDefFilteringProvider defFilter;
+		private readonly UpdateFeaturesDialogDevTools devTools;
 		private float bottomButtonWidth;
 
 		public Dialog_UpdateFeaturesFiltered(List<UpdateFeatureDef> featureDefs,
-			UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) 
+			UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders, IUpdateNewsDevActions newsDevActions) 
 				: base(FilterOutIgnoredProviders(featureDefs, ignoredNewsProviders), ignoredNewsProviders) {
 			fullDefList = featureDefs;
 			this.ignoredNewsProviders = ignoredNewsProviders;
@@ -29,7 +31,24 @@ namespace HugsLib.News {
 			dropdownEntryTemplate = "HugsLib_features_filterDropdownEntry".Translate();
 			ignoredModLabelSuffix = "HugsLib_features_filterIgnoredModSuffix".Translate();
 			defFilter = new UpdateFeatureDefFilteringProvider(featureDefs);
+			devTools = new UpdateFeaturesDialogDevTools(newsDevActions, HugsLibTextures.HLMenuIcon);
+			devTools.UpdateFeatureDefsReloaded += InstallUpdateFeatureDefs;
 			AdjustButtonSizeToLabel();
+		}
+
+		public override void ExtraOnGUI() {
+			base.ExtraOnGUI();
+			devTools.OnGUI();
+		}
+
+		protected override void DrawEntryTitleWidgets(Rect titleRect, UpdateFeatureDef forDef) {
+			var linkWidgetWidth = DrawEntryLinkWidget(titleRect, forDef);
+			if (Prefs.DevMode) {
+				var devToolsWidgetSize = titleRect.height;
+				var devToolsWidgetRect = new Rect(titleRect.width - linkWidgetWidth - devToolsWidgetSize,
+					titleRect.y, devToolsWidgetSize, devToolsWidgetSize);
+				devTools.DrawMenuButton(devToolsWidgetRect, forDef);
+			}
 		}
 
 		protected override void DrawBottomButtonRow(Rect inRect) {
@@ -98,7 +117,7 @@ namespace HugsLib.News {
 		}
 
 		private static List<UpdateFeatureDef> FilterOutIgnoredProviders(IEnumerable<UpdateFeatureDef> featureDefs,
-			UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) {
+			IIgnoredNewsProviderStore ignoredNewsProviders) {
 			return featureDefs
 				.Where(d => !ignoredNewsProviders.Contains(d.OwningModId))
 				.ToList();
