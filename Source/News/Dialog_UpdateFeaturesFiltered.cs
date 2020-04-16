@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Verse;
@@ -86,10 +86,6 @@ namespace HugsLib.News {
 			return options;
 		}
 
-		private bool ShouldHaveIgnoredModSuffix(string modIdentifier) {
-			return ignoredNewsProviders.Contains(modIdentifier);
-		}
-		
 		private void SetFilterAndUpdateShownDefs(string newFilterModIdentifier) {
 			if (defFilter.CurrentFilterModIdentifier == newFilterModIdentifier) return;
 			defFilter.CurrentFilterModIdentifier = newFilterModIdentifier;
