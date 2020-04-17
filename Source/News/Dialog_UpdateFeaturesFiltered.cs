@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using HugsLib.Core;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -17,12 +18,14 @@ namespace HugsLib.News {
 		private readonly TaggedString dropdownEntryTemplate;
 		private readonly TaggedString ignoredModLabelSuffix;
 		private readonly UpdateFeatureDefFilteringProvider defFilter;
-		private readonly UpdateFeaturesDialogDevTools devTools;
+		private readonly UpdateFeaturesDevMenu devMenu;
 		private float bottomButtonWidth;
 
 		public Dialog_UpdateFeaturesFiltered(List<UpdateFeatureDef> featureDefs,
-			UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders, IUpdateNewsDevActions newsDevActions) 
-				: base(FilterOutIgnoredProviders(featureDefs, ignoredNewsProviders), ignoredNewsProviders) {
+			UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders,
+			IUpdateFeaturesDevActions news, IModSpotterDevActions spotter)
+			: base(FilterOutIgnoredProviders(featureDefs, ignoredNewsProviders), ignoredNewsProviders) {
+
 			fullDefList = featureDefs;
 			this.ignoredNewsProviders = ignoredNewsProviders;
 			filterButtonLabel = "HugsLib_features_filterBtn".Translate();
@@ -31,24 +34,56 @@ namespace HugsLib.News {
 			dropdownEntryTemplate = "HugsLib_features_filterDropdownEntry".Translate();
 			ignoredModLabelSuffix = "HugsLib_features_filterIgnoredModSuffix".Translate();
 			defFilter = new UpdateFeatureDefFilteringProvider(featureDefs);
-			devTools = new UpdateFeaturesDialogDevTools(newsDevActions, HugsLibTextures.HLMenuIcon);
-			devTools.UpdateFeatureDefsReloaded += InstallUpdateFeatureDefs;
+			devMenu = new UpdateFeaturesDevMenu(news, spotter, new PlayerMessageSender());
+			devMenu.UpdateFeatureDefsReloaded += InstallUpdateFeatureDefs;
 			AdjustButtonSizeToLabel();
 		}
 
 		public override void ExtraOnGUI() {
 			base.ExtraOnGUI();
-			devTools.OnGUI();
+			CheckForReloadKeyPress();
 		}
 
 		protected override void DrawEntryTitleWidgets(Rect titleRect, UpdateFeatureDef forDef) {
 			var linkWidgetWidth = DrawEntryLinkWidget(titleRect, forDef);
 			if (Prefs.DevMode) {
-				var devToolsWidgetSize = titleRect.height;
-				var devToolsWidgetRect = new Rect(titleRect.width - linkWidgetWidth - devToolsWidgetSize,
-					titleRect.y, devToolsWidgetSize, devToolsWidgetSize);
-				devTools.DrawMenuButton(devToolsWidgetRect, forDef);
+				DrawDevToolsMenuWidget(titleRect, linkWidgetWidth, forDef);
 			}
+		}
+
+		private void CheckForReloadKeyPress() {
+			if (Event.current.type == EventType.KeyUp && Event.current.keyCode == KeyCode.F5) {
+				Event.current.Use();
+				devMenu.ReloadNewsDefs();
+			}
+		}
+
+		private void DrawDevToolsMenuWidget(Rect titleRect, float widgetOffset, UpdateFeatureDef forDef) {
+			var widgetSize = titleRect.height;
+			var widgetRect = new Rect(titleRect.width - widgetOffset - widgetSize,
+				titleRect.y, widgetSize, widgetSize);
+			if (Mouse.IsOver(widgetRect)) {
+				Widgets.DrawHighlight(widgetRect);
+			}
+			var buttonTexture = HugsLibTextures.HLMenuIcon;
+			var textureRect = new Rect(
+				widgetRect.center.x - buttonTexture.width / 2f, widgetRect.center.y - buttonTexture.height / 2f,
+				buttonTexture.width, buttonTexture.height
+			);
+			Widgets.DrawTextureFitted(textureRect, buttonTexture, 1f);
+			if (Widgets.ButtonInvisible(widgetRect)) {
+				OpenDevToolsDropdownMenu(forDef);
+			}
+		}
+
+		private void OpenDevToolsDropdownMenu(UpdateFeatureDef forDef) {
+			Find.WindowStack.Add(
+				new FloatMenu(
+					devMenu.GetMenuOptions(forDef)
+						.Select(o => new FloatMenuOption(o.label, o.action) {Disabled = o.disabled})
+						.ToList()
+				)
+			);
 		}
 
 		protected override void DrawBottomButtonRow(Rect inRect) {
@@ -121,6 +156,15 @@ namespace HugsLib.News {
 			return featureDefs
 				.Where(d => !ignoredNewsProviders.Contains(d.OwningModId))
 				.ToList();
+		}
+		
+		private class PlayerMessageSender : IStatusMessageSender {
+			public void Send(string message, bool success) {
+				var messageType = success
+					? MessageTypeDefOf.TaskCompletion
+					: MessageTypeDefOf.RejectInput;
+				Messages.Message(message, messageType);
+			}
 		}
 	}
 }

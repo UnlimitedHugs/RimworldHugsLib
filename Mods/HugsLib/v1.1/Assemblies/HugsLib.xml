@@ -102,6 +102,11 @@
             Filters <see cref="T:HugsLib.UpdateFeatureDef"/>s by their mod identifier.
             </summary>
         </member>
+        <member name="T:HugsLib.News.UpdateFeaturesDevMenu">
+            <summary>
+            Provides the options for the dev tools dropdown menu in the extended update news dialog. 
+            </summary>
+        </member>
         <member name="T:HugsLib.News.Dialog_UpdateFeatures">
             <summary>
             Displays a list to update feature defs with basic image and formatting support. See <see cref="T:HugsLib.UpdateFeatureDef"/> for proper syntax.

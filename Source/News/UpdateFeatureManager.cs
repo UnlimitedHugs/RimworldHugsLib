@@ -5,7 +5,6 @@ using System.Xml;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.Settings;
-using HugsLib.Spotter;
 using HugsLib.Utils;
 using Verse;
 
@@ -14,7 +13,7 @@ namespace HugsLib.News {
 	/// Stores the highest displayed update news version for all mods that provide update news via <see cref="UpdateFeatureDef"/>.
 	/// Defs are loaded from the News folder in the root mod directory.
 	/// </summary>
-	public class UpdateFeatureManager : PersistentDataManager {
+	public class UpdateFeatureManager : PersistentDataManager, IUpdateFeaturesDevActions {
 		internal const string UpdateFeatureDefFolder = "News/";
 
 		protected override string FileName {
@@ -75,7 +74,7 @@ namespace HugsLib.News {
 					SortFeatureDefsByModNameAndVersion(defsToShow);
 					var newsDialog = manuallyOpened
 						? new Dialog_UpdateFeaturesFiltered(defsToShow, IgnoredNewsProvidersSetting, 
-							new UpdateNewsDevActionProvider(this, HugsLibController.Instance.ModSpotter))
+							this, HugsLibController.Instance.ModSpotter)
 						: new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting);
 					Find.WindowStack.Add(newsDialog);
 					return true;
@@ -112,22 +111,6 @@ namespace HugsLib.News {
 			}
 		}
 
-		private void SetLastSeenNewsVersionForMod(string ownerId, Version version) {
-			var changesNeedSaving = false;
-			if (version != null) {
-				highestSeenVersions[ownerId] = version;
-				changesNeedSaving = true;
-			} else {
-				if (highestSeenVersions.ContainsKey(ownerId)) {
-					highestSeenVersions.Remove(ownerId);
-					changesNeedSaving = true;
-				}
-			}
-			if (changesNeedSaving) {
-				SaveData();
-			}
-		}
-		
 		internal static IEnumerable<UpdateFeatureDef> FilterFeatureDefsByMatchingAudience(
 			IEnumerable<UpdateFeatureDef> featureDefs, Predicate<string> packageIdFirstTimeSeen, Action<Exception> exceptionReporter) {
 			foreach (var featureDef in featureDefs) {
@@ -189,6 +172,35 @@ namespace HugsLib.News {
 			xml.Add(root);
 			foreach (var pair in highestSeenVersions) {
 				root.Add(new XElement(pair.Key, new XText(pair.Value.ToString())));
+			}
+		}
+
+		Version IUpdateFeaturesDevActions.GetLastSeenNewsVersion(string modIdentifier) {
+			return highestSeenVersions.TryGetValue(modIdentifier);
+		}
+
+		IEnumerable<UpdateFeatureDef> IUpdateFeaturesDevActions.ReloadAllUpdateFeatureDefs() {
+			UpdateFeatureDefLoader.ReloadAllUpdateFeatureDefs();
+			return DefDatabase<UpdateFeatureDef>.AllDefs;
+		}
+
+		bool IUpdateFeaturesDevActions.TryShowAutomaticNewsPopupDialog() {
+			return TryShowDialog(false);
+		}
+
+		void IUpdateFeaturesDevActions.SetLastSeenNewsVersion(string modIdentifier, Version version) {
+			var changesNeedSaving = false;
+			if (version != null) {
+				highestSeenVersions[modIdentifier] = version;
+				changesNeedSaving = true;
+			} else {
+				if (highestSeenVersions.ContainsKey(modIdentifier)) {
+					highestSeenVersions.Remove(modIdentifier);
+					changesNeedSaving = true;
+				}
+			}
+			if (changesNeedSaving) {
+				SaveData();
 			}
 		}
 
@@ -334,34 +346,6 @@ namespace HugsLib.News {
 					message += $" -> {e.Message}";
 				}
 				return message;
-			}
-		}
-
-		private class UpdateNewsDevActionProvider : IUpdateNewsDevActions {
-			private readonly UpdateFeatureManager news;
-			private readonly ModSpottingManager spotter;
-			public UpdateNewsDevActionProvider(UpdateFeatureManager news, ModSpottingManager spotter) {
-				this.news = news;
-				this.spotter = spotter;
-			}
-			public bool GetFirstTimeUserStatus(string packageId) {
-				return spotter.FirstTimeSeen(packageId);
-			}
-			public Version GetLastSeenNewsVersion(string modIdentifier) {
-				return news.highestSeenVersions.TryGetValue(modIdentifier);
-			}
-			public void ReloadAllUpdateFeatureDefs() {
-				UpdateFeatureDefLoader.ReloadAllUpdateFeatureDefs();
-			}
-			public bool TryShowAutomaticNewsPopupDialog() {
-				return news.TryShowDialog(false);
-			}
-			public void SetLastSeenNewsVersion(string modIdentifier, Version version) {
-				news.SetLastSeenNewsVersionForMod(modIdentifier, version);
-			}
-			public void ToggleFirstTimeUserStatus(string packageId) {
-				var newStatus = !spotter.FirstTimeSeen(packageId);
-				spotter.ToggleFirstTimeSeen(packageId, newStatus);
 			}
 		}
 	}

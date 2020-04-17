@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using HugsLib.Core;
+using HugsLib.News;
 using Verse;
 
 namespace HugsLib.Spotter {
@@ -11,7 +12,7 @@ namespace HugsLib.Spotter {
 	/// Keeps track of mod packageIds that ever were loaded together with HugsLib
 	/// by the player and the first/last time they were seen.
 	/// </summary>
-	public partial class ModSpottingManager : PersistentDataManager {
+	public partial class ModSpottingManager : PersistentDataManager, IModSpotterDevActions {
 		private readonly Dictionary<string, TrackingEntry> entries = 
 			new Dictionary<string, TrackingEntry>(StringComparer.OrdinalIgnoreCase);
 		private bool erroredOnLoad;
@@ -86,6 +87,15 @@ namespace HugsLib.Spotter {
 			return entries.TryGetValue(packageId)?.FirstSeen;
 		}
 
+		bool IModSpotterDevActions.GetFirstTimeUserStatus(string packageId) {
+			return FirstTimeSeen(packageId);
+		}
+
+		void IModSpotterDevActions.ToggleFirstTimeUserStatus(string packageId) {
+			var newStatus = !FirstTimeSeen(packageId);
+			ToggleFirstTimeSeen(packageId, newStatus);
+		}
+		
 		private void WaitForInspectionCompletion() {
 			bool waitSuccess = inspectTask?.Wait(TimeSpan.FromSeconds(3)) ?? true;
 			if (!waitSuccess) {
