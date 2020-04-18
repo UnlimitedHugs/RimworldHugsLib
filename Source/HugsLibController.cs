@@ -308,6 +308,14 @@ namespace HugsLib {
 			}
 		}
 
+		internal void OnApplicationQuit() {
+			try {
+				Settings.SaveChanges();
+			} catch (Exception e) {
+				Logger.ReportException(e);
+			}
+		}
+
 		internal void OnGameInitializationStart(Game game) {
 			try {
 				var currentTick = game.tickManager.TicksGame;

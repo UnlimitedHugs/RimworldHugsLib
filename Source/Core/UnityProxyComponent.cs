@@ -24,6 +24,10 @@ namespace HugsLib.Core {
 			controllerInstance.OnFixedUpdate();
 		}
 
+		private void OnApplicationQuit() {
+			controllerInstance.OnApplicationQuit();
+		}
+
 		public void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode) {
 			controllerInstance.OnSceneLoaded(scene);
 		}
