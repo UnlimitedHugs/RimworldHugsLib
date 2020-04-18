@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using HugsLib.Utils;
@@ -199,7 +199,11 @@ namespace HugsLib.Settings {
 					valueChanged = DrawDefaultHandleEntry(handle, entryRect);
 				}
 				if (valueChanged) {
-					FlagConvertibleHandleAsModified(handle);
+					if (handle.ValueType.IsClass) {
+						// required for SettingHandleConvertible values to be eligible for saving,
+						// since changes in reference-type values can't be automatically detected
+						handle.HasUnsavedChanges = true;
+					}
 					settingsHaveChanged = true;
 				}
 			}
@@ -257,14 +261,6 @@ namespace HugsLib.Settings {
 			hoverMenu.Draw(hoverMenuPos, handle);
 		}
 
-		private static void FlagConvertibleHandleAsModified(SettingHandle handle) {
-			if (handle.ValueType.IsClass) {
-				// required for SettingHandleConvertible values to be eligible for saving,
-				// since changes in reference-type values can't be automatically detected
-				handle.HasUnsavedChanges = true;
-			}
-		}
-		
 		// draws the input control for string settings
 		private bool DrawHandleInputText(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			var evt = Event.current;
@@ -389,7 +385,6 @@ namespace HugsLib.Settings {
 			if (!handle.CanBeReset) return;
 			handle.ResetToDefault();
 			handleControlInfo[handle] = new HandleControlInfo(handle);
-			FlagConvertibleHandleAsModified(handle);
 			settingsHaveChanged = true;
 		}
 
