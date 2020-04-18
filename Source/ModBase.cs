@@ -261,8 +261,6 @@ namespace HugsLib {
 		/// </summary>
 		public virtual void SettingsChanged() {
 		}
-
-		
 		
 		/// <summary>
 		/// Called after StaticInitialize and when defs have been reloaded. This is a good place to inject defs.
@@ -274,6 +272,17 @@ namespace HugsLib {
 		/// When def reloading is not an issue, anything done by this method can be safely done in StaticInitialize.
 		/// </remarks>
 		public virtual void DefsLoaded() {
+		}
+
+		/// <summary>
+		/// Called before the game process shuts down.
+		/// "Quit to OS", clicking the "X" button on the window, and pressing Alt+F4 all execute this event.
+		/// There are still ways to forcibly terminate the game process, so this callback is not 100% reliable.
+		/// </summary>
+		/// <remarks>
+		///	Modified <see cref="SettingHandle"/>s are automatically saved after this call.
+		/// </remarks>
+		public virtual void ApplicationQuit() {
 		}
 	}
 }

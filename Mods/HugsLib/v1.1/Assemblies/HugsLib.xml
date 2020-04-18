@@ -869,6 +869,16 @@
             When def reloading is not an issue, anything done by this method can be safely done in StaticInitialize.
             </remarks>
         </member>
+        <member name="M:HugsLib.ModBase.ApplicationQuit">
+            <summary>
+            Called before the game process shuts down.
+            "Quit to OS", clicking the "X" button on the window, and pressing Alt+F4 all execute this event.
+            There are still ways to forcibly terminate the game process, so this callback is not 100% reliable.
+            </summary>
+            <remarks>
+            Modified <see cref="T:HugsLib.Settings.SettingHandle"/>s are automatically saved after this call.
+            </remarks>
+        </member>
         <member name="T:HugsLib.UpdateFeatureDef">
             <summary>
             Describes a single update news item.

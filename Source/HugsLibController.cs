@@ -310,6 +310,13 @@ namespace HugsLib {
 
 		internal void OnApplicationQuit() {
 			try {
+				for (int i = 0; i < childMods.Count; i++) {
+					try {
+						childMods[i].ApplicationQuit();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
+					}
+				}
 				Settings.SaveChanges();
 			} catch (Exception e) {
 				Logger.ReportException(e);
