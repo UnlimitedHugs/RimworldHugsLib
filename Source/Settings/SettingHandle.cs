@@ -8,7 +8,7 @@ namespace HugsLib.Settings {
 	/// An individual persistent setting owned by a mod.
 	/// The extra layer of inheritance allows for type abstraction and storing SettingHandles in lists.
 	/// </summary>
-	public abstract class SettingHandle {
+	public abstract class SettingHandle : IHoverMenuHandle {
 		public delegate bool ValueIsValid(string value);
 		public delegate bool ShouldDisplay();
 		public delegate bool DrawCustomControl(Rect rect);
@@ -50,8 +50,9 @@ namespace HugsLib.Settings {
 		/// </summary>
 		/// <remarks>
 		///	The following built-in handle drawing features are also disabled when this property is assigned:
-		/// row highlighting (<see cref="Verse.Widgets.DrawHighlight"/>), description tooltip
-		/// (<see cref="Verse.TooltipHandler"/>), hovering info/menu buttons.  
+		/// row highlighting (<see cref="Verse.Widgets.DrawHighlight"/>),
+		/// description tooltip (<see cref="Verse.TooltipHandler"/>),
+		/// hovering info/menu buttons (<see cref="ModSettingsHoverMenu"/>).
 		/// </remarks>
 		public DrawCustomControl CustomDrawerFullWidth { get; set; }
 		/// <summary>

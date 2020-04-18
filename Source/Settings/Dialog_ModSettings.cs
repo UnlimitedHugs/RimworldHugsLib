@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HugsLib.Utils;
@@ -30,6 +30,7 @@ namespace HugsLib.Settings {
 		private readonly Dictionary<SettingHandle, HandleControlInfo> handleControlInfo = new Dictionary<SettingHandle, HandleControlInfo>();
 		private readonly SettingsHandleDrawer defaultHandleDrawer;
 		private readonly Dictionary<Type, SettingsHandleDrawer> handleDrawers;
+		private readonly ModSettingsHoverMenu hoverMenu;
 
 		private float totalContentHeight;
 		// TodoMajor: remove this field, leverage the change detection system built into SettingHandle
@@ -50,6 +51,8 @@ namespace HugsLib.Settings {
 			absorbInputAroundWindow = true;
 			resizeable = false;
 			defaultHandleDrawer = DrawHandleInputText;
+			hoverMenu = new ModSettingsHoverMenu();
+			hoverMenu.HandleReset += OnHoverMenuHandleReset;
 			// these pairs specify which type of input field will be drawn for handles of this type. defaults to the string input
 			handleDrawers = new Dictionary<Type, SettingsHandleDrawer> {
 				{typeof(int), DrawHandleInputSpinner},
@@ -204,8 +207,8 @@ namespace HugsLib.Settings {
 		}
 
 		private bool DrawDefaultHandleEntry(SettingHandle handle, Rect entryRect) {
-			var mouseOver = Mouse.IsOver(entryRect);
-			if (mouseOver) Widgets.DrawHighlight(entryRect);
+			var mouseOverEntry = Mouse.IsOver(entryRect);
+			if (mouseOverEntry) Widgets.DrawHighlight(entryRect);
 			var controlRect = new Rect(entryRect.x + entryRect.width / 2f, entryRect.y,
 				entryRect.width / 2f, entryRect.height);
 			GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
@@ -239,20 +242,19 @@ namespace HugsLib.Settings {
 						$"{nameof(SettingHandle)}.{nameof(SettingHandle.CustomDrawer)}");
 				}
 			}
-			if (mouseOver) {
-				if (!handle.Description.NullOrEmpty()) {
-					TooltipHandler.TipRegion(entryRect, handle.Description);
-				}
-				if (handle.CanBeReset && Input.GetMouseButtonUp(1)) {
-					var options = new List<FloatMenuOption>(1) {
-						new FloatMenuOption("HugsLib_settings_resetValue".Translate(),
-							() => { ResetSetting(handle); }
-						)
-					};
-					Find.WindowStack.Add(new FloatMenu(options));
-				}
+			if (mouseOverEntry) {
+				DrawEntryHoverMenu(entryRect, handle);
 			}
 			return valueChanged;
+		}
+
+		private void DrawEntryHoverMenu(Rect entryRect, IHoverMenuHandle handle) {
+			var menuSize = hoverMenu.DrawSize;
+			var hoverMenuPos = new Vector2(
+				entryRect.x + entryRect.width / 2f - HandleEntryPadding - menuSize.x,
+				entryRect.y + entryRect.height / 2f - menuSize.y / 2f
+			);
+			hoverMenu.Draw(hoverMenuPos, handle);
 		}
 
 		private static void FlagConvertibleHandleAsModified(SettingHandle handle) {
@@ -375,6 +377,14 @@ namespace HugsLib.Settings {
 			PopulateControlInfo();
 		}
 
+		private void OnHoverMenuHandleReset(IHoverMenuHandle handle) {
+			if (handle is SettingHandle settingHandle) {
+				handleControlInfo[settingHandle] = new HandleControlInfo(settingHandle);
+			}
+			settingsHaveChanged = true;
+		}
+		
+		// TodoMajor: remove this
 		private void ResetSetting(SettingHandle handle) {
 			if (!handle.CanBeReset) return;
 			handle.ResetToDefault();
