@@ -39,9 +39,21 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public ShouldDisplay VisibilityPredicate { get; set; }
 		/// <summary>
-		/// Draw a custom control for the settings menu entry. Entry name is already drawn when this is called. Optional. Return value indicates if the control changed the setting.
+		/// Draw a custom control for the settings menu entry. Entry name is already drawn when this is called.
+		/// Optional. Return value indicates if the handle value was changed during the drawer call.
 		/// </summary>
 		public DrawCustomControl CustomDrawer { get; set; }
+		/// <summary>
+		///	Fully override the drawing of the settings menu entry for this handle.
+		/// This replaces both the title and the control half of the entry.
+		/// Optional. Return value indicates if the handle value was changed during the drawer call.
+		/// </summary>
+		/// <remarks>
+		///	The following built-in handle drawing features are also disabled when this property is assigned:
+		/// row highlighting (<see cref="Verse.Widgets.DrawHighlight"/>), description tooltip
+		/// (<see cref="Verse.TooltipHandler"/>), hovering info/menu buttons.  
+		/// </remarks>
+		public DrawCustomControl CustomDrawerFullWidth { get; set; }
 		/// <summary>
 		/// When true, setting will never appear. For serialized data.
 		/// No longer affects value resetting, see <see cref="CanBeReset"/>

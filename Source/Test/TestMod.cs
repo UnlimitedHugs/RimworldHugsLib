@@ -154,6 +154,22 @@ namespace HugsLib.Test {
 				}
 				return false;
 			};
+			var fullWidth = Settings.GetHandle("fullWidth", null, null, false);
+			fullWidth.CustomDrawerHeight = 30f;
+			fullWidth.CustomDrawerFullWidth = rect => {
+				float SineColor(float offset) => .6f + .4f * Mathf.Sin(offset + Time.unscaledTime); 
+				GUI.color = new Color(SineColor(.5f), SineColor(1f), SineColor(1.5f));
+				Widgets.Label(rect, "Full width goodness");
+				GUI.color = fullWidth.Value ? new Color(.5f, 1f, .5f) : new Color(1f, .5f, .5f);
+				bool changed = false;
+				if (Widgets.ButtonText(rect.RightHalf(), "Clicky")) {
+					fullWidth.Value = !fullWidth.Value;
+					changed = true;
+				}
+				GUI.color = Color.white;
+				return changed;
+			};
+			
 			TestSettingsHasUnsavedChanges();
 			TestCustomTypeSetting();
 			TestGiveShortHash();

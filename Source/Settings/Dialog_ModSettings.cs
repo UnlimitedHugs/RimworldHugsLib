@@ -176,70 +176,93 @@ namespace HugsLib.Settings {
 		// draws the label and appropriate input for a single setting
 		private void DrawHandleEntry(SettingHandle handle, Rect parentRect, ref float curY, float scrollViewHeight) {
 			var entryHeight = HandleEntryHeight;
-			if (handle.CustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
+			var anyCustomDrawer = handle.CustomDrawerFullWidth ?? handle.CustomDrawer;
+			if (anyCustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
 				entryHeight = handle.CustomDrawerHeight + HandleEntryPadding * 2;
 			}
 			var skipDrawing = curY - scrollPosition.y + entryHeight < 0f || curY - scrollPosition.y > scrollViewHeight;
 			if (!skipDrawing) {
-				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight).ContractedBy(HandleEntryPadding);
-				var mouseOver = Mouse.IsOver(entryRect);
-				if (mouseOver) Widgets.DrawHighlight(entryRect);
-				var controlRect = new Rect(entryRect.x + entryRect.width / 2f, entryRect.y, entryRect.width / 2f, entryRect.height);
-				GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-				var leftHalfRect = new Rect(entryRect.x, entryRect.y, entryRect.width / 2f - HandleEntryPadding, entryRect.height);
-				// give full width to the label if custom control drawer is used- this allows handle titles to be used as section titles
-				var labelRect = handle.CustomDrawer == null ? leftHalfRect : entryRect;
-				// reduce text size if label is long and wraps over to he second line
-				var expectedLabelHeight = Text.CalcHeight(handle.Title, labelRect.width);
-				if (expectedLabelHeight > labelRect.height) {
-					Text.Font = GameFont.Tiny;
-					labelRect = new Rect(labelRect.x, labelRect.y - 1f, labelRect.width, labelRect.height + 2f);
-				} else {
-					Text.Font = GameFont.Small;
-				}
-				Widgets.Label(labelRect, handle.Title);
-				if (Text.Font == GameFont.Tiny) {
-					Text.Font = GameFont.Small;
-					GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-				}
-				GenUI.ResetLabelAlign();
+				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight)
+					.ContractedBy(HandleEntryPadding);
 				bool valueChanged = false;
-				if (handle.CustomDrawer == null) {
-					var handleType = handle.ValueType;
-					if (handleType.IsEnum) handleType = typeof(Enum);
-					handleDrawers.TryGetValue(handleType, out var drawer);
-					if (drawer == null) drawer = defaultHandleDrawer;
-					valueChanged = drawer(handle, controlRect, handleControlInfo[handle]);
-				} else {
+				if (handle.CustomDrawerFullWidth != null) {
 					try {
-						valueChanged = handle.CustomDrawer(controlRect);
-						if (valueChanged && handle.ValueType.IsClass) {
-							// required for SettingHandleConvertible values to be eligible for saving,
-							// since changes in reference-type values can't be automatically detected
-							handle.HasUnsavedChanges = true;
-						}
+						valueChanged = handle.CustomDrawerFullWidth(entryRect);
 					} catch (Exception e) {
-						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.CustomDrawer");
+						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true,
+							$"{nameof(SettingHandle)}.{nameof(SettingHandle.CustomDrawerFullWidth)}");
 					}
+				} else {
+					valueChanged = DrawDefaultHandleEntry(handle, entryRect);
 				}
-				if (valueChanged) settingsHaveChanged = true;
-				if (mouseOver) {
-					if (!handle.Description.NullOrEmpty()) {
-						TooltipHandler.TipRegion(entryRect, handle.Description);
-					}
-					if (handle.CanBeReset && Input.GetMouseButtonUp(1)) {
-						var options = new List<FloatMenuOption>(1) {
-							new FloatMenuOption("HugsLib_settings_resetValue".Translate(),
-								() => { ResetSetting(handle); }
-							)
-						};
-						Find.WindowStack.Add(new FloatMenu(options));
-					}
+				if (valueChanged) {
+					FlagConvertibleHandleAsModified(handle);
+					settingsHaveChanged = true;
 				}
 			}
 			curY += entryHeight;
 		}
 
+		private bool DrawDefaultHandleEntry(SettingHandle handle, Rect entryRect) {
+			var mouseOver = Mouse.IsOver(entryRect);
+			if (mouseOver) Widgets.DrawHighlight(entryRect);
+			var controlRect = new Rect(entryRect.x + entryRect.width / 2f, entryRect.y,
+				entryRect.width / 2f, entryRect.height);
+			GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
+			var leftHalfRect = new Rect(entryRect.x, entryRect.y,
+				entryRect.width / 2f - HandleEntryPadding, entryRect.height);
+			// give full width to the label if custom control drawer is used- this allows handle titles to be used as section titles
+			var labelRect = handle.CustomDrawer == null ? leftHalfRect : entryRect;
+			// reduce text size if label is long and wraps over to the second line
+			var expectedLabelHeight = Text.CalcHeight(handle.Title, labelRect.width);
+			if (expectedLabelHeight > labelRect.height) {
+				Text.Font = GameFont.Tiny;
+				labelRect = new Rect(labelRect.x, labelRect.y - 1f, labelRect.width, labelRect.height + 2f);
+			} else {
+				Text.Font = GameFont.Small;
+			}
+			Widgets.Label(labelRect, handle.Title);
+			Text.Font = GameFont.Small;
+			GenUI.ResetLabelAlign();
+			var valueChanged = false;
+			if (handle.CustomDrawer == null) {
+				var handleType = handle.ValueType;
+				if (handleType.IsEnum) handleType = typeof(Enum);
+				handleDrawers.TryGetValue(handleType, out var drawer);
+				if (drawer == null) drawer = defaultHandleDrawer;
+				valueChanged = drawer(handle, controlRect, handleControlInfo[handle]);
+			} else {
+				try {
+					valueChanged = handle.CustomDrawer(controlRect);
+				} catch (Exception e) {
+					HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true,
+						$"{nameof(SettingHandle)}.{nameof(SettingHandle.CustomDrawer)}");
+				}
+			}
+			if (mouseOver) {
+				if (!handle.Description.NullOrEmpty()) {
+					TooltipHandler.TipRegion(entryRect, handle.Description);
+				}
+				if (handle.CanBeReset && Input.GetMouseButtonUp(1)) {
+					var options = new List<FloatMenuOption>(1) {
+						new FloatMenuOption("HugsLib_settings_resetValue".Translate(),
+							() => { ResetSetting(handle); }
+						)
+					};
+					Find.WindowStack.Add(new FloatMenu(options));
+				}
+			}
+			return valueChanged;
+		}
+
+		private static void FlagConvertibleHandleAsModified(SettingHandle handle) {
+			if (handle.ValueType.IsClass) {
+				// required for SettingHandleConvertible values to be eligible for saving,
+				// since changes in reference-type values can't be automatically detected
+				handle.HasUnsavedChanges = true;
+			}
+		}
+		
 		// draws the input control for string settings
 		private bool DrawHandleInputText(SettingHandle handle, Rect controlRect, HandleControlInfo info) {
 			var evt = Event.current;
@@ -356,6 +379,7 @@ namespace HugsLib.Settings {
 			if (!handle.CanBeReset) return;
 			handle.ResetToDefault();
 			handleControlInfo[handle] = new HandleControlInfo(handle);
+			FlagConvertibleHandleAsModified(handle);
 			settingsHaveChanged = true;
 		}
 
