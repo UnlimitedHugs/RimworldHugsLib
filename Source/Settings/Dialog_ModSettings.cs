@@ -185,12 +185,12 @@ namespace HugsLib.Settings {
 			}
 			var skipDrawing = curY - scrollPosition.y + entryHeight < 0f || curY - scrollPosition.y > scrollViewHeight;
 			if (!skipDrawing) {
-				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight)
-					.ContractedBy(HandleEntryPadding);
+				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight);
+				var trimmedEntryRect = entryRect.ContractedBy(HandleEntryPadding); 
 				bool valueChanged = false;
 				if (handle.CustomDrawerFullWidth != null) {
 					try {
-						valueChanged = handle.CustomDrawerFullWidth(entryRect);
+						valueChanged = handle.CustomDrawerFullWidth(trimmedEntryRect);
 					} catch (Exception e) {
 						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true,
 							$"{nameof(SettingHandle)}.{nameof(SettingHandle.CustomDrawerFullWidth)}");
@@ -213,13 +213,14 @@ namespace HugsLib.Settings {
 		private bool DrawDefaultHandleEntry(SettingHandle handle, Rect entryRect) {
 			var mouseOverEntry = Mouse.IsOver(entryRect);
 			if (mouseOverEntry) Widgets.DrawHighlight(entryRect);
-			var controlRect = new Rect(entryRect.x + entryRect.width / 2f, entryRect.y,
-				entryRect.width / 2f, entryRect.height);
+			var trimmedEntryRect = entryRect.ContractedBy(HandleEntryPadding);
+			var controlRect = new Rect(trimmedEntryRect.x + trimmedEntryRect.width / 2f, trimmedEntryRect.y,
+				trimmedEntryRect.width / 2f, trimmedEntryRect.height);
 			GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-			var leftHalfRect = new Rect(entryRect.x, entryRect.y,
-				entryRect.width / 2f - HandleEntryPadding, entryRect.height);
+			var leftHalfRect = new Rect(trimmedEntryRect.x, trimmedEntryRect.y,
+				trimmedEntryRect.width / 2f - HandleEntryPadding, trimmedEntryRect.height);
 			// give full width to the label if custom control drawer is used- this allows handle titles to be used as section titles
-			var labelRect = handle.CustomDrawer == null ? leftHalfRect : entryRect;
+			var labelRect = handle.CustomDrawer == null ? leftHalfRect : trimmedEntryRect;
 			// reduce text size if label is long and wraps over to the second line
 			var expectedLabelHeight = Text.CalcHeight(handle.Title, labelRect.width);
 			if (expectedLabelHeight > labelRect.height) {
@@ -247,7 +248,7 @@ namespace HugsLib.Settings {
 				}
 			}
 			if (mouseOverEntry) {
-				DrawEntryHoverMenu(entryRect, handle);
+				DrawEntryHoverMenu(trimmedEntryRect, handle);
 			}
 			return valueChanged;
 		}
