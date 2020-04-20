@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 // ReSharper disable UnusedAutoPropertyAccessor.Global
@@ -89,6 +90,14 @@ namespace HugsLib.Settings {
 		/// Can be manually toggled when e.g. replacing null with an instance in a <see cref="SettingHandleConvertible"/> handle.
 		/// </summary>
 		public bool HasUnsavedChanges { get; set; }
+		/// <summary>
+		/// Additional context menu options for the entry of this handle in the mod settings dialog.
+		/// Will be shown when the hovering menu button for this entry is clicked.
+		/// </summary>
+		/// <remarks>
+		/// The "Reset to default" option is always present, but will be disabled if <see cref="CanBeReset"/> is false.
+		/// </remarks>
+		public Func<IEnumerable<ContextMenuEntry>> ContextMenuEntries { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }

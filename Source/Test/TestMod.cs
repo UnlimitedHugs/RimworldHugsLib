@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using HugsLib.Settings;
 using HugsLib.Source.Settings;
 using HugsLib.Utils;
+using RimWorld;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Verse;
@@ -142,6 +143,10 @@ namespace HugsLib.Test {
 			Logger.Message("DefsLoaded");
 			Settings.GetHandle("str", "String value", "", "value");
 			var spinner = Settings.GetHandle("intSpinner", "Spinner", "desc", 5, Validators.IntRangeValidator(0, 30));
+			spinner.ContextMenuEntries = () => new []{
+				new ContextMenuEntry("Do a thing", 
+					() => Messages.Message("A thing was done!", MessageTypeDefOf.TaskCompletion)) 
+			};
 			spinner.SpinnerIncrement = 2;
 			spinner.CanBeReset = false;
 			Settings.GetHandle("enumThing", "Enum setting", "", HandleEnum.DefaultValue, null, "test_enumSetting_");

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using HugsLib.Core;
 using UnityEngine;
 using Verse;
@@ -41,15 +42,38 @@ namespace HugsLib.Settings {
 		}
 
 		public void OpenHandleFloatMenu(IHoverMenuHandle forHandle) {
+			var options = GetFloatMenuOptions(forHandle);
+			Find.WindowStack.Add(new FloatMenu(options));
+		}
+
+		private List<FloatMenuOption> GetFloatMenuOptions(IHoverMenuHandle forHandle) {
+			var options = new List<FloatMenuOption> {
+				new FloatMenuOption("HugsLib_settings_resetValue".Translate(), ResetHandleAction)
+					{Disabled = !forHandle.CanBeReset}
+			};
+			options.AddRange(GetCustomFloatMenuOptions(forHandle));
+			return options;
+
 			void ResetHandleAction() {
 				forHandle.ResetToDefault();
 				HandleReset?.Invoke(forHandle);
 			}
-			var options = new List<FloatMenuOption> {
-				new FloatMenuOption("HugsLib_settings_resetValue".Translate(), ResetHandleAction) 
-					{Disabled = !forHandle.CanBeReset}
-			};
-			Find.WindowStack.Add(new FloatMenu(options));
+		}
+
+		private static IEnumerable<FloatMenuOption> GetCustomFloatMenuOptions(IHoverMenuHandle forHandle) {
+			var options = new List<FloatMenuOption>();
+			try {
+				var entries = forHandle.ContextMenuEntries?.Invoke() ?? Enumerable.Empty<ContextMenuEntry>();
+				foreach (var entry in entries) {
+					entry.Validate();
+					options.Add(
+						new FloatMenuOption(entry.Label, entry.Action) {Disabled = entry.Disabled}
+					);
+				}
+			} catch (Exception e) {
+				HugsLibController.Logger.ReportException(e);
+			}
+			return options;
 		}
 
 		private static (bool hovered, bool clicked) DoHoverMenuButton(Vector2 topLeft, Texture texture, float opacity) {
@@ -85,6 +109,7 @@ namespace HugsLib.Settings {
 
 	public interface IHoverMenuHandle {
 		string Description { get; }
+		Func<IEnumerable<ContextMenuEntry>> ContextMenuEntries { get; }
 		bool CanBeReset { get; }
 		void ResetToDefault();
 	}
