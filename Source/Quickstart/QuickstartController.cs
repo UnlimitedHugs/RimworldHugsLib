@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using HarmonyLib;
 using HugsLib.Core;
 using HugsLib.Settings;
@@ -36,6 +35,7 @@ namespace HugsLib.Quickstart {
 		private static Type quickStarterType;
 		private static FieldInfo quickStartedField;
 		private static SettingHandle<QuickstartSettings> handle;
+		private static QuickstartStatusBox statusBox;
 		private static bool quickstartPending;
 		private static bool mapGenerationPending;
 
@@ -79,9 +79,7 @@ namespace HugsLib.Quickstart {
 
 		internal static void OnEarlyInitialize(ModSettingsPack librarySettings) {
 			PrepareSettings(librarySettings);
-			if (Settings.OperationMode != QuickstartSettings.QuickstartMode.Disabled) {
-				quickstartPending = true;
-			}
+			PrepareQuickstart();
 		}
 
 		internal static void OnLateInitialize() {
@@ -94,16 +92,7 @@ namespace HugsLib.Quickstart {
 
 		internal static void OnGUIUnfiltered() {
 			if (!quickstartPending) return;
-			StatusBox.OnGUI(Settings);
-			if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Space) {
-				quickstartPending = false;
-				HugsLibController.Logger.Warning("Quickstart aborted: Space key was pressed.");
-				if (HugsLibUtility.ShiftIsHeld) {
-					Settings.OperationMode = QuickstartSettings.QuickstartMode.Disabled;
-					LongEventHandler.ExecuteWhenFinished(SaveSettings);
-				}
-				Event.current.Use();
-			}
+			statusBox.OnGUI();
 		}
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {
@@ -142,9 +131,39 @@ namespace HugsLib.Quickstart {
 			handle.NeverVisible = true;
 		}
 
+		private static void PrepareQuickstart() {
+			if (Settings.OperationMode != QuickstartSettings.QuickstartMode.Disabled) {
+				quickstartPending = true;
+				statusBox = new QuickstartStatusBox(GetStatusBoxOperation(Settings));
+				statusBox.AbortRequested += StatusBoxAbortRequestedHandler;
+			}
+
+			QuickstartStatusBox.IOperationMessageProvider GetStatusBoxOperation(QuickstartSettings settings) {
+				switch (settings.OperationMode) {
+					case QuickstartSettings.QuickstartMode.LoadMap:
+						return new QuickstartStatusBox.LoadSaveOperation(settings.SaveFileToLoad);
+					case QuickstartSettings.QuickstartMode.GenerateMap:
+						return new QuickstartStatusBox.GenerateMapOperation(
+							settings.ScenarioToGen, settings.MapSizeToGen);
+					default:
+						throw new ArgumentOutOfRangeException("Unhandled operation mode: "+settings.OperationMode);
+				}
+			}
+		}
+
+		private static void StatusBoxAbortRequestedHandler(bool abortAndDisable) {
+			quickstartPending = false;
+			HugsLibController.Logger.Warning("Quickstart aborted: Space key was pressed.");
+			if (abortAndDisable) {
+				Settings.OperationMode = QuickstartSettings.QuickstartMode.Disabled;
+				LongEventHandler.ExecuteWhenFinished(SaveSettings);
+			}
+		}
+
 		private static void InitiateQuickstart() {
 			if(!quickstartPending) return;
 			quickstartPending = false;
+			statusBox = null;
 			try {
 				if (Settings.OperationMode == QuickstartSettings.QuickstartMode.Disabled) return;
 				CheckForErrorsAndWarnings();
@@ -218,61 +237,6 @@ namespace HugsLib.Quickstart {
 			public MapSizeEntry(int size, string label) {
 				Size = size;
 				Label = label;
-			}
-		}
-
-		private static class StatusBox {
-			private static readonly Vector2 StatusRectSize = new Vector2(240f, 75f);
-			private static readonly Vector2 StatusRectPadding = new Vector2(26f, 18f);
-
-			public static void OnGUI(QuickstartSettings settings) {
-				var statusText = GetStatusBoxText(settings);
-				var boxRect = GetStatusBoxRect(statusText);
-				DrawStatusBox(boxRect, statusText);
-			}
-
-			private static string GetStatusBoxText(QuickstartSettings settings) {
-				var sb = new StringBuilder("HugsLib quickstarter preparing to\n");
-				switch (settings.OperationMode) {
-					case QuickstartSettings.QuickstartMode.LoadMap:
-						sb.AppendFormat("load save file: {0}\n", settings.SaveFileToLoad);
-						break;
-					case QuickstartSettings.QuickstartMode.GenerateMap:
-						sb.AppendFormat("generate map: {0} ({1}x{1})\n", 
-							settings.ScenarioToGen, settings.MapSizeToGen
-						);
-						break;
-					default:
-						return $"Unhandled {nameof(QuickstartSettings.QuickstartMode)}: {settings.OperationMode}";
-				}
-				sb.AppendLine();
-				sb.Append("<color=#777777>");
-				sb.AppendLine("Press Space to abort");
-				sb.Append("Press Shift+Space to disable");
-				sb.Append("</color>");
-				return sb.ToString();
-			}
-
-			private static Rect GetStatusBoxRect(string statusText) {
-				var statusTextSize = Text.CalcSize(statusText);
-				var boxWidth = Mathf.Max(StatusRectSize.x, statusTextSize.x + StatusRectPadding.x * 2f);
-				var boxHeight = Mathf.Max(StatusRectSize.y, statusTextSize.y + StatusRectPadding.y * 2f);
-				var boxRect = new Rect(
-					(UI.screenWidth - boxWidth) / 2f,
-					(UI.screenHeight / 2f - boxHeight) / 2f,
-					boxWidth, boxHeight
-				);
-				boxRect = boxRect.Rounded();
-				return boxRect;
-			}
-
-			private static void DrawStatusBox(Rect rect, string statusText) {
-				Widgets.DrawShadowAround(rect);
-				Widgets.DrawWindowBackground(rect);
-				var prevAnchor = Text.Anchor;
-				Text.Anchor = TextAnchor.MiddleCenter;
-				Widgets.Label(rect, statusText);
-				Text.Anchor = prevAnchor;
 			}
 		}
 	}

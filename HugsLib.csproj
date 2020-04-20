@@ -97,6 +97,7 @@
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\News\UpdateFeatureDefFilteringProvider.cs" />
     <Compile Include="Source\News\UpdateFeaturesDevMenu.cs" />
+    <Compile Include="Source\Quickstart\QuickstartStatusBox.cs" />
     <Compile Include="Source\Settings\ContextMenuEntry.cs" />
     <Compile Include="Source\Settings\ModSettingsHoverMenu.cs" />
     <Compile Include="Source\Spotter\CurrentDateTimeSource.cs" />
