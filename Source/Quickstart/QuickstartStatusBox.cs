@@ -5,6 +5,10 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Quickstart {
+	/// <summary>
+	/// Displays at game startup when the quickstarter is scheduled to run.
+	/// Shows the pending operation and allows to abort or disable the quickstart.
+	/// </summary>
 	internal class QuickstartStatusBox {
 		public delegate void AbortHandler(bool abortAndDisable);
 		
