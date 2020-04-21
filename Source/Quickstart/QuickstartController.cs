@@ -49,13 +49,11 @@ namespace HugsLib.Quickstart {
 		}
 
 		public static void InitateSaveLoading() {
-			var saveName = Settings.SaveFileToLoad;
-			if (saveName == null) {
-				throw new WarningException("save filename not set");
-			}
+			var saveName = GetSaveNameToLoad()
+				?? throw new WarningException("save filename not set"); 
 			var filePath = GenFilePaths.FilePathForSavedGame(saveName);
 			if (!File.Exists(filePath)) {
-				throw new WarningException("save file not found: " + Settings.SaveFileToLoad);
+				throw new WarningException("save file not found: " + saveName);
 			}
 			HugsLibController.Logger.Message("Quickstarter is loading saved game: " + saveName);
 			Action loadAction = () => {
@@ -141,7 +139,7 @@ namespace HugsLib.Quickstart {
 			QuickstartStatusBox.IOperationMessageProvider GetStatusBoxOperation(QuickstartSettings settings) {
 				switch (settings.OperationMode) {
 					case QuickstartSettings.QuickstartMode.LoadMap:
-						return new QuickstartStatusBox.LoadSaveOperation(settings.SaveFileToLoad);
+						return new QuickstartStatusBox.LoadSaveOperation(GetSaveNameToLoad() ?? string.Empty);
 					case QuickstartSettings.QuickstartMode.GenerateMap:
 						return new QuickstartStatusBox.GenerateMapOperation(
 							settings.ScenarioToGen, settings.MapSizeToGen);
@@ -228,6 +226,15 @@ namespace HugsLib.Quickstart {
 		// ensure that the settings have a valid map size
 		private static void SnapSettingsMapSizeToClosestValue(QuickstartSettings settings, List<MapSizeEntry> sizes) {
 			Settings.MapSizeToGen = sizes.OrderBy(e => Mathf.Abs(e.Size - settings.MapSizeToGen)).First().Size;
+		}
+
+		private static string GetSaveNameToLoad() {
+			return Settings.SaveFileToLoad ?? TryGetMostRecentSaveFileName();
+		}
+
+		private static string TryGetMostRecentSaveFileName() {
+			var mostRecentFilePath = GenFilePaths.AllSavedGameFiles.FirstOrDefault()?.Name;
+			return Path.GetFileNameWithoutExtension(mostRecentFilePath);
 		}
 
 		public class MapSizeEntry {

@@ -144,29 +144,16 @@ namespace HugsLib.Quickstart {
 		}
 
 		private void MakeSelectSaveButton(Listing_Standard sub, QuickstartSettings settings) {
-			const float VersionLabelOffset = 10f;
 			const float LoadNowWidth = 120f;
 			const float HorizontalSpacing = 6f;
 			const float ButtonHeight = 30f;
-			var selected = settings.SaveFileToLoad;
+			const string LatestSaveFileLabel = "Most recent save file";
 			var buttonRect = sub.GetRect(ButtonHeight);
 			var leftHalf = new Rect(buttonRect) {xMax = buttonRect.xMax - (LoadNowWidth + HorizontalSpacing)};
 			var rightHalf = new Rect(buttonRect) { xMin = buttonRect.xMin + leftHalf.width + HorizontalSpacing };
-			if (Widgets.ButtonText(leftHalf, selected ?? "Select a save file")) {
-				var menu = new FloatMenu(saveFiles.Select(s => {
-					return new FloatMenuOption(s.Label, () => { settings.SaveFileToLoad = s.Name; }, MenuOptionPriority.Default, null, null, Text.CalcSize(s.VersionLabel).x + VersionLabelOffset,
-						rect => {
-							var prevColor = GUI.color;
-							GUI.color = s.FileInfo.VersionColor;
-							Text.Anchor = TextAnchor.MiddleLeft;
-							Widgets.Label(new Rect(rect.x + VersionLabelOffset, rect.y, 200f, rect.height), s.VersionLabel);
-							Text.Anchor = TextAnchor.UpperLeft;
-							GUI.color = prevColor;
-							return false;
-						}
-					);
-				}).ToList());
-				Find.WindowStack.Add(menu);
+			var selectedSaveLabel = settings.SaveFileToLoad ?? LatestSaveFileLabel;
+			if (Widgets.ButtonText(leftHalf, selectedSaveLabel)) {
+				ShowSaveFileSelectionFloatMenu();
 			}
 			if (Widgets.ButtonText(rightHalf, "Load now")) {
 				if (HugsLibUtility.ShiftIsHeld) {
@@ -176,6 +163,32 @@ namespace HugsLib.Quickstart {
 				Close();
 			}
 			sub.Gap(sub.verticalSpacing);
+
+			void ShowSaveFileSelectionFloatMenu() {
+				var options = new List<FloatMenuOption> {
+					new FloatMenuOption(LatestSaveFileLabel, () => settings.SaveFileToLoad = null)
+				};
+				options.AddRange(GetSaveFileFloatMenuOptions(settings));
+				Find.WindowStack.Add(new FloatMenu(options));
+			}			
+		}
+
+		private IEnumerable<FloatMenuOption> GetSaveFileFloatMenuOptions(QuickstartSettings settings) {
+			const float VersionLabelOffset = 10f;
+			return saveFiles.Select(s => {
+				return new FloatMenuOption(s.Label, () => { settings.SaveFileToLoad = s.Name; }, 
+					MenuOptionPriority.Default, null, null, Text.CalcSize(s.VersionLabel).x + VersionLabelOffset,
+					rect => {
+						var prevColor = GUI.color;
+						GUI.color = s.FileInfo.VersionColor;
+						Text.Anchor = TextAnchor.MiddleLeft;
+						Widgets.Label(new Rect(rect.x + VersionLabelOffset, rect.y, 200f, rect.height), s.VersionLabel);
+						Text.Anchor = TextAnchor.UpperLeft;
+						GUI.color = prevColor;
+						return false;
+					}
+				);
+			});
 		}
 
 		private void MakeSelectScenarioButton(Listing_Standard sub, QuickstartSettings settings) {
