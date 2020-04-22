@@ -215,18 +215,18 @@ namespace HugsLib.Utils {
 		/// Expands a shorthand unix user directory path with its full system path.
 		/// </summary>
 		public static string TryReplaceUserDirectory(this string text) {
-	        if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
-		        text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
-	        }
-	        return text;
-        }
+			if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
+				text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
+			}
+			return text;
+		}
 
 		/// <summary>
 		/// Adds double quotes to the start and end of a string.
 		/// </summary>
-        public static string SurroundWithDoubleQuotes(this string text) {
-            return string.Format("\"{0}\"", text);
-        }
+		public static string SurroundWithDoubleQuotes(this string text) {
+			return string.Format("\"{0}\"", text);
+		}
 
 		/// <summary>
 		/// Attempts to return the patch of the log file Unity is writing to.
@@ -261,9 +261,9 @@ namespace HugsLib.Utils {
 		public static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
 			/* TODO: next major update: scrap whole method, revert to System.Net.WebClient
 			.NET version has been updated and SSL should work again */
-			#pragma warning disable 618
+#pragma warning disable 618
 			request.Send();
-			#pragma warning restore 618
+#pragma warning restore 618
 			var timeoutTime = Time.unscaledTime + timeout;
 			Action pollingAction = null;
 			pollingAction = () => {

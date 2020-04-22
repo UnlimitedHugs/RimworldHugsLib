@@ -37,7 +37,7 @@ namespace HugsLib.Shell {
 				return true;
 			} catch (Win32Exception e) {
 				if (psi.FileName.StartsWith("\"") &&
-				    psi.FileName.EndsWith("\""))
+					psi.FileName.EndsWith("\""))
 					HugsLibController.Logger.Warning("Detected surround quotes on shell filename, " +
 					                                 "some platforms interpret them as part of the filename.");
 				HugsLibController.Logger.ReportException(e);

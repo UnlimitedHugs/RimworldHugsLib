@@ -250,14 +250,14 @@ namespace HugsLib.News {
 				if(LanguageDatabase.activeLanguage == null) return;
 				var updateFeatureDefInjections = LanguageDatabase.activeLanguage.defInjections
 					.Where(i => i.defType == typeof(UpdateFeatureDef));
-                foreach (var injectionPackage in updateFeatureDefInjections) {
-                	try {
-                		injectionPackage.InjectIntoDefs(true);
-                	} catch (Exception e) {
-                		HugsLibController.Logger.Warning(
-                			$"Error while injecting translations into {nameof(UpdateFeatureDef)}: {e}");
-                	}
-                }
+				foreach (var injectionPackage in updateFeatureDefInjections) {
+					try {
+						injectionPackage.InjectIntoDefs(true);
+					} catch (Exception e) {
+						HugsLibController.Logger.Warning(
+							$"Error while injecting translations into {nameof(UpdateFeatureDef)}: {e}");
+					}
+				}
 			}
 
 			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
