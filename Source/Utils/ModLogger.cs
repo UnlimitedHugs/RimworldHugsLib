@@ -4,11 +4,10 @@ using System.Text;
 using Verse;
 
 namespace HugsLib.Utils {
-	//
 	/// <summary>
 	/// A logger that prefixes all messages with the identifier of the issuing mod.
 	/// </summary>
-	public class ModLogger {
+	public class ModLogger : IModLogger {
 		private const string WarningPrefix = "warn";
 		private const string ErrorPrefix = "ERR";
 
@@ -111,5 +110,13 @@ namespace HugsLib.Utils {
 		private string GetModPrefix() {
 			return String.Format("[{0}]", logPrefix);
 		}
+	}
+
+	internal interface IModLogger {
+		void Message(string message, params object[] substitutions);
+		void Warning(string message, params object[] substitutions);
+		void Error(string message, params object[] substitutions);
+		void ReportException(Exception e, string modIdentifier = null,
+			bool reportOnceOnly = false, string location = null);
 	}
 }

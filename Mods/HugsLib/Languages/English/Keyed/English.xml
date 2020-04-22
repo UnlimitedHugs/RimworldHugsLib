@@ -69,6 +69,10 @@
 	<HugsLib_loadOrderWarning_title>Improper mod load order</HugsLib_loadOrderWarning_title>
 	<HugsLib_loadOrderWarning_text>&lt;b&gt;The HugsLib mod&lt;/b&gt; should always be loaded after &lt;b&gt;Core&lt;/b&gt; to avoid issues.\nPlease adjust your mod order in the Mods menu and restart the game.</HugsLib_loadOrderWarning_text>
 		
+	<HugsLib_updateRequired_title>Library update required</HugsLib_updateRequired_title>
+	<HugsLib_updateRequired_text>&lt;b&gt;{0}&lt;/b&gt; requires version &lt;b&gt;{1}&lt;/b&gt; of the &lt;b&gt;HugsLib library&lt;/b&gt; to work properly.\n\nWould you like to update it now?</HugsLib_updateRequired_text>
+	<HugsLib_updateRequired_updateBtn>Update now</HugsLib_updateRequired_updateBtn>
+	
 	<test_enumSetting_DefaultValue>Default Value</test_enumSetting_DefaultValue>
 	<test_enumSetting_ValueOne>Value One</test_enumSetting_ValueOne>
 	<test_enumSetting_ValueTwo>Value Two</test_enumSetting_ValueTwo>

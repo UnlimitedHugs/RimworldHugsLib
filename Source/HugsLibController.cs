@@ -142,6 +142,7 @@ namespace HugsLib {
 				QuickstartController.OnEarlyInitialize(librarySettings);
 				ModSpotter = new ModSpottingManager();
 				ModSpotter.OnEarlyInitialize();
+				new LibraryVersionChecker(LibraryVersion, Logger).OnEarlyInitialize();
 				LoadOrderChecker.ValidateLoadOrder();
 				EnumerateModAssemblies();
 				EarlyInitializeChildMods();
