@@ -96,6 +96,7 @@
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
     <Compile Include="Source\News\Dialog_UpdateFeaturesFiltered.cs" />
+    <Compile Include="Source\News\UpdateFeatureDefLoader.cs" />
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\News\UpdateFeatureDefFilteringProvider.cs" />
     <Compile Include="Source\News\UpdateFeaturesDevMenu.cs" />

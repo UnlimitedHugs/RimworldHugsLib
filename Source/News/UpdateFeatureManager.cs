@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.Settings;
@@ -30,14 +30,31 @@ namespace HugsLib.News {
 			LoadData();
 		}
 
+		// TodoMajor: remove this
 		[Obsolete("Mods no longer need to call in, fresh news are automatically detected based on their defs")]
 		public void InspectActiveMod(string modId, Version currentVersion) {
 		}
 
 		internal void OnEarlyInitialize() {
+			// offload reading and parsing XML files to a worker thread
+			var loadingTask = Task.Run(UpdateFeatureDefLoader.LoadUpdateFeatureDefNodes);
+			
 			// this should put us just before backstory loading in the DoPlayLoad cycle
 			// we inject our defs early on to take advantage of the stock translation injection system
-			LongEventHandler.ExecuteWhenFinished(UpdateFeatureDefLoader.LoadUpdateFeatureDefs);
+			LongEventHandler.ExecuteWhenFinished(ResolveAndInjectNewsDefs);
+			
+			void ResolveAndInjectNewsDefs() {
+				// this must be done synchronously to avoid creating potential race conditions with other mods
+				try {
+					if (!loadingTask.Wait(TimeSpan.FromSeconds(3)))
+						throw new InvalidOperationException("XML loading did not resolve in time");
+					var (nodes, errors) = loadingTask.Result;
+					UpdateFeatureDefLoader.HandleDefLoadingErrors(errors);
+					UpdateFeatureDefLoader.ResolveAndInjectUpdateFeatureDefs(nodes);
+				} catch (Exception e) {
+					HugsLibController.Logger.Error("Failed to load UpdateFeatureDefs: " + e);
+				}
+			}
 		}
 
 		/// <summary>
@@ -230,122 +247,6 @@ namespace HugsLib.News {
 
 			public override string ToString() {
 				return ignoredOwnerIds.Join(SerializationSeparator.ToString());
-			}
-		}
-
-		private static class UpdateFeatureDefLoader {
-
-			public static void LoadUpdateFeatureDefs() {
-				ResetUpdateFeatureDefTranslations();
-				var parsedDefs = LoadAndParseNewsFeatureDefs();
-				ReinitUpdateFeatureDefDatabase(parsedDefs);
-			}
-
-			public static void ReloadAllUpdateFeatureDefs() {
-				LoadUpdateFeatureDefs();
-				InjectTranslationsIntoUpdateFeatureDefs();
-			}
-
-			private static void InjectTranslationsIntoUpdateFeatureDefs() {
-				if(LanguageDatabase.activeLanguage == null) return;
-				var updateFeatureDefInjections = LanguageDatabase.activeLanguage.defInjections
-					.Where(i => i.defType == typeof(UpdateFeatureDef));
-				foreach (var injectionPackage in updateFeatureDefInjections) {
-					try {
-						injectionPackage.InjectIntoDefs(true);
-					} catch (Exception e) {
-						HugsLibController.Logger.Warning(
-							$"Error while injecting translations into {nameof(UpdateFeatureDef)}: {e}");
-					}
-				}
-			}
-
-			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
-				XmlInheritance.Clear();
-				// As we're moving the updates out of /Defs and into /News, we can no longer rely on the DefDatabase to magically 
-				// load all the UpdateFeatureDefs. Instead, we'll have to manually point the reader to the relevant folders. 
-				// Overall, we'll stick as much as we can to the vanilla def loading experience, albeit without patches.
-				// Patch metadata has already been cleared, and parsing it again would add too much overhead.
-				// First, gather all XML nodes that represent an UpdateFeatureDef, and remember where they came from
-				// We can't parse them info defs on the spot, because there is inheritance to consider.
-				var newsItemNodes = new List<(ModContentPack pack, XmlNode node, LoadableXmlAsset asset)>();
-				foreach (var modContentPack in LoadedModManager.RunningMods) {
-					try {
-						var modNewsXmlAssets = DirectXmlLoader.XmlAssetsInModFolder(modContentPack, UpdateFeatureDefFolder);
-						foreach (var xmlAsset in modNewsXmlAssets) {
-							var rootElement = xmlAsset.xmlDoc?.DocumentElement;
-							if (rootElement != null) {
-								foreach (var childNode in rootElement.ChildNodes.OfType<XmlNode>()) {
-									newsItemNodes.Add((modContentPack, childNode, xmlAsset));
-								}
-							}
-						}
-					} catch (Exception e) {
-						HugsLibController.Logger.Error("Failed to load UpdateFeatureDefs for mod " +
-														$"{modContentPack.PackageIdPlayerFacing}: {e}");
-						throw;
-					}
-				}
-
-				// deal with inheritance
-				foreach (var (modContent, node, _) in newsItemNodes) {
-					if (node != null && node.NodeType == XmlNodeType.Element) {
-						XmlInheritance.TryRegister(node, modContent);
-					}
-				}
-				XmlInheritance.Resolve();
-
-				var parsedFeatureDefs = new List<UpdateFeatureDef>();
-				foreach (var (pack, node, asset) in newsItemNodes) {
-					// parse defs
-					try {
-						var def = DirectXmlLoader.DefFromNode(node, asset) as UpdateFeatureDef;
-						if (def != null) {
-							def.modContentPack = pack;
-							def.ResolveReferences();
-							parsedFeatureDefs.Add(def);
-						}
-					} catch (Exception e) {
-						HugsLibController.Logger.Error($"Failed to parse UpdateFeatureDef from mod {pack.PackageIdPlayerFacing}:\n" +
-														$"{GetExceptionChainMessage(e)}\n" +
-														$"Context: {node?.OuterXml.ToStringSafe()}\n" +
-														$"File: {asset?.FullFilePath.ToStringSafe()}\n" +
-														$"Exception: {e}");
-					}
-				}
-				
-				XmlInheritance.Clear();
-
-				return parsedFeatureDefs;
-			}
-
-			private static void ResetUpdateFeatureDefTranslations() {
-				// translations might have already been applied to news defs inherited from 1.0
-				// through the versioning system, and must be reset so they can be applied again
-				if(LanguageDatabase.activeLanguage == null) return;
-				foreach (var defInjection in LanguageDatabase.activeLanguage.defInjections) {
-					if (defInjection.defType == typeof(UpdateFeatureDef)) {
-						foreach (var injection in defInjection.injections) {
-							injection.Value.injected = false;
-						}
-						defInjection.loadErrors.Clear();
-					}
-				}
-			}
-
-			private static void ReinitUpdateFeatureDefDatabase(IEnumerable<UpdateFeatureDef> defs) {
-				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
-				DefDatabase<UpdateFeatureDef>.Clear();
-				DefDatabase<UpdateFeatureDef>.Add(defs);
-			}
-
-			private static string GetExceptionChainMessage(Exception e) {
-				var message = e.Message;
-				while (e.InnerException != null) {
-					e = e.InnerException;
-					message += $" -> {e.Message}";
-				}
-				return message;
 			}
 		}
 	}
