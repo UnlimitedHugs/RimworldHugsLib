@@ -143,7 +143,7 @@ namespace HugsLib.Test {
 			Logger.Message("DefsLoaded");
 			Settings.GetHandle("str", "String value", "", "value");
 			var spinner = Settings.GetHandle("intSpinner", "Spinner", "desc", 5, Validators.IntRangeValidator(0, 30));
-			spinner.ContextMenuEntries = () => new []{
+			spinner.ContextMenuEntries = new []{
 				new ContextMenuEntry("Do a thing", 
 					() => Messages.Message("A thing was done!", MessageTypeDefOf.TaskCompletion)) 
 			};

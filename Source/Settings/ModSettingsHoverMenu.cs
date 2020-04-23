@@ -63,7 +63,7 @@ namespace HugsLib.Settings {
 		private static IEnumerable<FloatMenuOption> GetCustomFloatMenuOptions(IHoverMenuHandle forHandle) {
 			var options = new List<FloatMenuOption>();
 			try {
-				var entries = forHandle.ContextMenuEntries?.Invoke() ?? Enumerable.Empty<ContextMenuEntry>();
+				var entries = forHandle.ContextMenuEntries ?? Enumerable.Empty<ContextMenuEntry>();
 				foreach (var entry in entries) {
 					entry.Validate();
 					options.Add(
@@ -109,7 +109,7 @@ namespace HugsLib.Settings {
 
 	public interface IHoverMenuHandle {
 		string Description { get; }
-		Func<IEnumerable<ContextMenuEntry>> ContextMenuEntries { get; }
+		IEnumerable<ContextMenuEntry> ContextMenuEntries { get; }
 		bool CanBeReset { get; }
 		void ResetToDefault();
 	}

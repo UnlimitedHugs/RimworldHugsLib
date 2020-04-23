@@ -97,7 +97,7 @@ namespace HugsLib.Settings {
 		/// <remarks>
 		/// The "Reset to default" option is always present, but will be disabled if <see cref="CanBeReset"/> is false.
 		/// </remarks>
-		public Func<IEnumerable<ContextMenuEntry>> ContextMenuEntries { get; set; }
+		public IEnumerable<ContextMenuEntry> ContextMenuEntries { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
