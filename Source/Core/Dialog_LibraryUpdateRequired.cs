@@ -37,18 +37,25 @@ namespace HugsLib.Core {
 		}
 
 		public override void DoWindowContents(Rect inRect) {
-			Text.Font = GameFont.Medium;
-			var titleRect = new Rect(inRect.x, inRect.y, inRect.width, 45);
-			Widgets.Label(titleRect, titleText);
-			
-			Text.Font = GameFont.Small;
-			var mainTextRect = new Rect(inRect.x, inRect.y + titleRect.height,
-				inRect.width, inRect.height - buttonSize.y - titleRect.height);
-			Widgets.Label(mainTextRect, bodyText);
-			
+			const int titleLabelHeight = 45;
+			DrawTitleLabel();
+			DrawMainTextLabel();
 			DrawUpdateButton();
 			DrawCloseButton();
 
+			void DrawTitleLabel() {
+				Text.Font = GameFont.Medium;
+				var rect = new Rect(inRect.x, inRect.y, inRect.width, titleLabelHeight);
+				Widgets.Label(rect, titleText);
+			}
+
+			void DrawMainTextLabel() {
+				Text.Font = GameFont.Small;
+				var rect = new Rect(inRect.x, inRect.y + titleLabelHeight,
+					inRect.width, inRect.height - buttonSize.y - titleLabelHeight);
+				Widgets.Label(rect, bodyText);
+			}
+			
 			void DrawUpdateButton() {
 				var rect = new Rect(
 					inRect.x, inRect.height - buttonSize.y, 
