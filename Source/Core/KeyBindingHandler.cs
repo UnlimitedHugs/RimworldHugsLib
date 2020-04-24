@@ -23,6 +23,12 @@ namespace HugsLib.Core {
 			if (HugsLibKeyBindings.RestartRimworld.JustPressed) {
 				GenCommandLine.Restart();
 			}
+			if (HugsLibKeyBindings.HLOpenModSettings.JustPressed) {
+				HugsLibUtility.OpenModSettingsDialog();
+			}
+			if (HugsLibKeyBindings.HLOpenUpdateNews.JustPressed) {
+				HugsLibController.Instance.UpdateFeatures.TryShowDialog(true);
+			}
 		}
 	}
 }

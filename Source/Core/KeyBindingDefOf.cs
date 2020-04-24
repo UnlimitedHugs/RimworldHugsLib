@@ -11,5 +11,7 @@ namespace HugsLib.Core {
 		public static KeyBindingDef PublishLogs;
 		public static KeyBindingDef OpenLogFile;
 		public static KeyBindingDef RestartRimworld;
+		public static KeyBindingDef HLOpenModSettings;
+		public static KeyBindingDef HLOpenUpdateNews;
 	}
 }

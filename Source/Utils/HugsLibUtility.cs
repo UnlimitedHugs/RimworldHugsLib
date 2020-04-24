@@ -325,6 +325,14 @@ namespace HugsLib.Utils {
 			}
 		}
 
+		/// <summary>
+		///	Opens the HugsLib Mod Settings dialog. 
+		/// </summary>
+		public static void OpenModSettingsDialog() {
+			Find.WindowStack.TryRemove(typeof(Dialog_Options));
+			Find.WindowStack.Add(new HugsLib.Settings.Dialog_ModSettings());
+		}
+
 		internal static void BlameCallbackException(string schedulerName, Delegate callback, Exception e) {
 			string exceptionCause = null;
 			if (callback != null) {
