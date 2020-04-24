@@ -20,11 +20,8 @@ namespace HugsLib.Settings {
 		private const float HandleEntryHeight = 34f;
 		private const float ScrollBarWidthMargin = 18f;
 
-		// made static to preserve values between dialog openings
-		private static readonly List<ModEntry> listedMods = new List<ModEntry>();
-		private static readonly HashSet<ModEntry> expandedModEntries = new HashSet<ModEntry>();
-		private static Vector2 scrollPosition;
-		
+		private readonly List<ModEntry> listedMods = new List<ModEntry>();
+		private readonly HashSet<ModEntry> expandedModEntries = new HashSet<ModEntry>();
 		private readonly Color ModEntryLineColor = new Color(0.3f, 0.3f, 0.3f);
 		private readonly Color BadValueOutlineColor = new Color(.9f, .1f, .1f, 1f);
 		private readonly Dictionary<SettingHandle, HandleControlInfo> handleControlInfo = new Dictionary<SettingHandle, HandleControlInfo>();
@@ -32,11 +29,14 @@ namespace HugsLib.Settings {
 		private readonly Dictionary<Type, SettingsHandleDrawer> handleDrawers;
 		private readonly ModSettingsHoverMenu hoverMenu;
 
+		private Vector2 scrollPosition;
 		private float totalContentHeight;
 		// TodoMajor: remove this field, leverage the change detection system built into SettingHandle
 		private bool settingsHaveChanged;
 		private string currentlyDrawnEntry;
 		private bool closingScheduled;
+
+		internal IModSettingsWindowState WindowState { get; set; }
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
@@ -64,15 +64,15 @@ namespace HugsLib.Settings {
 		public override void PreOpen() {
 			base.PreOpen();
 			settingsHaveChanged = false;
-			if (listedMods.Count == 0) {
-				EnumerateModsWithSettings();
-			}
+			EnumerateModsWithSettings();
 			RefreshSettingsHandles();
 			PopulateControlInfo();
+			TryRestoreWindowState(WindowState);
 		}
 
 		public override void PostClose() {
 			base.PostClose();
+			TrySaveWindowState(WindowState);
 			if (settingsHaveChanged) HugsLibController.Instance.Settings.SaveChanges();
 		}
 
@@ -364,6 +364,25 @@ namespace HugsLib.Settings {
 			GUI.color = prevColor;
 		}
 
+		private void TryRestoreWindowState(IModSettingsWindowState state) {
+			if (state == null) return;
+			expandedModEntries.Clear();
+			var expandedIdSet = (state.ExpandedSettingPackIds ?? Enumerable.Empty<string>()).ToHashSet();
+			expandedModEntries.AddRange(listedMods.Where(
+				m => m.SettingsPack != null && expandedIdSet.Contains(m.SettingsPack.ModId)
+			));
+			scrollPosition = new Vector2(0f, state.VerticalScrollPosition);
+		}
+		
+		private void TrySaveWindowState(IModSettingsWindowState state) {
+			if (state == null) return;
+			state.ExpandedSettingPackIds = expandedModEntries
+				.Select(e => e.SettingsPack?.ModId)
+				.Where(id => id != null)
+				.ToArray();
+			state.VerticalScrollPosition = scrollPosition.y;
+		}
+		
 		private void ResetHugsLibSettingsForLoadedMods() {
 			foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
 				foreach (var handle in pack.Handles) {

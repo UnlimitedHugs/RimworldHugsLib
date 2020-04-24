@@ -103,6 +103,7 @@
     <Compile Include="Source\Quickstart\QuickstartStatusBox.cs" />
     <Compile Include="Source\Settings\ContextMenuEntry.cs" />
     <Compile Include="Source\Settings\ModSettingsHoverMenu.cs" />
+    <Compile Include="Source\Settings\ModSettingsWindowState.cs" />
     <Compile Include="Source\Spotter\CurrentDateTimeSource.cs" />
     <Compile Include="Source\Spotter\ModSpottingManager.cs" />
     <Compile Include="Source\Spotter\TrackingEntry.cs" />
