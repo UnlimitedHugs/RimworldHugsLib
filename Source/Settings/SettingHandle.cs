@@ -53,7 +53,7 @@ namespace HugsLib.Settings {
 		///	The following built-in handle drawing features are also disabled when this property is assigned:
 		/// row highlighting (<see cref="Verse.Widgets.DrawHighlight"/>),
 		/// description tooltip (<see cref="Verse.TooltipHandler"/>),
-		/// hovering info/menu buttons (<see cref="ModSettingsHoverMenu"/>).
+		/// hovering info/menu buttons (<see cref="ModSettingsWidgets.DrawHoverMenu"/>).
 		/// </remarks>
 		public DrawCustomControl CustomDrawerFullWidth { get; set; }
 		/// <summary>

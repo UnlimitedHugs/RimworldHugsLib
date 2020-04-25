@@ -27,7 +27,6 @@ namespace HugsLib.Settings {
 		private readonly Dictionary<SettingHandle, HandleControlInfo> handleControlInfo = new Dictionary<SettingHandle, HandleControlInfo>();
 		private readonly SettingsHandleDrawer defaultHandleDrawer;
 		private readonly Dictionary<Type, SettingsHandleDrawer> handleDrawers;
-		private readonly ModSettingsHoverMenu hoverMenu;
 
 		private Vector2 scrollPosition;
 		private float totalContentHeight;
@@ -51,8 +50,6 @@ namespace HugsLib.Settings {
 			absorbInputAroundWindow = true;
 			resizeable = false;
 			defaultHandleDrawer = DrawHandleInputText;
-			hoverMenu = new ModSettingsHoverMenu();
-			hoverMenu.HandleReset += OnHoverMenuHandleReset;
 			// these pairs specify which type of input field will be drawn for handles of this type. defaults to the string input
 			handleDrawers = new Dictionary<Type, SettingsHandleDrawer> {
 				{typeof(int), DrawHandleInputSpinner},
@@ -253,13 +250,15 @@ namespace HugsLib.Settings {
 			return valueChanged;
 		}
 
-		private void DrawEntryHoverMenu(Rect entryRect, IHoverMenuHandle handle) {
-			var menuSize = hoverMenu.DrawSize;
-			var hoverMenuPos = new Vector2(
-				entryRect.x + entryRect.width / 2f - HandleEntryPadding - menuSize.x,
-				entryRect.y + entryRect.height / 2f - menuSize.y / 2f
+		private void DrawEntryHoverMenu(Rect entryRect, SettingHandle handle) {
+			var topRight = new Vector2(
+				entryRect.x + entryRect.width / 2f - HandleEntryPadding,
+				entryRect.y + entryRect.height / 2f - ModSettingsWidgets.HoverMenuHeight / 2f
 			);
-			hoverMenu.Draw(hoverMenuPos, handle);
+			var menuButtonClicked = ModSettingsWidgets.DrawHoverMenu(topRight, handle.Description);
+			if (menuButtonClicked) {
+				ModSettingsWidgets.OpenHandleFloatMenu(handle, OnHoverMenuHandleReset);
+			}
 		}
 
 		// draws the input control for string settings

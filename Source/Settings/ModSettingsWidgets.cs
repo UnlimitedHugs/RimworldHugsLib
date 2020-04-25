@@ -6,7 +6,7 @@ using UnityEngine;
 using Verse;
 
 namespace HugsLib.Settings {
-	public class ModSettingsHoverMenu {
+	public static class ModSettingsWidgets {
 		private const float HoverMenuButtonSpacing = 3f;
 
 		private static Texture2D InfoIconTexture {
@@ -16,37 +16,33 @@ namespace HugsLib.Settings {
 			get { return HugsLibTextures.HLMenuIcon; }
 		}
 
-		public event Action<IHoverMenuHandle> HandleReset;
-		
-		public Vector2 DrawSize {
-			get {
-				return new Vector2(
-					InfoIconTexture.width + HoverMenuButtonSpacing + MenuIconTexture.width,
-					Mathf.Max(InfoIconTexture.height, MenuIconTexture.width)
-				);
-			}
+		public static float HoverMenuHeight {
+			get { return Mathf.Max(InfoIconTexture.height, MenuIconTexture.width); }
 		}
 
-		public void Draw(Vector2 topLeft, IHoverMenuHandle forHandle, float opacity = .5f) {
-			if (!string.IsNullOrWhiteSpace(forHandle.Description)) {
-				var (infoHovered, _) = DoHoverMenuButton(topLeft, InfoIconTexture, opacity);
+		public static bool DrawHoverMenu(Vector2 topRight, string infoTooltip, float opacity = .5f) {
+			var menuButtonTopLeft = new Vector2(topRight.x - MenuIconTexture.width, topRight.y);
+			var (_, menuClicked) = DoHoverMenuButton(menuButtonTopLeft, MenuIconTexture, opacity);
+			
+			if (!string.IsNullOrWhiteSpace(infoTooltip)) {
+				var infoButtonTopLeft = 
+					new Vector2(menuButtonTopLeft.x - HoverMenuButtonSpacing - InfoIconTexture.width, topRight.y);
+				var (infoHovered, _) = DoHoverMenuButton(infoButtonTopLeft, InfoIconTexture, opacity);
 				if (infoHovered) {
-					DrawImmediateTooltip(forHandle.Description);
+					DrawImmediateTooltip(infoTooltip);
 				}
 			}
-			var menuButtonTopLeft = new Vector2(topLeft.x + HoverMenuButtonSpacing + InfoIconTexture.width, topLeft.y);
-			var (_, menuClicked) = DoHoverMenuButton(menuButtonTopLeft, MenuIconTexture, opacity);
-			if (menuClicked) {
-				OpenHandleFloatMenu(forHandle);
-			}
+
+			return menuClicked;
 		}
 
-		public void OpenHandleFloatMenu(IHoverMenuHandle forHandle) {
-			var options = GetFloatMenuOptions(forHandle);
+		public static void OpenHandleFloatMenu(IHoverMenuHandle forHandle, Action<IHoverMenuHandle> handleReset) {
+			var options = GetHandleFloatMenuOptions(forHandle, handleReset);
 			Find.WindowStack.Add(new FloatMenu(options));
 		}
 
-		private List<FloatMenuOption> GetFloatMenuOptions(IHoverMenuHandle forHandle) {
+		private static List<FloatMenuOption> GetHandleFloatMenuOptions(
+			IHoverMenuHandle forHandle, Action<IHoverMenuHandle> handleReset) {
 			var options = new List<FloatMenuOption> {
 				new FloatMenuOption("HugsLib_settings_resetValue".Translate(), ResetHandleAction)
 					{Disabled = !forHandle.CanBeReset}
@@ -56,7 +52,7 @@ namespace HugsLib.Settings {
 
 			void ResetHandleAction() {
 				forHandle.ResetToDefault();
-				HandleReset?.Invoke(forHandle);
+				handleReset?.Invoke(forHandle);
 			}
 		}
 
@@ -108,7 +104,6 @@ namespace HugsLib.Settings {
 	}
 
 	public interface IHoverMenuHandle {
-		string Description { get; }
 		IEnumerable<ContextMenuEntry> ContextMenuEntries { get; }
 		bool CanBeReset { get; }
 		void ResetToDefault();
