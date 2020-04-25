@@ -7,6 +7,8 @@
 	<HugsLib_settings_resetAll>Reset all</HugsLib_settings_resetAll>
 	<HugsLib_settings_resetAll_prompt>Reset all mod settings to their original values?</HugsLib_settings_resetAll_prompt>
 	<HugsLib_settings_noSettings>No mods with configurable settings are loaded.</HugsLib_settings_noSettings>
+	<HugsLib_settings_resetMod>Reset {0} settings to default</HugsLib_settings_resetMod>
+	<HugsLib_settings_resetMod_prompt>Reset all {0} settings to their original values?</HugsLib_settings_resetMod_prompt>
 
 	<HugsLib_ownSettingsName>Other</HugsLib_ownSettingsName>
 	<HugsLib_setting_showNews_label>Show mod update news</HugsLib_setting_showNews_label>

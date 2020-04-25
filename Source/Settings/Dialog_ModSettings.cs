@@ -118,7 +118,7 @@ namespace HugsLib.Settings {
 			Text.Font = GameFont.Small;
 			var resetButtonRect = new Rect(0, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (Widgets.ButtonText(resetButtonRect, "HugsLib_settings_resetAll".Translate())) {
-				Find.WindowStack.Add(new Dialog_Confirm("HugsLib_settings_resetAll_prompt".Translate(), ResetHugsLibSettingsForLoadedMods, true));
+				ShowResetPrompt("HugsLib_settings_resetAll_prompt".Translate(), ResetHugsLibSettingsForLoadedMods);
 			}
 			var closeButtonRect = new Rect(inRect.width - windowButtonSize.x, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (closingScheduled) {
@@ -134,36 +134,19 @@ namespace HugsLib.Settings {
 		// draws the header with the name of the mod
 		private void DrawModEntryHeader(ModEntry entry, float width, ref float curY) {
 			if (entry.ModName.NullOrEmpty()) return;
-			var labelRect = new Rect(0f, curY, width, ModEntryLabelHeight).ContractedBy(ModEntryLabelPadding);
+			var entryTitleRect = new Rect(0f, curY, width, ModEntryLabelHeight);
+			var mouseOverTitle = Mouse.IsOver(entryTitleRect);
+			if (mouseOverTitle) {
+				Widgets.DrawHighlight(entryTitleRect);
+			}
+			var labelRect = entryTitleRect.ContractedBy(ModEntryLabelPadding);
 			Text.Font = GameFont.Medium;
 			Widgets.Label(labelRect, entry.ModName);
 			Text.Font = GameFont.Small;
-			// draw open setting or expand handle listing button
-			if (entry.SettingsPack == null || !entry.SettingsPack.AlwaysExpandEntry) {
-				var isVanillaEntry = entry.SettingsPack == null;
-				var isExpanded = expandedModEntries.Contains(entry);
-				string buttonLabel;
-				if (isVanillaEntry) {
-					buttonLabel = "HugsLib_setting_show_settings";
-				} else {
-					buttonLabel = isExpanded ? "HugsLib_setting_collapse_mod" : "HugsLib_setting_expand_mod";
-				}
-				buttonLabel = buttonLabel.Translate();
-				var buttonWidth = Text.CalcSize(buttonLabel).x + 20f;
-				var buttonRect = new Rect(width - (buttonWidth + HandleEntryPadding), curY + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f, buttonWidth,
-					ModEntryShowSettingsButtonHeight);
-				if (Widgets.ButtonText(buttonRect, buttonLabel)) {
-					if (isVanillaEntry) {
-						Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
-					} else {
-						if (isExpanded) {
-							expandedModEntries.Remove(entry);
-						} else {
-							expandedModEntries.Add(entry);
-						}
-					}
-				}
-			}
+
+			var entryButtonsTopRight = new Vector2(width, curY);
+			var activateButtonWidth = DrawActivateEntryButton(entryButtonsTopRight);
+			DrawFloatMenuButton(new Vector2(entryButtonsTopRight.x - activateButtonWidth, entryButtonsTopRight.y));
 
 			curY += ModEntryLabelHeight;
 			var color = GUI.color;
@@ -171,6 +154,58 @@ namespace HugsLib.Settings {
 			Widgets.DrawLineHorizontal(0f, curY, width);
 			GUI.color = color;
 			curY += ModEntryLabelPadding;
+
+			float DrawActivateEntryButton(Vector2 topRight) {
+				if (entry.SettingsPack == null || !entry.SettingsPack.AlwaysExpandEntry) {
+					var isExpanded = expandedModEntries.Contains(entry);
+					string buttonLabel;
+					var isVanillaEntry = entry.SettingsPack == null;
+					if (isVanillaEntry) {
+						buttonLabel = "HugsLib_setting_show_settings";
+					} else {
+						buttonLabel = isExpanded ? "HugsLib_setting_collapse_mod" : "HugsLib_setting_expand_mod";
+					}
+					buttonLabel = buttonLabel.Translate();
+					var buttonWidth = Text.CalcSize(buttonLabel).x + 20f;
+					var buttonRect = new Rect(topRight.x - (buttonWidth + ModEntryLabelPadding),
+						topRight.y + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f, 
+						buttonWidth, ModEntryShowSettingsButtonHeight);
+					if (Widgets.ButtonText(buttonRect, buttonLabel)) {
+						if (isVanillaEntry) {
+							Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
+						} else {
+							if (isExpanded) {
+								expandedModEntries.Remove(entry);
+							} else {
+								expandedModEntries.Add(entry);
+							}
+						}
+					}
+					return topRight.x - buttonRect.x;
+				}
+				return 0f;
+			}
+
+			void DrawFloatMenuButton(Vector2 topRight) {
+				if(entry.SettingsPack == null || !mouseOverTitle) return;
+				var buttonTopRight = new Vector2(topRight.x - ModEntryLabelPadding,
+					topRight.y + (ModEntryLabelHeight - ModSettingsWidgets.HoverMenuHeight) / 2f);
+				if (ModSettingsWidgets.DrawHoverMenuButton(buttonTopRight)) {
+					OpenModEntryContextMenu();
+				}
+
+				void OpenModEntryContextMenu() {
+					ModSettingsWidgets.OpenFloatMenu(
+						ModSettingsWidgets.GetResetContextMenuOption(entry.SettingsPack,
+							"HugsLib_settings_resetMod".Translate(entry.ModName), OnResetOptionSelected)
+					);
+				}
+
+				void OnResetOptionSelected() {
+					ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(entry.ModName),
+						() => ResetModSettingPack(entry.SettingsPack));
+				}
+			}
 		}
 
 		// draws the label and appropriate input for a single setting
@@ -255,9 +290,17 @@ namespace HugsLib.Settings {
 				entryRect.x + entryRect.width / 2f - HandleEntryPadding,
 				entryRect.y + entryRect.height / 2f - ModSettingsWidgets.HoverMenuHeight / 2f
 			);
-			var menuButtonClicked = ModSettingsWidgets.DrawHoverMenu(topRight, handle.Description);
+			var menuButtonClicked = ModSettingsWidgets.DrawHandleHoverMenu(topRight, handle.Description);
 			if (menuButtonClicked) {
-				ModSettingsWidgets.OpenHandleFloatMenu(handle, OnHoverMenuHandleReset);
+				OpenHandleContextMenu();
+			}
+
+			void OpenHandleContextMenu() {
+				ModSettingsWidgets.OpenFloatMenu(
+					ModSettingsWidgets.GetResetContextMenuOption(
+							handle, "HugsLib_settings_resetValue".Translate(), () => ResetSetting(handle))
+						.Concat(ModSettingsWidgets.GetHandleContextMenuEntries(handle))
+				);
 			}
 		}
 
@@ -347,7 +390,7 @@ namespace HugsLib.Settings {
 						info.validationScheduled = true;
 					}));
 				}
-				Find.WindowStack.Add(new FloatMenu(floatOptions));
+				ModSettingsWidgets.OpenFloatMenu(floatOptions);
 			}
 			if (info.validationScheduled) {
 				info.validationScheduled = false;
@@ -381,6 +424,10 @@ namespace HugsLib.Settings {
 				.ToArray();
 			state.VerticalScrollPosition = scrollPosition.y;
 		}
+
+		private void ShowResetPrompt(string message, Action confirmAction) {
+			Find.WindowStack.Add(new Dialog_Confirm(message, confirmAction, true));
+		}
 		
 		private void ResetHugsLibSettingsForLoadedMods() {
 			foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
@@ -392,19 +439,32 @@ namespace HugsLib.Settings {
 			PopulateControlInfo();
 		}
 
-		private void OnHoverMenuHandleReset(IHoverMenuHandle handle) {
-			if (handle is SettingHandle settingHandle) {
-				handleControlInfo[settingHandle] = new HandleControlInfo(settingHandle);
+		private void ResetModSettingPack(ModSettingsPack pack) {
+			if (!pack.CanBeReset) return;
+			try {
+				pack.ResetToDefault();
+			} catch (Exception e) {
+				HugsLibController.Logger.ReportException(e);
+			}
+			foreach (var handle in pack.Handles) {
+				ResetHandleControlInfo(handle);
 			}
 			settingsHaveChanged = true;
 		}
-		
-		// TodoMajor: remove this
+
 		private void ResetSetting(SettingHandle handle) {
 			if (!handle.CanBeReset) return;
-			handle.ResetToDefault();
-			handleControlInfo[handle] = new HandleControlInfo(handle);
+			try {
+				handle.ResetToDefault();
+			} catch (Exception e) {
+				HugsLibController.Logger.ReportException(e);
+			}
+			ResetHandleControlInfo(handle);
 			settingsHaveChanged = true;
+		}
+
+		private void ResetHandleControlInfo(SettingHandle handle) {
+			handleControlInfo[handle] = new HandleControlInfo(handle);
 		}
 
 		// pulls all available mods with settings to display

@@ -10,7 +10,7 @@ namespace HugsLib.Settings {
 	/// A group of settings values added by a mod. Each mod has their own ModSettingsPack.
 	/// Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
 	/// </summary>
-	public class ModSettingsPack {
+	public class ModSettingsPack : IResettable {
 		public enum ListPriority {
 			Higher, Normal, Lower, Lowest
 		}
@@ -166,6 +166,30 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public void SaveChanges() {
 			ParentManager.SaveChanges();
+		}
+
+		/// <summary>
+		/// Returns true if the pack contains at least one handle with
+		/// <see cref="SettingHandle.CanBeReset"/> set to true.
+		/// </summary>
+		public bool CanBeReset {
+			get { return handles.Any(h => h.CanBeReset); }
+		}
+
+		/// <summary>
+		/// Resets handles contained in this pack to their default values, except
+		/// for handles with <see cref="SettingHandle.CanBeReset"/> set to false.
+		/// </summary>
+		public void ResetToDefault() {
+			foreach (var handle in handles) {
+				try {
+					if (handle.CanBeReset) {
+						handle.ResetToDefault();
+					}
+				} catch (Exception e) {
+					throw new Exception($"Failed to reset handle {ModId}.{handle.Name}: {e}");
+				}
+			}
 		}
 
 		internal void LoadFromXml(XElement xml) {
