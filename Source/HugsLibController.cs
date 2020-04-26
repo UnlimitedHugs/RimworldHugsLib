@@ -531,7 +531,7 @@ namespace HugsLib {
 		private void RegisterOwnSettings() {
 			try {
 				var pack = Settings.GetModSettings(ModIdentifier);
-				pack.EntryName = "HugsLib_ownSettingsName".Translate();
+				pack.EntryName = assemblyContentPacks[Assembly.GetCallingAssembly()]?.Name ?? "HugsLib";
 				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
 				pack.AlwaysExpandEntry = true;
 				UpdateFeatures.RegisterSettings(pack);

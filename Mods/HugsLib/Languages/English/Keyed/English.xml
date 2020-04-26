@@ -10,7 +10,6 @@
 	<HugsLib_settings_resetMod>Reset {0} settings to default</HugsLib_settings_resetMod>
 	<HugsLib_settings_resetMod_prompt>Reset all {0} settings to their original values?</HugsLib_settings_resetMod_prompt>
 
-	<HugsLib_ownSettingsName>Other</HugsLib_ownSettingsName>
 	<HugsLib_setting_showNews_label>Show mod update news</HugsLib_setting_showNews_label>
 	<HugsLib_setting_showNews_desc>Allows newly installed mods to highlight their new features in a pop-up window when you start your game.</HugsLib_setting_showNews_desc>
 	<HugsLib_setting_allNews_label>All mod update news</HugsLib_setting_allNews_label>
