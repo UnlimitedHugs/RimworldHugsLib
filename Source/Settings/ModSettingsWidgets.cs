@@ -70,8 +70,22 @@ namespace HugsLib.Settings {
 		internal static void OpenFloatMenu(IEnumerable<FloatMenuOption> options) {
 			Find.WindowStack.Add(new FloatMenu(options.ToList()));
 		}
-		
-		internal static IEnumerable<FloatMenuOption> CreateContextMenuOptions(IEnumerable<ContextMenuEntry> entries) {
+
+		internal static void OpenExtensibleContextMenu(
+			string firstEntryLabel, Action firstEntryActivated, IEnumerable<ContextMenuEntry> additionalEntries) {
+			OpenFloatMenu(
+				GetOptionalMenuEntry(firstEntryLabel, firstEntryActivated)
+					.Concat(CreateContextMenuOptions(additionalEntries))
+			);
+		}
+
+		private static IEnumerable<FloatMenuOption> GetOptionalMenuEntry(string label, Action onActivated) {
+			return label != null
+				? new[] {new FloatMenuOption(label, onActivated)}
+				: Enumerable.Empty<FloatMenuOption>();
+		}
+
+		private static IEnumerable<FloatMenuOption> CreateContextMenuOptions(IEnumerable<ContextMenuEntry> entries) {
 			var options = new List<FloatMenuOption>();
 			try {
 				entries = entries ?? Enumerable.Empty<ContextMenuEntry>();

@@ -29,6 +29,11 @@ namespace HugsLib.Settings {
 		/// </summary>
 		public ListPriority DisplayPriority { get; set; }
 		/// <summary>
+		/// Additional context menu options for this entry in the mod settings dialog.
+		/// Will be shown when the hovering menu button for this entry is clicked.
+		/// </summary>
+		public IEnumerable<ContextMenuEntry> ContextMenuEntries { get; set; }
+		/// <summary>
 		/// Returns true if any handles retrieved from this pack have had their values changed.
 		/// Resets to false after the changes are saved.
 		/// </summary>

@@ -190,14 +190,17 @@ namespace HugsLib.Settings {
 				if(!mouseOverTitle) return;
 				var buttonTopRight = new Vector2(topRight.x - ModEntryLabelPadding,
 					topRight.y + (ModEntryLabelHeight - ModSettingsWidgets.HoverMenuHeight) / 2f);
-				if (ModSettingsWidgets.DrawHoverMenuButton(buttonTopRight, entry.HasResetOption, false)){ 
+				var hasExtraMenuEntries = entry.SettingsPack?.ContextMenuEntries != null;
+				if (ModSettingsWidgets.DrawHoverMenuButton(
+					buttonTopRight, entry.HasContextMenuEntries, hasExtraMenuEntries)){ 
 					OpenModEntryContextMenu();
 				}
 
 				void OpenModEntryContextMenu() {
-					ModSettingsWidgets.OpenFloatMenu(new[] {
-						new FloatMenuOption("HugsLib_settings_resetMod".Translate(entry.ModName), OnResetOptionSelected)
-					});
+					var resetOptionLabel = 
+						entry.SettingsPack.CanBeReset ? "HugsLib_settings_resetMod".Translate(entry.ModName) : null;
+					ModSettingsWidgets.OpenExtensibleContextMenu(
+						resetOptionLabel, OnResetOptionSelected, entry.SettingsPack.ContextMenuEntries);
 				}
 
 				void OnResetOptionSelected() {
@@ -299,16 +302,9 @@ namespace HugsLib.Settings {
 			}
 
 			void OpenHandleContextMenu() {
-				ModSettingsWidgets.OpenFloatMenu(
-					GetOptionalResetEntry()
-						.Concat(ModSettingsWidgets.CreateContextMenuOptions(handle.ContextMenuEntries))
-				);
-			}
-
-			IEnumerable<FloatMenuOption> GetOptionalResetEntry() {
-				return includeResetEntry
-					? new[] {new FloatMenuOption("HugsLib_settings_resetValue".Translate(), () => ResetSetting(handle))}
-					: Enumerable.Empty<FloatMenuOption>();
+				var resetOptionLabel = handle.CanBeReset ? "HugsLib_settings_resetValue".Translate() : null;
+				ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
+					() => ResetSetting(handle), handle.ContextMenuEntries);
 			}
 		}
 
@@ -549,7 +545,7 @@ namespace HugsLib.Settings {
 			public List<SettingHandle> Handles = new List<SettingHandle>();
 			public readonly ModSettingsPack SettingsPack;
 			public readonly Mod VanillaMod;
-			public readonly bool HasResetOption;
+			public readonly bool HasContextMenuEntries;
 
 			public bool Visible {
 				get { return VanillaMod != null || Handles.Count > 0; }
@@ -559,7 +555,8 @@ namespace HugsLib.Settings {
 				ModName = modName;
 				SettingsPack = settingsPack;
 				VanillaMod = vanillaMod;
-				HasResetOption = settingsPack?.CanBeReset ?? false;
+				HasContextMenuEntries = settingsPack != null
+					&& (settingsPack.CanBeReset || settingsPack.ContextMenuEntries != null);
 			}
 		}
 
