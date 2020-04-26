@@ -178,7 +178,7 @@ namespace HugsLib.Test {
 				return changed;
 			};
 			
-			TestSettingsHasUnsavedChanges();
+			//TestSettingsHasUnsavedChanges();
 			TestCustomTypeSetting();
 			TestGiveShortHash();
 			//TestConditionalVisibilitySettings();	
