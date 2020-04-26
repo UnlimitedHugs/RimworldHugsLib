@@ -190,7 +190,7 @@ namespace HugsLib.Settings {
 				if(!mouseOverTitle) return;
 				var buttonTopRight = new Vector2(topRight.x - ModEntryLabelPadding,
 					topRight.y + (ModEntryLabelHeight - ModSettingsWidgets.HoverMenuHeight) / 2f);
-				if (ModSettingsWidgets.DrawHoverMenuButton(buttonTopRight, entry.HasResetOption)) {
+				if (ModSettingsWidgets.DrawHoverMenuButton(buttonTopRight, entry.HasResetOption, false)){ 
 					OpenModEntryContextMenu();
 				}
 
@@ -290,8 +290,10 @@ namespace HugsLib.Settings {
 				entryRect.y + entryRect.height / 2f - ModSettingsWidgets.HoverMenuHeight / 2f
 			);
 			var includeResetEntry = handle.CanBeReset && !handle.Unsaved;
-			var menuEnabled = includeResetEntry || handle.ContextMenuEntries != null;
-			var menuButtonClicked = ModSettingsWidgets.DrawHandleHoverMenu(topRight, handle.Description, menuEnabled);
+			var menuHasExtraOptions = handle.ContextMenuEntries != null;
+			var menuEnabled = includeResetEntry || menuHasExtraOptions;
+			var menuButtonClicked = ModSettingsWidgets.DrawHandleHoverMenu(
+				topRight, handle.Description, menuEnabled, menuHasExtraOptions);
 			if (menuButtonClicked) {
 				OpenHandleContextMenu();
 			}

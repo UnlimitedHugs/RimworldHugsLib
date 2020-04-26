@@ -13,28 +13,38 @@ namespace HugsLib.Settings {
 		private const float HoverMenuButtonSpacing = 3f;
 		private const float HoverMenuOpacityEnabled = .5f;
 		private const float HoverMenuOpacityDisabled = .08f;
+		private const float HoverMenuIconSize = 32f;
 
 		private static Texture2D InfoIconTexture {
 			get { return HugsLibTextures.HLInfoIcon; }
 		}
-		private static Texture2D MenuIconTexture {
+		private static Texture2D MenuIconNormalTexture {
 			get { return HugsLibTextures.HLMenuIcon; }
+		}
+		private static Texture2D MenuIconPlusTexture {
+			get { return HugsLibTextures.HLMenuIconPlus; }
 		}
 
 		public static float HoverMenuHeight {
-			get { return MenuIconTexture.height; }
+			get { return HoverMenuIconSize; }
 		}
 
 		/// <summary>
-		/// Draws a floating menu of 2 buttons: info and menu.
+		/// Draws a hovering menu of 2 buttons: info and menu.
 		/// </summary>
+		/// <param name="topRight"></param>
+		/// <param name="infoTooltip">Text for the info button tooltip. Null to disable.</param>
+		/// <param name="menuEnabled">When false, the menu button is semi-transparent and non-interactable</param>
+		/// <param name="extraMenuOptions">When true, uses menu-with-plus-badge icon for the button</param>
 		/// <returns>true if the menu button was clicked</returns>
-		public static bool DrawHandleHoverMenu(Vector2 topRight, string infoTooltip, bool menuEnabled) {
-			var menuClicked = DrawHoverMenuButton(topRight, menuEnabled);
+		/// <returns>true if the menu button was clicked</returns>
+		public static bool DrawHandleHoverMenu(
+			Vector2 topRight, string infoTooltip, bool menuEnabled, bool extraMenuOptions) {
+			var menuClicked = DrawHoverMenuButton(topRight, menuEnabled, extraMenuOptions);
 
 			var infoEnabled = !string.IsNullOrEmpty(infoTooltip); 
 			var infoButtonTopLeft = new Vector2(
-				topRight.x - MenuIconTexture.width - HoverMenuButtonSpacing - InfoIconTexture.width, topRight.y);
+				topRight.x - HoverMenuIconSize - HoverMenuButtonSpacing - InfoIconTexture.width, topRight.y);
 			var (infoHovered, _) = DoHoverMenuButton(infoButtonTopLeft, InfoIconTexture, infoEnabled);
 			if (infoHovered) {
 				DrawImmediateTooltip(infoTooltip);
@@ -43,9 +53,17 @@ namespace HugsLib.Settings {
 			return menuClicked;
 		}
 
-		internal static bool DrawHoverMenuButton(Vector2 topRight, bool enabled) {
-			var menuButtonTopLeft = new Vector2(topRight.x - MenuIconTexture.width, topRight.y);
-			var (_, menuClicked) = DoHoverMenuButton(menuButtonTopLeft, MenuIconTexture, enabled);
+		/// <summary>
+		/// Draws the menu button for the hovering menu.
+		/// </summary>
+		/// <param name="topRight"></param>
+		/// <param name="enabled">When false, the button is semi-transparent and non-interactable</param>
+		/// <param name="extraMenuOptions">When true, uses menu-with-plus-badge icon for the button</param>
+		/// <returns>true if the menu button was clicked</returns>
+		public static bool DrawHoverMenuButton(Vector2 topRight, bool enabled, bool extraMenuOptions) {
+			var texture = extraMenuOptions ? MenuIconPlusTexture : MenuIconNormalTexture;
+			var menuButtonTopLeft = new Vector2(topRight.x - texture.width, topRight.y);
+			var (_, menuClicked) = DoHoverMenuButton(menuButtonTopLeft, texture, enabled);
 			return menuClicked;
 		}
 

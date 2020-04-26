@@ -13,6 +13,7 @@ namespace HugsLib.Core {
 	internal static class HugsLibTextures {
 		public static Texture2D quickstartIcon;
 		public static Texture2D HLMenuIcon;
+		public static Texture2D HLMenuIconPlus;
 		public static Texture2D HLInfoIcon;
 		
 		static HugsLibTextures() {
