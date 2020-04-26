@@ -11,6 +11,8 @@ namespace HugsLib.Settings {
 	/// </summary>
 	public static class ModSettingsWidgets {
 		private const float HoverMenuButtonSpacing = 3f;
+		private const float HoverMenuOpacityEnabled = .5f;
+		private const float HoverMenuOpacityDisabled = .08f;
 
 		private static Texture2D InfoIconTexture {
 			get { return HugsLibTextures.HLInfoIcon; }
@@ -27,43 +29,34 @@ namespace HugsLib.Settings {
 		/// Draws a floating menu of 2 buttons: info and menu.
 		/// </summary>
 		/// <returns>true if the menu button was clicked</returns>
-		public static bool DrawHandleHoverMenu(Vector2 topRight, string infoTooltip, float opacity = .5f) {
-			var menuClicked = DrawHoverMenuButton(topRight, opacity);
-			
-			if (!string.IsNullOrWhiteSpace(infoTooltip)) {
-				var infoButtonTopLeft = new Vector2(
-					topRight.x - MenuIconTexture.width - HoverMenuButtonSpacing - InfoIconTexture.width, topRight.y);
-				var (infoHovered, _) = DoHoverMenuButton(infoButtonTopLeft, InfoIconTexture, opacity);
-				if (infoHovered) {
-					DrawImmediateTooltip(infoTooltip);
-				}
+		public static bool DrawHandleHoverMenu(Vector2 topRight, string infoTooltip, bool menuEnabled) {
+			var menuClicked = DrawHoverMenuButton(topRight, menuEnabled);
+
+			var infoEnabled = !string.IsNullOrEmpty(infoTooltip); 
+			var infoButtonTopLeft = new Vector2(
+				topRight.x - MenuIconTexture.width - HoverMenuButtonSpacing - InfoIconTexture.width, topRight.y);
+			var (infoHovered, _) = DoHoverMenuButton(infoButtonTopLeft, InfoIconTexture, infoEnabled);
+			if (infoHovered) {
+				DrawImmediateTooltip(infoTooltip);
 			}
 
 			return menuClicked;
 		}
 
-		internal static bool DrawHoverMenuButton(Vector2 topRight, float opacity = .5f) {
+		internal static bool DrawHoverMenuButton(Vector2 topRight, bool enabled) {
 			var menuButtonTopLeft = new Vector2(topRight.x - MenuIconTexture.width, topRight.y);
-			var (_, menuClicked) = DoHoverMenuButton(menuButtonTopLeft, MenuIconTexture, opacity);
+			var (_, menuClicked) = DoHoverMenuButton(menuButtonTopLeft, MenuIconTexture, enabled);
 			return menuClicked;
-		}
-
-		internal static IEnumerable<FloatMenuOption> GetResetContextMenuOption(
-			IResettable forHandle, string label, Action selectedAction) {
-			return new[] {
-				new FloatMenuOption(label, selectedAction)
-					{Disabled = !forHandle.CanBeReset}
-			};
 		}
 
 		internal static void OpenFloatMenu(IEnumerable<FloatMenuOption> options) {
 			Find.WindowStack.Add(new FloatMenu(options.ToList()));
 		}
 		
-		internal static IEnumerable<FloatMenuOption> GetHandleContextMenuEntries(IContextMenuEntryProvider forHandle) {
+		internal static IEnumerable<FloatMenuOption> CreateContextMenuOptions(IEnumerable<ContextMenuEntry> entries) {
 			var options = new List<FloatMenuOption>();
 			try {
-				var entries = forHandle.ContextMenuEntries ?? Enumerable.Empty<ContextMenuEntry>();
+				entries = entries ?? Enumerable.Empty<ContextMenuEntry>();
 				foreach (var entry in entries) {
 					entry.Validate();
 					options.Add(
@@ -76,18 +69,19 @@ namespace HugsLib.Settings {
 			return options;
 		}
 
-		private static (bool hovered, bool clicked) DoHoverMenuButton(Vector2 topLeft, Texture texture, float opacity) {
+		private static (bool hovered, bool clicked) DoHoverMenuButton(Vector2 topLeft, Texture texture, bool enabled) {
 			bool hovered = false, clicked = false;
 			var buttonRect = new Rect(topLeft.x, topLeft.y, InfoIconTexture.width, InfoIconTexture.height);
-			if (Mouse.IsOver(buttonRect)) {
+			if (enabled && Mouse.IsOver(buttonRect)) {
 				Widgets.DrawHighlight(buttonRect);
 				hovered = true;
 			}
 			var prevColor = GUI.color;
+			var opacity = enabled ? HoverMenuOpacityEnabled : HoverMenuOpacityDisabled;
 			GUI.color = new Color(1f, 1f, 1f, opacity);
 			GUI.DrawTexture(buttonRect, texture);
 			GUI.color = prevColor;
-			if (Widgets.ButtonInvisible(buttonRect)) {
+			if (enabled && Widgets.ButtonInvisible(buttonRect)) {
 				clicked = true;
 			}
 			return (hovered, clicked);
@@ -105,14 +99,5 @@ namespace HugsLib.Settings {
 		private static Vector2 GUIPositionLocalToGlobal(Vector2 localPosition) {
 			return localPosition + (UI.MousePositionOnUIInverted - Event.current.mousePosition);
 		}
-	}
-
-	internal interface IResettable {
-		bool CanBeReset { get; }
-		void ResetToDefault();
-	}
-	
-	internal interface IContextMenuEntryProvider {
-		IEnumerable<ContextMenuEntry> ContextMenuEntries { get; }
 	}
 }

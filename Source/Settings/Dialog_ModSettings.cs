@@ -187,18 +187,17 @@ namespace HugsLib.Settings {
 			}
 
 			void DrawFloatMenuButton(Vector2 topRight) {
-				if(entry.SettingsPack == null || !mouseOverTitle) return;
+				if(!mouseOverTitle) return;
 				var buttonTopRight = new Vector2(topRight.x - ModEntryLabelPadding,
 					topRight.y + (ModEntryLabelHeight - ModSettingsWidgets.HoverMenuHeight) / 2f);
-				if (ModSettingsWidgets.DrawHoverMenuButton(buttonTopRight)) {
+				if (ModSettingsWidgets.DrawHoverMenuButton(buttonTopRight, entry.HasResetOption)) {
 					OpenModEntryContextMenu();
 				}
 
 				void OpenModEntryContextMenu() {
-					ModSettingsWidgets.OpenFloatMenu(
-						ModSettingsWidgets.GetResetContextMenuOption(entry.SettingsPack,
-							"HugsLib_settings_resetMod".Translate(entry.ModName), OnResetOptionSelected)
-					);
+					ModSettingsWidgets.OpenFloatMenu(new[] {
+						new FloatMenuOption("HugsLib_settings_resetMod".Translate(entry.ModName), OnResetOptionSelected)
+					});
 				}
 
 				void OnResetOptionSelected() {
@@ -290,17 +289,24 @@ namespace HugsLib.Settings {
 				entryRect.x + entryRect.width / 2f - HandleEntryPadding,
 				entryRect.y + entryRect.height / 2f - ModSettingsWidgets.HoverMenuHeight / 2f
 			);
-			var menuButtonClicked = ModSettingsWidgets.DrawHandleHoverMenu(topRight, handle.Description);
+			var includeResetEntry = handle.CanBeReset && !handle.Unsaved;
+			var menuEnabled = includeResetEntry || handle.ContextMenuEntries != null;
+			var menuButtonClicked = ModSettingsWidgets.DrawHandleHoverMenu(topRight, handle.Description, menuEnabled);
 			if (menuButtonClicked) {
 				OpenHandleContextMenu();
 			}
 
 			void OpenHandleContextMenu() {
 				ModSettingsWidgets.OpenFloatMenu(
-					ModSettingsWidgets.GetResetContextMenuOption(
-							handle, "HugsLib_settings_resetValue".Translate(), () => ResetSetting(handle))
-						.Concat(ModSettingsWidgets.GetHandleContextMenuEntries(handle))
+					GetOptionalResetEntry()
+						.Concat(ModSettingsWidgets.CreateContextMenuOptions(handle.ContextMenuEntries))
 				);
+			}
+
+			IEnumerable<FloatMenuOption> GetOptionalResetEntry() {
+				return includeResetEntry
+					? new[] {new FloatMenuOption("HugsLib_settings_resetValue".Translate(), () => ResetSetting(handle))}
+					: Enumerable.Empty<FloatMenuOption>();
 			}
 		}
 
@@ -541,6 +547,7 @@ namespace HugsLib.Settings {
 			public List<SettingHandle> Handles = new List<SettingHandle>();
 			public readonly ModSettingsPack SettingsPack;
 			public readonly Mod VanillaMod;
+			public readonly bool HasResetOption;
 
 			public bool Visible {
 				get { return VanillaMod != null || Handles.Count > 0; }
@@ -550,6 +557,7 @@ namespace HugsLib.Settings {
 				ModName = modName;
 				SettingsPack = settingsPack;
 				VanillaMod = vanillaMod;
+				HasResetOption = settingsPack?.CanBeReset ?? false;
 			}
 		}
 

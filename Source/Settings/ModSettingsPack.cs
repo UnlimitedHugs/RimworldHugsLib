@@ -10,7 +10,7 @@ namespace HugsLib.Settings {
 	/// A group of settings values added by a mod. Each mod has their own ModSettingsPack.
 	/// Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
 	/// </summary>
-	public class ModSettingsPack : IResettable {
+	public class ModSettingsPack {
 		public enum ListPriority {
 			Higher, Normal, Lower, Lowest
 		}

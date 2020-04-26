@@ -9,7 +9,7 @@ namespace HugsLib.Settings {
 	/// An individual persistent setting owned by a mod.
 	/// The extra layer of inheritance allows for type abstraction and storing SettingHandles in lists.
 	/// </summary>
-	public abstract class SettingHandle : IResettable, IContextMenuEntryProvider {
+	public abstract class SettingHandle {
 		public delegate bool ValueIsValid(string value);
 		public delegate bool ShouldDisplay();
 		public delegate bool DrawCustomControl(Rect rect);
