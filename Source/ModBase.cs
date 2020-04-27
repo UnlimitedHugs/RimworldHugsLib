@@ -104,7 +104,7 @@ namespace HugsLib {
 
 		/// <summary>
 		/// Added to avoid breaking mod compatibility during the 7.0 update.
-		/// TODO: kill this during the next major update
+		/// TodoMajor: kill this during the next major update
 		/// </summary>
 		internal static ModContentPack CurrentlyProcessedContentPack { get; set; }
 

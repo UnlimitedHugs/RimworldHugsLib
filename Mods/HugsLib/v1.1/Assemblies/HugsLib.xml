@@ -110,6 +110,11 @@
             The extended update news dialog, with filtering by mod and a menu button in entry headers for dev mode actions.
             </summary>
         </member>
+        <member name="T:HugsLib.News.UpdateFeatureDefLoader">
+            <summary>
+            Handles the custom loading mechanics of <see cref="T:HugsLib.UpdateFeatureDef"/>s.
+            </summary>
+        </member>
         <member name="T:HugsLib.News.UpdateFeatureDefFilteringProvider">
             <summary>
             Filters <see cref="T:HugsLib.UpdateFeatureDef"/>s by their mod identifier.
@@ -186,6 +191,37 @@
             <param name="label"><inheritdoc cref="P:HugsLib.Settings.ContextMenuEntry.Label"/></param>
             <param name="action"><inheritdoc cref="P:HugsLib.Settings.ContextMenuEntry.Action"/></param>
         </member>
+        <member name="T:HugsLib.Settings.ModSettingsWidgets">
+            <summary>
+            Helper methods for drawing elements and controls that appear in the <see cref="T:HugsLib.Settings.Dialog_ModSettings"/> window.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Settings.ModSettingsWidgets.DrawHandleHoverMenu(UnityEngine.Vector2,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Draws a hovering menu of 2 buttons: info and menu.
+            </summary>
+            <param name="topRight"></param>
+            <param name="infoTooltip">Text for the info button tooltip. Null to disable.</param>
+            <param name="menuEnabled">When false, the menu button is semi-transparent and non-interactable</param>
+            <param name="extraMenuOptions">When true, uses menu-with-plus-badge icon for the button</param>
+            <returns>true if the menu button was clicked</returns>
+            <returns>true if the menu button was clicked</returns>
+        </member>
+        <member name="M:HugsLib.Settings.ModSettingsWidgets.DrawHoverMenuButton(UnityEngine.Vector2,System.Boolean,System.Boolean)">
+            <summary>
+            Draws the menu button for the hovering menu.
+            </summary>
+            <param name="topRight"></param>
+            <param name="enabled">When false, the button is semi-transparent and non-interactable</param>
+            <param name="extraMenuOptions">When true, uses menu-with-plus-badge icon for the button</param>
+            <returns>true if the menu button was clicked</returns>
+        </member>
+        <member name="T:HugsLib.Settings.ModSettingsWindowState">
+            <summary>
+            Used to preserve the state of the Mod Settings window between multiple openings.
+            State is not persisted between game restarts.
+            </summary>
+        </member>
         <member name="T:HugsLib.Settings.Dialog_VanillaModSettings">
             <summary>
             Displays custom settings controls for mods that use the vanilla mod settings system.
@@ -253,6 +289,12 @@
             Mods are generally ordered by name. Please leave this at Normal unless you have a good reason to change it.
             </summary>
         </member>
+        <member name="P:HugsLib.Settings.ModSettingsPack.ContextMenuEntries">
+            <summary>
+            Additional context menu options for this entry in the mod settings dialog.
+            Will be shown when the hovering menu button for this entry is clicked.
+            </summary>
+        </member>
         <member name="P:HugsLib.Settings.ModSettingsPack.HasUnsavedChanges">
             <summary>
             Returns true if any handles retrieved from this pack have had their values changed.
@@ -317,6 +359,18 @@
             <summary>
             Prompts the <see cref="T:HugsLib.Settings.ModSettingsManager"/> to save changes if any or the registered 
             <see cref="T:HugsLib.Settings.ModSettingsPack"/>s have handles with unsaved changes
+            </summary>
+        </member>
+        <member name="P:HugsLib.Settings.ModSettingsPack.CanBeReset">
+            <summary>
+            Returns true if the pack contains at least one handle with
+            <see cref="P:HugsLib.Settings.SettingHandle.CanBeReset"/> set to true.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Settings.ModSettingsPack.ResetToDefault">
+            <summary>
+            Resets handles contained in this pack to their default values, except
+            for handles with <see cref="P:HugsLib.Settings.SettingHandle.CanBeReset"/> set to false.
             </summary>
         </member>
         <member name="T:HugsLib.Settings.ModSettingsManager">
@@ -418,7 +472,7 @@
             The following built-in handle drawing features are also disabled when this property is assigned:
             row highlighting (<see cref="M:Verse.Widgets.DrawHighlight(UnityEngine.Rect)"/>),
             description tooltip (<see cref="T:Verse.TooltipHandler"/>),
-            hovering info/menu buttons (<see cref="T:HugsLib.Settings.ModSettingsHoverMenu"/>).
+            hovering info/menu buttons (<see cref="M:HugsLib.Settings.ModSettingsWidgets.DrawHandleHoverMenu(UnityEngine.Vector2,System.String,System.Boolean,System.Boolean)"/>).
             </remarks>
         </member>
         <member name="P:HugsLib.Settings.SettingHandle.NeverVisible">
@@ -1331,6 +1385,11 @@
         <member name="M:HugsLib.Utils.HugsLibUtility.TryGetModAssemblyFileInfo(System.String,Verse.ModContentPack)">
             <summary>
             Same as <see cref="M:HugsLib.Utils.HugsLibUtility.GetModAssemblyFileInfo(System.String,Verse.ModContentPack)"/> but suppresses all exceptions.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Utils.HugsLibUtility.OpenModSettingsDialog">
+            <summary>
+            Opens the HugsLib Mod Settings dialog and restores its last known state (expanded entries, scroll position). 
             </summary>
         </member>
         <member name="T:HugsLib.Utils.InjectedDefHasher">

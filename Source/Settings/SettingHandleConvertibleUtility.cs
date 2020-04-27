@@ -5,7 +5,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using HugsLib.Utils;
 using Verse;
-// TODO: next major update: remove the 'Source namespace'
+// TodoMajor: remove the 'Source' namespace
 // ReSharper disable once CheckNamespace
 namespace HugsLib.Source.Settings {
 	/// <summary>
