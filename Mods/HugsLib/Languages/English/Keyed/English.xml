@@ -23,6 +23,9 @@
 	<HugsLib_setting_mod_name_title>Mod settings for {0}</HugsLib_setting_mod_name_title>
 	<HugsLib_setting_expand_mod>Open</HugsLib_setting_expand_mod>
 	<HugsLib_setting_collapse_mod>Close</HugsLib_setting_collapse_mod>
+	<HugsLib_setting_quickstartSettings_label>Quickstart configuration</HugsLib_setting_quickstartSettings_label>
+	<HugsLib_setting_logPublisherSettings_label>Log publisher preferences</HugsLib_setting_logPublisherSettings_label>
+	<HugsLib_setting_ignoredUpdateNews_label>Ignored mod update news providers</HugsLib_setting_ignoredUpdateNews_label>
 		
 	<HugsLib_features_title>New Mod Features</HugsLib_features_title>
 	<HugsLib_features_description>The following mod updates were installed, and these are the new features and improvements that came with them.\nYou can disable this dialog in Options &gt; Mod Settings</HugsLib_features_description>

@@ -168,7 +168,8 @@ namespace HugsLib.News {
 				return false;
 			};
 			
-			var ignored = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", null, null);
+			var ignored = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", 
+				"HugsLib_setting_ignoredUpdateNews_label".Translate(), null);
 			IgnoredNewsProvidersSetting = ignored;
 			ignored.OnValueChanged = EnsureIgnoredProvidersInstance;
 			EnsureIgnoredProvidersInstance(null);

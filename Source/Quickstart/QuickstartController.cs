@@ -81,6 +81,7 @@ namespace HugsLib.Quickstart {
 		}
 
 		internal static void OnLateInitialize() {
+			RetrofitSettingWithLabel();
 			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = HugsLibTextures.quickstartIcon);
 			EnumerateMapSizes();
 			if (Prefs.DevMode) {
@@ -127,6 +128,11 @@ namespace HugsLib.Quickstart {
 		private static void PrepareSettings(ModSettingsPack librarySettings) {
 			handle = librarySettings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
 			handle.NeverVisible = true;
+		}
+
+		private static void RetrofitSettingWithLabel() {
+			// language data is not yet loaded when creating the handle, so we have to postpone adding the label
+			handle.Title = "HugsLib_setting_quickstartSettings_label".Translate();
 		}
 
 		private static void PrepareQuickstart() {

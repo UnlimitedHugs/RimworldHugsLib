@@ -467,7 +467,8 @@ namespace HugsLib.Logs {
 		}
 
 		internal static void RegisterSettings(ModSettingsPack pack) {
-			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", null, null);
+			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", 
+				"HugsLib_setting_logPublisherSettings_label".Translate(), null);
 			optionsHandle.NeverVisible = true;
 			optionsHandle.OnValueChanged = EnsureNonNullHandleValue;
 			EnsureNonNullHandleValue(null);
