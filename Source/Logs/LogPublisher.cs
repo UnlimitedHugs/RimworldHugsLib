@@ -468,8 +468,15 @@ namespace HugsLib.Logs {
 
 		internal static void RegisterSettings(ModSettingsPack pack) {
 			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", null, null);
-			if (optionsHandle.Value == null) optionsHandle.Value = new LogPublisherOptions();
 			optionsHandle.NeverVisible = true;
+			optionsHandle.OnValueChanged = EnsureNonNullHandleValue;
+			EnsureNonNullHandleValue(null);
+
+			void EnsureNonNullHandleValue(LogPublisherOptions _) {
+				if (optionsHandle.Value != null) return;
+				optionsHandle.Value = new LogPublisherOptions();
+				optionsHandle.HasUnsavedChanges = false;
+			}
 		}
 	}
 }

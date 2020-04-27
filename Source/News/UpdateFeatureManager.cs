@@ -167,13 +167,19 @@ namespace HugsLib.News {
 				}
 				return false;
 			};
-			IgnoredNewsProvidersSetting = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", null, null);
-			if (IgnoredNewsProvidersSetting.Value == null) {
-				IgnoredNewsProvidersSetting.Value = new IgnoredNewsIds();
-				IgnoredNewsProvidersSetting.HasUnsavedChanges = false;
+			
+			var ignored = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", null, null);
+			IgnoredNewsProvidersSetting = ignored;
+			ignored.OnValueChanged = EnsureIgnoredProvidersInstance;
+			EnsureIgnoredProvidersInstance(null);
+			ignored.NeverVisible = true;
+			ignored.Value.Handle = ignored;
+
+			void EnsureIgnoredProvidersInstance(IgnoredNewsIds _) {
+				if (ignored.Value != null) return;
+				ignored.Value = new IgnoredNewsIds();
+				ignored.HasUnsavedChanges = false;
 			}
-			IgnoredNewsProvidersSetting.NeverVisible = true;
-			IgnoredNewsProvidersSetting.Value.Handle = IgnoredNewsProvidersSetting;
 		}
 
 		protected override void LoadFromXml(XDocument xml) {
