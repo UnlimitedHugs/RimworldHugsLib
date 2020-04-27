@@ -102,6 +102,7 @@
     <Compile Include="Source\News\UpdateFeaturesDevMenu.cs" />
     <Compile Include="Source\Quickstart\QuickstartStatusBox.cs" />
     <Compile Include="Source\Settings\ContextMenuEntry.cs" />
+    <Compile Include="Source\Settings\Dialog_ConfirmReset.cs" />
     <Compile Include="Source\Settings\ModSettingsWidgets.cs" />
     <Compile Include="Source\Settings\ModSettingsWindowState.cs" />
     <Compile Include="Source\Spotter\CurrentDateTimeSource.cs" />

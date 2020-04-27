@@ -361,18 +361,6 @@
             <see cref="T:HugsLib.Settings.ModSettingsPack"/>s have handles with unsaved changes
             </summary>
         </member>
-        <member name="P:HugsLib.Settings.ModSettingsPack.CanBeReset">
-            <summary>
-            Returns true if the pack contains at least one handle with
-            <see cref="P:HugsLib.Settings.SettingHandle.CanBeReset"/> set to true.
-            </summary>
-        </member>
-        <member name="M:HugsLib.Settings.ModSettingsPack.ResetToDefault">
-            <summary>
-            Resets handles contained in this pack to their default values, except
-            for handles with <see cref="P:HugsLib.Settings.SettingHandle.CanBeReset"/> set to false.
-            </summary>
-        </member>
         <member name="T:HugsLib.Settings.ModSettingsManager">
             <summary>
             A central place for mods to store persistent settings. Individual settings are grouped by mod using ModSettingsPack
@@ -882,7 +870,7 @@
         <member name="P:HugsLib.ModBase.CurrentlyProcessedContentPack">
             <summary>
             Added to avoid breaking mod compatibility during the 7.0 update.
-            TODO: kill this during the next major update
+            TodoMajor: kill this during the next major update
             </summary>
         </member>
         <member name="M:HugsLib.ModBase.GetVersion">

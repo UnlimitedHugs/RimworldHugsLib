@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HugsLib.Utils;
 using UnityEngine;
 using Verse;
 
@@ -118,7 +117,8 @@ namespace HugsLib.Settings {
 			Text.Font = GameFont.Small;
 			var resetButtonRect = new Rect(0, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (Widgets.ButtonText(resetButtonRect, "HugsLib_settings_resetAll".Translate())) {
-				ShowResetPrompt("HugsLib_settings_resetAll_prompt".Translate(), ResetHugsLibSettingsForLoadedMods);
+				ShowResetPrompt("HugsLib_settings_resetAll_prompt".Translate(),
+					HugsLibController.SettingsManager.ModSettingsPacks.SelectMany(p => p.Handles));
 			}
 			var closeButtonRect = new Rect(inRect.width - windowButtonSize.x, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (closingScheduled) {
@@ -205,7 +205,7 @@ namespace HugsLib.Settings {
 
 				void OnResetOptionSelected() {
 					ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(entry.ModName),
-						() => ResetModSettingPack(entry.SettingsPack));
+						entry.SettingsPack.Handles);
 				}
 			}
 		}
@@ -304,7 +304,7 @@ namespace HugsLib.Settings {
 			void OpenHandleContextMenu() {
 				var resetOptionLabel = handle.CanBeReset ? "HugsLib_settings_resetValue".Translate() : null;
 				ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
-					() => ResetSetting(handle), handle.ContextMenuEntries);
+					() => ResetSettingHandles(handle), handle.ContextMenuEntries);
 			}
 		}
 
@@ -429,46 +429,49 @@ namespace HugsLib.Settings {
 			state.VerticalScrollPosition = scrollPosition.y;
 		}
 
-		private void ShowResetPrompt(string message, Action confirmAction) {
-			Find.WindowStack.Add(new Dialog_Confirm(message, confirmAction, true));
-		}
-		
-		private void ResetHugsLibSettingsForLoadedMods() {
-			foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
-				foreach (var handle in pack.Handles) {
-					handle.ResetToDefault();
+		private void ShowResetPrompt(string message, IEnumerable<SettingHandle> handlesToReset) {
+			var handles = handlesToReset.ToArray();
+			var hiddenHandlesWithOwners = GetHiddenResettableHandles(handles)
+				.GroupBy(h => h.ParentPack)
+				.Select(grp => (
+					grp.Key.EntryName,
+					grp.Select(h => BlankStringToNull(h.Title) ?? h.Name).ToArray()
+				));
+			Find.WindowStack.Add(new Dialog_ConfirmReset(message, hiddenHandlesWithOwners, OnConfirmReset));
+
+			string BlankStringToNull(string s) {
+				return string.IsNullOrWhiteSpace(s) ? null : s;
+			}
+
+			void OnConfirmReset(Dialog_ConfirmReset dialog) {
+				IEnumerable<SettingHandle> resetHandles = handles;
+				if (!dialog.IncludeHidden) {
+					resetHandles = handles.Except(GetHiddenResettableHandles(handles));
 				}
+				ResetSettingHandles(resetHandles.ToArray());
 			}
-			settingsHaveChanged = true;
-			PopulateControlInfo();
 		}
 
-		private void ResetModSettingPack(ModSettingsPack pack) {
-			if (!pack.CanBeReset) return;
-			try {
-				pack.ResetToDefault();
-			} catch (Exception e) {
-				HugsLibController.Logger.ReportException(e);
+		private void ResetSettingHandles(params SettingHandle[] handles) {
+			var anyHandlesReset = false;
+			foreach (var handle in handles) {
+				if (handle == null || !handle.CanBeReset) continue;
+				try {
+					handle.ResetToDefault();
+				} catch (Exception e) {
+					HugsLibController.Logger.Error(
+						$"Failed to reset handle {handle.ParentPack.ModId}.{handle.Name}: {e}");
+				}
+				handleControlInfo[handle] = new HandleControlInfo(handle);
+				anyHandlesReset = true;
 			}
-			foreach (var handle in pack.Handles) {
-				ResetHandleControlInfo(handle);
+			if (anyHandlesReset) {
+				settingsHaveChanged = true;
 			}
-			settingsHaveChanged = true;
 		}
 
-		private void ResetSetting(SettingHandle handle) {
-			if (!handle.CanBeReset) return;
-			try {
-				handle.ResetToDefault();
-			} catch (Exception e) {
-				HugsLibController.Logger.ReportException(e);
-			}
-			ResetHandleControlInfo(handle);
-			settingsHaveChanged = true;
-		}
-
-		private void ResetHandleControlInfo(SettingHandle handle) {
-			handleControlInfo[handle] = new HandleControlInfo(handle);
+		private static IEnumerable<SettingHandle> GetHiddenResettableHandles(IEnumerable<SettingHandle> handles) {
+			return handles.Where(h => h.CanBeReset && h.NeverVisible);
 		}
 
 		// pulls all available mods with settings to display
