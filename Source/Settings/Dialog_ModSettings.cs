@@ -14,6 +14,7 @@ namespace HugsLib.Settings {
 		private const float TitleLabelHeight = 40f;
 		private const float ModEntryLabelHeight = 40f;
 		private const float ModEntryLabelPadding = 4f;
+		private const float ModEntryExpandButtonPadding = 20f;
 		private const float ModEntryShowSettingsButtonHeight = 34f;
 		private const float HandleEntryPadding = 3f;
 		private const float HandleEntryHeight = 34f;
@@ -26,6 +27,10 @@ namespace HugsLib.Settings {
 		private readonly Dictionary<SettingHandle, HandleControlInfo> handleControlInfo = new Dictionary<SettingHandle, HandleControlInfo>();
 		private readonly SettingsHandleDrawer defaultHandleDrawer;
 		private readonly Dictionary<Type, SettingsHandleDrawer> handleDrawers;
+		private readonly CachedLabel labelShowVanillaSettings = CachedLabel.FromKey("HugsLib_setting_show_settings");
+		private readonly CachedLabel labelExpandModEntry = CachedLabel.FromKey("HugsLib_setting_expand_mod");
+		private readonly CachedLabel labelCollapseModEntry = CachedLabel.FromKey("HugsLib_setting_collapse_mod");
+		private readonly float expandableToggleButtonWidth;
 
 		private Vector2 scrollPosition;
 		private float totalContentHeight;
@@ -48,6 +53,8 @@ namespace HugsLib.Settings {
 			forcePause = true;
 			absorbInputAroundWindow = true;
 			resizeable = false;
+			expandableToggleButtonWidth = 
+				Mathf.Max(labelExpandModEntry.Size.x, labelCollapseModEntry.Size.x) + ModEntryExpandButtonPadding;
 			defaultHandleDrawer = DrawHandleInputText;
 			// these pairs specify which type of input field will be drawn for handles of this type. defaults to the string input
 			handleDrawers = new Dictionary<Type, SettingsHandleDrawer> {
@@ -158,18 +165,19 @@ namespace HugsLib.Settings {
 			float DrawActivateEntryButton(Vector2 topRight) {
 				if (entry.SettingsPack == null || !entry.SettingsPack.AlwaysExpandEntry) {
 					var isExpanded = expandedModEntries.Contains(entry);
-					string buttonLabel;
+					CachedLabel buttonLabel;
 					var isVanillaEntry = entry.SettingsPack == null;
+					float toggleButtonWidth;
 					if (isVanillaEntry) {
-						buttonLabel = "HugsLib_setting_show_settings";
+						buttonLabel = labelShowVanillaSettings;
+						toggleButtonWidth = labelShowVanillaSettings.Size.x + ModEntryExpandButtonPadding;
 					} else {
-						buttonLabel = isExpanded ? "HugsLib_setting_collapse_mod" : "HugsLib_setting_expand_mod";
+						buttonLabel = isExpanded ? labelCollapseModEntry : labelExpandModEntry;
+						toggleButtonWidth = expandableToggleButtonWidth;
 					}
-					buttonLabel = buttonLabel.Translate();
-					var buttonWidth = Text.CalcSize(buttonLabel).x + 20f;
-					var buttonRect = new Rect(topRight.x - (buttonWidth + ModEntryLabelPadding),
-						topRight.y + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f, 
-						buttonWidth, ModEntryShowSettingsButtonHeight);
+					var buttonRect = new Rect(topRight.x - (toggleButtonWidth + ModEntryLabelPadding),
+						topRight.y + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f,
+						toggleButtonWidth, ModEntryShowSettingsButtonHeight);
 					if (Widgets.ButtonText(buttonRect, buttonLabel)) {
 						if (isVanillaEntry) {
 							Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
@@ -256,14 +264,15 @@ namespace HugsLib.Settings {
 			// give full width to the label if custom control drawer is used- this allows handle titles to be used as section titles
 			var labelRect = handle.CustomDrawer == null ? leftHalfRect : trimmedEntryRect;
 			// reduce text size if label is long and wraps over to the second line
-			var expectedLabelHeight = Text.CalcHeight(handle.Title, labelRect.width);
-			if (expectedLabelHeight > labelRect.height) {
+			var controlInfo = handleControlInfo[handle];
+			var cachedTitle = controlInfo.handleTitle ?? (controlInfo.handleTitle = new CachedLabel(handle.Title));
+			if (cachedTitle.GetHeight(labelRect.width) > labelRect.height) {
 				Text.Font = GameFont.Tiny;
 				labelRect = new Rect(labelRect.x, labelRect.y - 1f, labelRect.width, labelRect.height + 2f);
 			} else {
 				Text.Font = GameFont.Small;
 			}
-			Widgets.Label(labelRect, handle.Title);
+			Widgets.Label(labelRect, cachedTitle.Text);
 			Text.Font = GameFont.Small;
 			GenUI.ResetLabelAlign();
 			var valueChanged = false;
@@ -272,7 +281,7 @@ namespace HugsLib.Settings {
 				if (handleType.IsEnum) handleType = typeof(Enum);
 				handleDrawers.TryGetValue(handleType, out var drawer);
 				if (drawer == null) drawer = defaultHandleDrawer;
-				valueChanged = drawer(handle, controlRect, handleControlInfo[handle]);
+				valueChanged = drawer(handle, controlRect, controlInfo);
 			} else {
 				try {
 					valueChanged = handle.CustomDrawer(controlRect);
@@ -570,6 +579,7 @@ namespace HugsLib.Settings {
 			public bool badInput;
 			public string inputValue;
 			public bool validationScheduled;
+			public CachedLabel handleTitle;
 
 			public HandleControlInfo(SettingHandle handle) {
 				controlName = "control" + handle.GetHashCode();
