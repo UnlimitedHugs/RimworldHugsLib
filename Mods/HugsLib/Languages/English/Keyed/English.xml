@@ -11,6 +11,7 @@
 	<HugsLib_settings_resetMod_prompt>Reset all {0} settings to their original values?</HugsLib_settings_resetMod_prompt>
 	<HugsLib_settings_resetIncludeHidden>Include hidden settings ({0})</HugsLib_settings_resetIncludeHidden>
 	<HugsLib_settings_hiddenSettingsHeader>Hidden mod settings:</HugsLib_settings_hiddenSettingsHeader>
+	<HugsLib_settings_resetSuccessMessage>{0} settings have been reset.</HugsLib_settings_resetSuccessMessage>
 
 	<HugsLib_setting_showNews_label>Show mod update news</HugsLib_setting_showNews_label>
 	<HugsLib_setting_showNews_desc>Allows newly installed mods to highlight their new features in a pop-up window when you start your game.</HugsLib_setting_showNews_desc>

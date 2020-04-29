@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -462,20 +463,22 @@ namespace HugsLib.Settings {
 		}
 
 		private void ResetSettingHandles(params SettingHandle[] handles) {
-			var anyHandlesReset = false;
+			var resetCount = 0;
 			foreach (var handle in handles) {
 				if (handle == null || !handle.CanBeReset) continue;
 				try {
 					handle.ResetToDefault();
+					resetCount++;
 				} catch (Exception e) {
 					HugsLibController.Logger.Error(
 						$"Failed to reset handle {handle.ParentPack.ModId}.{handle.Name}: {e}");
 				}
 				handleControlInfo[handle] = new HandleControlInfo(handle);
-				anyHandlesReset = true;
 			}
-			if (anyHandlesReset) {
+			if (resetCount > 0) {
 				settingsHaveChanged = true;
+				Messages.Message("HugsLib_settings_resetSuccessMessage".Translate(resetCount), 
+					MessageTypeDefOf.TaskCompletion);
 			}
 		}
 
