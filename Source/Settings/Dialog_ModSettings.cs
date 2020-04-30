@@ -236,6 +236,8 @@ namespace HugsLib.Settings {
 			var skipDrawing = curY - scrollPosition.y + entryHeight < 0f || curY - scrollPosition.y > scrollViewHeight;
 			if (!skipDrawing) {
 				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight);
+				var mouseOverEntry = Mouse.IsOver(entryRect);
+				if (mouseOverEntry) Widgets.DrawHighlight(entryRect);
 				var trimmedEntryRect = entryRect.ContractedBy(HandleEntryPadding); 
 				bool valueChanged = false;
 				if (handle.CustomDrawerFullWidth != null) {
@@ -246,7 +248,7 @@ namespace HugsLib.Settings {
 							$"{nameof(SettingHandle)}.{nameof(SettingHandle.CustomDrawerFullWidth)}");
 					}
 				} else {
-					valueChanged = DrawDefaultHandleEntry(handle, entryRect);
+					valueChanged = DrawDefaultHandleEntry(handle, trimmedEntryRect, mouseOverEntry);
 				}
 				if (valueChanged) {
 					if (handle.ValueType.IsClass) {
@@ -259,10 +261,7 @@ namespace HugsLib.Settings {
 			curY += entryHeight;
 		}
 
-		private bool DrawDefaultHandleEntry(SettingHandle handle, Rect entryRect) {
-			var mouseOverEntry = Mouse.IsOver(entryRect);
-			if (mouseOverEntry) Widgets.DrawHighlight(entryRect);
-			var trimmedEntryRect = entryRect.ContractedBy(HandleEntryPadding);
+		private bool DrawDefaultHandleEntry(SettingHandle handle, Rect trimmedEntryRect, bool mouseOverEntry) {
 			var controlRect = new Rect(trimmedEntryRect.x + trimmedEntryRect.width / 2f, trimmedEntryRect.y,
 				trimmedEntryRect.width / 2f, trimmedEntryRect.height);
 			GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
