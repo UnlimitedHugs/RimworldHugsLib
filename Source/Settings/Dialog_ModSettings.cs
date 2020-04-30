@@ -35,8 +35,10 @@ namespace HugsLib.Settings {
 
 		private Vector2 scrollPosition;
 		private float totalContentHeight;
-		// TodoMajor: remove this field, leverage the change detection system built into SettingHandle
+		// TodoMajor: remove this field
+#pragma warning disable 169
 		private bool settingsHaveChanged;
+#pragma warning restore 169
 		private string currentlyDrawnEntry;
 		private bool closingScheduled;
 
@@ -67,7 +69,6 @@ namespace HugsLib.Settings {
 
 		public override void PreOpen() {
 			base.PreOpen();
-			settingsHaveChanged = false;
 			EnumerateModsWithSettings();
 			RefreshSettingsHandles();
 			PopulateControlInfo();
@@ -77,7 +78,7 @@ namespace HugsLib.Settings {
 		public override void PostClose() {
 			base.PostClose();
 			TrySaveWindowState(WindowState);
-			if (settingsHaveChanged) HugsLibController.Instance.Settings.SaveChanges();
+			HugsLibController.Instance.Settings.SaveChanges();
 		}
 
 		public override void DoWindowContents(Rect inRect) {
@@ -208,13 +209,19 @@ namespace HugsLib.Settings {
 				void OpenModEntryContextMenu() {
 					var resetOptionLabel = 
 						entry.SettingsPack.CanBeReset ? "HugsLib_settings_resetMod".Translate(entry.ModName) : null;
-					ModSettingsWidgets.OpenExtensibleContextMenu(
-						resetOptionLabel, OnResetOptionSelected, entry.SettingsPack.ContextMenuEntries);
+					ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
+						OnResetOptionSelected, OnAnyOptionSelected, entry.SettingsPack.ContextMenuEntries);
 				}
 
 				void OnResetOptionSelected() {
 					ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(entry.ModName),
 						entry.SettingsPack.Handles);
+				}
+
+				void OnAnyOptionSelected() {
+					foreach (var handle in entry.SettingsPack.Handles) {
+						ResetHandleControlInfo(handle);
+					}
 				}
 			}
 		}
@@ -247,7 +254,6 @@ namespace HugsLib.Settings {
 						// since changes in reference-type values can't be automatically detected
 						handle.HasUnsavedChanges = true;
 					}
-					settingsHaveChanged = true;
 				}
 			}
 			curY += entryHeight;
@@ -314,7 +320,7 @@ namespace HugsLib.Settings {
 			void OpenHandleContextMenu() {
 				var resetOptionLabel = handle.CanBeReset ? "HugsLib_settings_resetValue".Translate() : null;
 				ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
-					() => ResetSettingHandles(handle), handle.ContextMenuEntries);
+					() => ResetSettingHandles(handle), () => ResetHandleControlInfo(handle), handle.ContextMenuEntries);
 			}
 		}
 
@@ -473,13 +479,16 @@ namespace HugsLib.Settings {
 					HugsLibController.Logger.Error(
 						$"Failed to reset handle {handle.ParentPack.ModId}.{handle.Name}: {e}");
 				}
-				handleControlInfo[handle] = new HandleControlInfo(handle);
+				ResetHandleControlInfo(handle);
 			}
 			if (resetCount > 0) {
-				settingsHaveChanged = true;
 				Messages.Message("HugsLib_settings_resetSuccessMessage".Translate(resetCount), 
 					MessageTypeDefOf.TaskCompletion);
 			}
+		}
+
+		private void ResetHandleControlInfo(SettingHandle handle) {
+			handleControlInfo[handle] = new HandleControlInfo(handle);
 		}
 
 		private static IEnumerable<SettingHandle> GetHiddenResettableHandles(IEnumerable<SettingHandle> handles) {

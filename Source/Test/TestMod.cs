@@ -141,6 +141,10 @@ namespace HugsLib.Test {
 
 		public override void DefsLoaded() {
 			Logger.Message("DefsLoaded");
+			var presets = Settings.GetHandle("presetsTest", "Presets", null, 0);
+			presets.ContextMenuEntries = new[] {
+				("Low", 10), ("Medium", 50), ("High", 80)
+			}.Select(t => new ContextMenuEntry($"Preset: {t.Item1}", () => presets.Value = t.Item2));
 			var testContextEntries = new[] {
 				new ContextMenuEntry("Do a thing",
 					() => Messages.Message("A thing was done!", MessageTypeDefOf.TaskCompletion))

@@ -72,10 +72,11 @@ namespace HugsLib.Settings {
 		}
 
 		internal static void OpenExtensibleContextMenu(
-			string firstEntryLabel, Action firstEntryActivated, IEnumerable<ContextMenuEntry> additionalEntries) {
+			string firstEntryLabel, Action firstEntryActivated, Action anyEntryActivated, IEnumerable<ContextMenuEntry> 
+			additionalEntries) {
 			OpenFloatMenu(
-				GetOptionalMenuEntry(firstEntryLabel, firstEntryActivated)
-					.Concat(CreateContextMenuOptions(additionalEntries))
+				GetOptionalMenuEntry(firstEntryLabel, firstEntryActivated + anyEntryActivated)
+					.Concat(CreateContextMenuOptions(additionalEntries, anyEntryActivated))
 			);
 		}
 
@@ -85,14 +86,15 @@ namespace HugsLib.Settings {
 				: Enumerable.Empty<FloatMenuOption>();
 		}
 
-		private static IEnumerable<FloatMenuOption> CreateContextMenuOptions(IEnumerable<ContextMenuEntry> entries) {
+		private static IEnumerable<FloatMenuOption> CreateContextMenuOptions(
+			IEnumerable<ContextMenuEntry> entries, Action anyEntryActivated) {
 			var options = new List<FloatMenuOption>();
 			try {
 				entries = entries ?? Enumerable.Empty<ContextMenuEntry>();
 				foreach (var entry in entries) {
 					entry.Validate();
 					options.Add(
-						new FloatMenuOption(entry.Label, entry.Action) {Disabled = entry.Disabled}
+						new FloatMenuOption(entry.Label, entry.Action + anyEntryActivated) {Disabled = entry.Disabled}
 					);
 				}
 			} catch (Exception e) {
