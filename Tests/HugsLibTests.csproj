@@ -55,6 +55,7 @@
         <Compile Include="Source\DistributedTickSchedulerTests.cs" />
         <Compile Include="Source\LibraryVersionCheckerTests.cs" />
         <Compile Include="Source\ModLoggerStub.cs" />
+        <Compile Include="Source\ModSettingsUnsavedChangesTests.cs" />
         <Compile Include="Source\ModSpottingManagerTests.cs" />
         <Compile Include="Source\UpdateFeatureAudienceTests.cs" />
         <Compile Include="Source\UpdateFeatureDefFilteringProviderTests.cs" />

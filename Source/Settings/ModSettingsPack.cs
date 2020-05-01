@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using HugsLib.Core;
+using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Settings {
@@ -197,6 +198,11 @@ namespace HugsLib.Settings {
 					packElem.Add(new XElement(handle.Name, new XText(handle.StringValue)));
 				}
 			}
+		}
+
+		public override string ToString() {
+			return $"[{nameof(ModSettingsPack)} {nameof(ModId)}:{ModId} " +
+				$"{nameof(Handles)}:{Handles.Select(h => h.Name).Join(",")}]";
 		}
 	}
 }

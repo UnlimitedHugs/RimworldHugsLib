@@ -183,8 +183,8 @@ namespace HugsLib.Test {
 				GUI.color = Color.white;
 				return changed;
 			};
-			
-			//TestSettingsHasUnsavedChanges();
+
+			TestSettingsChangedCallback();
 			TestCustomTypeSetting();
 			TestGiveShortHash();
 			//TestConditionalVisibilitySettings();	
@@ -209,64 +209,17 @@ namespace HugsLib.Test {
 			}
 		}
 
-		private void TestSettingsHasUnsavedChanges() {
-			void Assert(bool condition, string expectedConditionMessage) {
-				if(!condition) HugsLibController.Logger.Error($"Expected {nameof(TestSettingsHasUnsavedChanges)} condition: {expectedConditionMessage}");
-			}
-			var controllerSaved = false;
-			TestModSettingsChangedDetector.SettingsChangedCalled = false;
-			void OnControllerSaved() {
-				controllerSaved = true;
-			}
-			HugsLibController.SettingsManager.AfterModSettingsSaved += OnControllerSaved;
-			settingsChangedCalled = false;
-			var handle = Settings.GetHandle<int>("changeTestHandle", null, null);
-			handle.NeverVisible = true;
-			
-			if (HugsLibController.SettingsManager.HasUnsavedChanges) {
-				HugsLibController.Logger.Warning("Already modified handles: "+HugsLibController.SettingsManager.ModSettingsPacks
-					.SelectMany(p => p.Handles).Where(h => h.HasUnsavedChanges).Select(h => h.Name).ListElements());
-			}
-			Assert(HugsLibController.SettingsManager.HasUnsavedChanges == false, "controller unsaved false");
-			
-			Settings.SaveChanges();
-
-			Assert(controllerSaved == false, "controller not saving without changes");
-			Assert(settingsChangedCalled == false, "SettingsChanged not called before");
-			Assert(handle.HasUnsavedChanges == false, "handle unsaved false");
-			Assert(Settings.HasUnsavedChanges == false, "pack unsaved false");
-			
-			handle.Value += 1;
-			
-			Assert(handle.HasUnsavedChanges, "handle unsaved true");
-			Assert(Settings.HasUnsavedChanges, "pack unsaved true");
-			Assert(HugsLibController.SettingsManager.HasUnsavedChanges, "controller unsaved true");
-
-			Settings.SaveChanges();
-
-			Assert(controllerSaved, "controller saved changes");
-			Assert(settingsChangedCalled, "SettingsChanged called after");
-			Assert(handle.HasUnsavedChanges == false, "handle unsaved after false");
-			Assert(Settings.HasUnsavedChanges == false, "pack unsaved after false");
-			Assert(TestModSettingsChangedDetector.SettingsChangedCalled == false, "foreign mod not notified");
-			Assert(HugsLibController.SettingsManager.HasUnsavedChanges == false, "controller unsaved after false");
-
+		private void TestSettingsChangedCallback() {
 			settingsChangedCalled = false;
 			TestModSettingsChangedDetector.SettingsChangedCalled = false;
 			TestModSettingsChangedDetector.Handle.Value += 1;
 			Settings.SaveChanges();
-			Assert(settingsChangedCalled == false, "our mod not notified");
-			Assert(TestModSettingsChangedDetector.SettingsChangedCalled, "foreign mod notified");
-
-			settingsChangedCalled = false;
-			Assert(handle.Value != handle.DefaultValue, "has non-default value");
-			Assert(handle.HasUnsavedChanges == false, "saved before default value");
-			handle.Value = handle.DefaultValue;
-			Settings.SaveChanges();
-			Assert(handle.HasUnsavedChanges == false, "default value handle after has no unsaved changes");
-			Assert(settingsChangedCalled, "default value propagated save");
-
-			HugsLibController.SettingsManager.AfterModSettingsSaved -= OnControllerSaved;
+			if (settingsChangedCalled) {
+				Logger.Error($"Unexpected call to {nameof(TestMod)}.{nameof(SettingsChanged)}");
+			}
+			if (!TestModSettingsChangedDetector.SettingsChangedCalled) {
+				Logger.Error($"No expected call to {nameof(TestModSettingsChangedDetector)}.{nameof(SettingsChanged)}");
+			}
 		}
 
 		private void TestCustomTypeSetting() {

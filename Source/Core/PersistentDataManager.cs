@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Core {
@@ -20,6 +21,8 @@ namespace HugsLib.Core {
 		}
 
 		protected string OverrideFilePath { get; set; }
+
+		internal IModLogger DataManagerLogger { get; set; } = HugsLibController.Logger;
 
 		protected abstract string FileName { get; }
 
@@ -47,8 +50,8 @@ namespace HugsLib.Core {
 				LoadFromXml(doc);
 			} catch (Exception ex) {
 				if (DisplayLoadSaveWarnings) {
-					HugsLibController.Logger.Warning("Exception loading xml from " + filePath + ". " +
-													"Loading defaults instead. Exception was: " + ex
+					DataManagerLogger.Warning("Exception loading xml from " + filePath + ". " +
+						"Loading defaults instead. Exception was: " + ex
 					);
 				}
 				if (!SuppressLoadSaveExceptions) throw;
@@ -63,7 +66,7 @@ namespace HugsLib.Core {
 				doc.Save(filePath);
 			} catch (Exception ex) {
 				if (DisplayLoadSaveWarnings) {
-					HugsLibController.Logger.Warning("Failed to save xml to " + filePath + ". Exception was: " + ex);
+					DataManagerLogger.Warning("Failed to save xml to " + filePath + ". Exception was: " + ex);
 				}
 				if (!SuppressLoadSaveExceptions) throw;
 			}
