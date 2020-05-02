@@ -10,7 +10,6 @@ namespace HugsLib.News {
 	/// The extended update news dialog, with filtering by mod and a menu button in entry headers for dev mode actions.
 	/// </summary>
 	internal class Dialog_UpdateFeaturesFiltered : Dialog_UpdateFeatures {
-		private readonly List<UpdateFeatureDef> fullDefList;
 		private readonly IIgnoredNewsProviderStore ignoredNewsProviders;
 		private readonly string filterButtonLabel;
 		private readonly string allModsFilterLabel;
@@ -19,6 +18,7 @@ namespace HugsLib.News {
 		private readonly TaggedString ignoredModLabelSuffix;
 		private readonly UpdateFeatureDefFilteringProvider defFilter;
 		private readonly UpdateFeaturesDevMenu devMenu;
+		private List<UpdateFeatureDef> fullDefList;
 		private float bottomButtonWidth;
 
 		public Dialog_UpdateFeaturesFiltered(List<UpdateFeatureDef> featureDefs,
@@ -35,7 +35,7 @@ namespace HugsLib.News {
 			ignoredModLabelSuffix = "HugsLib_features_filterIgnoredModSuffix".Translate();
 			defFilter = new UpdateFeatureDefFilteringProvider(featureDefs);
 			devMenu = new UpdateFeaturesDevMenu(news, spotter, new PlayerMessageSender());
-			devMenu.UpdateFeatureDefsReloaded += InstallUpdateFeatureDefs;
+			devMenu.UpdateFeatureDefsReloaded += DevMenuDefsReloadedHandler;
 			AdjustButtonSizeToLabel();
 		}
 
@@ -56,6 +56,19 @@ namespace HugsLib.News {
 				Event.current.Use();
 				devMenu.ReloadNewsDefs();
 			}
+		}
+
+		private void DevMenuDefsReloadedHandler(IEnumerable<UpdateFeatureDef> loadedDefs) {
+			fullDefList = loadedDefs.ToList();
+			InstallFilteredDefs(fullDefList);
+		}
+
+		private void InstallFilteredDefs(IEnumerable<UpdateFeatureDef> defs) {
+			var filteredDefs = defFilter.MatchingDefsOf(defs);
+			if (defFilter.CurrentFilterModIdentifier == null) {
+				filteredDefs = FilterOutIgnoredProviders(filteredDefs, ignoredNewsProviders);
+			}
+			InstallUpdateFeatureDefs(filteredDefs);
 		}
 
 		private void DrawDevToolsMenuWidget(Rect titleRect, float widgetOffset, UpdateFeatureDef forDef) {
@@ -143,11 +156,7 @@ namespace HugsLib.News {
 		private void SetFilterAndUpdateShownDefs(string newFilterModIdentifier) {
 			if (defFilter.CurrentFilterModIdentifier == newFilterModIdentifier) return;
 			defFilter.CurrentFilterModIdentifier = newFilterModIdentifier;
-			var filteredDefList = defFilter.MatchingDefsOf(fullDefList).ToList();
-			if (defFilter.CurrentFilterModIdentifier == null) {
-				filteredDefList = FilterOutIgnoredProviders(filteredDefList, ignoredNewsProviders);
-			}
-			InstallUpdateFeatureDefs(filteredDefList);
+			InstallFilteredDefs(fullDefList);
 			ResetScrollPosition();
 		}
 
