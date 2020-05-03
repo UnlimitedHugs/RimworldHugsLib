@@ -1,0 +1,15 @@
+﻿title: HugsLib
+description: |-
+  This is a library that provides shared functionality for other mods.
+  For best results, make sure that HugsLib comes right after Core in your mod load order.
+
+  Also includes the Log Publisher: press [b]Ctrl+F12[/b] to upload your Rimworld logs and get a link to easily share them with others.
+
+  Can be safely added to existing games.
+
+  For more info on what this mod does or to report issues, check out the official forum post: https://ludeon.com/forums/index.php?topic=28066
+
+  The B19 version is still available, and can be found here: [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1535869345]HugsLib (B19)[/url]
+
+  My other mods: [url=https://steamcommunity.com/sharedfiles/filedetails/?id=761421485]Allow Tool[/url] · [url=https://steamcommunity.com/sharedfiles/filedetails/?id=761315214]Map Reroll[/url] · [url=https://steamcommunity.com/sharedfiles/filedetails/?id=761219125]Defensive Positions[/url] · [url=https://steamcommunity.com/sharedfiles/filedetails/?id=761379469]Remote Tech[/url]
+visibility: 0
