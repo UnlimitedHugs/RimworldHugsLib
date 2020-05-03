@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using Verse;
 
 namespace HugsLib.Utils {
 	/// <summary>
@@ -11,6 +12,7 @@ namespace HugsLib.Utils {
 	/// </summary>
 	public static class HarmonyUtility {
 		private const int DefaultPatchPriority = 400;
+		private static Dictionary<MethodBase, bool> IgnoredPatchedMethods = new Dictionary<MethodBase, bool>();
 		
 		/// <summary>
 		/// Produces a human-readable list of all methods patched by all Harmony instances and their respective patches.
@@ -33,6 +35,19 @@ namespace HugsLib.Utils {
 			} catch (Exception e) {
 				return $"Could not retrieve patched methods from Harmony instance (id: {instance.Id}):\n{e}";
 			}
+		}
+
+		/// <summary>
+		/// Register/Deregister a method to not be printed in the HugsLog if there are no active patches.
+		/// </summary>
+		/// <param name="method">The method to be registered.</param>
+		/// <param name="value">If true the method will be ignored; if false ensures it is not ignored.</param>
+		public static void RegisterIgnoredPatchedMethod(MethodBase method, bool value = true)
+		{
+			if (IgnoredPatchedMethods.ContainsKey(method))
+				IgnoredPatchedMethods[method] &= value;
+			else
+				IgnoredPatchedMethods.Add(method, value);
 		}
 
 		/// <summary>
@@ -65,32 +80,32 @@ namespace HugsLib.Utils {
 				var builder = new StringBuilder("Format = {BaseType}. [{NestedType}.{Method}] : {Active_Harmony_Patches}\n");
 				foreach (var pair in namedMethodList) {
 					// write patched method
-					builder.Append(pair.MethodName);
-					builder.Append(" : ");
+					var LogLine = new StringBuilder(pair.MethodName + " : ");
 					// write patches
 					var patches = Harmony.GetPatchInfo(pair.Method);
 					if (HasActivePatches(patches)) {
 						// write prefixes
 						if (patches.Prefixes != null && patches.Prefixes.Count > 0) {
-							builder.Append("PRE: ");
-							AppendPatchList(patches.Prefixes, builder);
+							LogLine.Append("PRE: ");
+							AppendPatchList(patches.Prefixes, LogLine);
 						}
 						// write postfixes
 						if (patches.Postfixes != null && patches.Postfixes.Count > 0) {
-							EnsureEndsWithSpace(builder);
-							builder.Append("post: ");
-							AppendPatchList(patches.Postfixes, builder);
+							EnsureEndsWithSpace(LogLine);
+							LogLine.Append("post: ");
+							AppendPatchList(patches.Postfixes, LogLine);
 						}
 						// write transpilers
 						if (patches.Transpilers != null && patches.Transpilers.Count > 0) {
-							EnsureEndsWithSpace(builder);
-							builder.Append("TRANS: ");
-							AppendPatchList(patches.Transpilers, builder);
+							EnsureEndsWithSpace(LogLine);
+							LogLine.Append("TRANS: ");
+							AppendPatchList(patches.Transpilers, LogLine);
 						}
+						builder.AppendLine(LogLine.ToString());
 					} else {
-						builder.Append("(no patches)");
+						if (!IgnoredPatchedMethods.TryGetValue(pair.Method, false))
+							builder.AppendLine(LogLine.ToString() + "(no patches)");
 					}
-					builder.AppendLine();
 				}
 				return builder.ToString();
 			} catch (Exception e) {
