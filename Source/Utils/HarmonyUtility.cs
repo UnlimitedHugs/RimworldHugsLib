@@ -45,11 +45,14 @@ namespace HugsLib.Utils {
 				var namedMethodList = new List<NameMethodPair>(methodList.Count);
 				foreach (var method in methodList) {
 					if (method == null) continue;
-					string methodName;
-					if (method.DeclaringType != null) {
-						methodName = string.Concat(method.DeclaringType.Name, ".", method.Name);
-					} else {
-						methodName = method.Name;
+					// Look through nested Types and mark nested type
+					bool nestedFlag = (method.DeclaringType?.IsNested == true);
+					string methodName = string.Concat(method.Name, nestedFlag ? " ]" : "");
+					Type currType = method.DeclaringType;
+					while (currType != null)
+					{
+						methodName = string.Concat(currType.Name, !currType.IsNested && nestedFlag ? ".[ " : ".", methodName);
+						currType = currType.DeclaringType;
 					}
 					namedMethodList.Add(new NameMethodPair(methodName, method));
 				}
@@ -63,7 +66,7 @@ namespace HugsLib.Utils {
 				foreach (var pair in namedMethodList) {
 					// write patched method
 					builder.Append(pair.MethodName);
-					builder.Append(": ");
+					builder.Append(" : ");
 					// write patches
 					var patches = Harmony.GetPatchInfo(pair.Method);
 					if (HasActivePatches(patches)) {
