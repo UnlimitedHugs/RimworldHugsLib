@@ -62,7 +62,7 @@ namespace HugsLib.Utils {
 				// sort patches by patched method name
 				namedMethodList.Sort((m1, m2) => string.Compare(m1.MethodName, m2.MethodName, StringComparison.Ordinal));
 
-				var builder = new StringBuilder();
+				var builder = new StringBuilder("Format = {BaseType}. [{NestedType}.{Method}] : {Active_Harmony_Patches}\n");
 				foreach (var pair in namedMethodList) {
 					// write patched method
 					builder.Append(pair.MethodName);
