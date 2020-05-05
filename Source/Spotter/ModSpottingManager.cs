@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.News;
+using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Spotter {
@@ -15,6 +16,7 @@ namespace HugsLib.Spotter {
 	public partial class ModSpottingManager : PersistentDataManager, IModSpotterDevActions {
 		private readonly Dictionary<string, TrackingEntry> entries = 
 			new Dictionary<string, TrackingEntry>(StringComparer.OrdinalIgnoreCase);
+		private readonly IModLogger logger = HugsLibController.Logger;
 		private bool erroredOnLoad;
 		private Task inspectTask;
 
@@ -26,32 +28,24 @@ namespace HugsLib.Spotter {
 			get { return false; }
 		}
 		
-		internal ICurrentDateTimeSource DateTimeSource { get; set; } = new SystemDateTimeSource();
-		
 		internal ModSpottingManager() {
 		}
 
-		internal ModSpottingManager(string overrideFilePath) {
+		internal ModSpottingManager(string overrideFilePath, IModLogger logger) {
+			this.logger = DataManagerLogger = logger;
 			OverrideFilePath = overrideFilePath;
 		}
 		
 		/// <summary>
-		/// Toggles the "first time seen" status of a packageId until the game is restarted.
-		/// If the status is modified, changes are immediately written to disk.
+		/// Sets the "first time seen" status of a packageId until the game is restarted.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Throws on null packageId</exception>
-		public void ToggleFirstTimeSeen(string packageId, bool setFirstTimeSeen) {
+		public void SetFirstTimeSeen(string packageId, bool setFirstTimeSeen) {
 			if (packageId == null) throw new ArgumentNullException(nameof(packageId));
 			WaitForInspectionCompletion();
-			var now = DateTimeSource.Now;
 			var currentlyFirstTimeSeen = FirstTimeSeen(packageId);
 			if (setFirstTimeSeen != currentlyFirstTimeSeen) {
-				var entry = new TrackingEntry(packageId, now, now);
-				entries[packageId] = entry;
-				if (!setFirstTimeSeen) {
-					entry.PreviouslyLastSeen = now;
-				}
-				SaveEntries();
+				entries[packageId] = new TrackingEntry(packageId) {FirstTimeSeen = setFirstTimeSeen};
 			}
 		}
 		
@@ -62,29 +56,17 @@ namespace HugsLib.Spotter {
 		public bool FirstTimeSeen(string packageId) {
 			if (packageId == null) throw new ArgumentNullException(nameof(packageId));
 			WaitForInspectionCompletion();
-			return entries.TryGetValue(packageId, out var entry) && !entry.PreviouslyLastSeen.HasValue;
+			return entries.TryGetValue(packageId)?.FirstTimeSeen ?? false;
 		}
 		
 		/// <summary>
-		/// Returns the previous time the provided packageId has been recorded.
-		/// Returns null if packageId is unknown or the current run is the first time the packageId has been recorded.
+		/// Returns true if the provided mod packageId was at any time seen running together with HugsLib.
 		/// </summary>
 		/// <exception cref="ArgumentNullException">Throws on null packageId</exception>
-		public DateTime? TryGetLastSeenTime(string packageId) {
+		public bool AnytimeSeen(string packageId) {
 			if (packageId == null) throw new ArgumentNullException(nameof(packageId));
 			WaitForInspectionCompletion();
-			return entries.TryGetValue(packageId)?.PreviouslyLastSeen;
-		}
-
-		/// <summary>
-		/// Returns the first time the provided packageId has been recorded.
-		/// Return null if the packageId has never been seen running together with HugsLib.
-		/// </summary>
-		/// <exception cref="ArgumentNullException">Throws on null packageId</exception>
-		public DateTime? TryGetFirstSeenTime(string packageId) {
-			if (packageId == null) throw new ArgumentNullException(nameof(packageId));
-			WaitForInspectionCompletion();
-			return entries.TryGetValue(packageId)?.FirstSeen;
+			return entries.ContainsKey(packageId);
 		}
 
 		bool IModSpotterDevActions.GetFirstTimeUserStatus(string packageId) {
@@ -93,7 +75,7 @@ namespace HugsLib.Spotter {
 
 		void IModSpotterDevActions.ToggleFirstTimeUserStatus(string packageId) {
 			var newStatus = !FirstTimeSeen(packageId);
-			ToggleFirstTimeSeen(packageId, newStatus);
+			SetFirstTimeSeen(packageId, newStatus);
 		}
 		
 		private void WaitForInspectionCompletion() {
@@ -131,27 +113,10 @@ namespace HugsLib.Spotter {
 			SaveEntries();
 		}
 
-		private void UpdateEntriesWithPackageIds(string[] packageIds) {
-			UpdateEntriesLastSeenTime(packageIds);
-			AddNewlySeenEntries(packageIds);
-		}
-
-		private void UpdateEntriesLastSeenTime(IEnumerable<string> packageIds) {
-			var currentPackageIdSet = new HashSet<string>(packageIds, StringComparer.InvariantCultureIgnoreCase);
-			var now = DateTimeSource.Now;
-			foreach (var entry in entries.Values) {
-				entry.PreviouslyLastSeen = entry.LastSeen;
-				if (currentPackageIdSet.Contains(entry.PackageId)) {
-					entry.LastSeen = now;
-				}
-			}
-		}
-
-		private void AddNewlySeenEntries(IEnumerable<string> packageIds) {
-			var now = DateTimeSource.Now;
+		private void UpdateEntriesWithPackageIds(IEnumerable<string> packageIds) {
 			foreach (var packageId in packageIds) {
 				if (!entries.ContainsKey(packageId)) {
-					entries.Add(packageId, new TrackingEntry(packageId, now, now));
+					entries.Add(packageId, new TrackingEntry(packageId) {FirstTimeSeen = true});
 				}
 			}
 		}
@@ -190,16 +155,16 @@ namespace HugsLib.Spotter {
 
 		private void SaveEntries() {
 			if (erroredOnLoad) {
-				HugsLibController.Logger.Warning(
+				logger.Warning(
 					$"Skipping {nameof(ModSpottingManager)} saving to preserve improperly " +
 					"loaded file data. Fix or delete the data file and try again."
 				);
-			} else {
-				try {
-					SaveData();
-				} catch (Exception) {
-					// suppress exception, warning is logged to console
-				}
+				return;
+			}
+			try {
+				SaveData();
+			} catch (Exception) {
+				// suppress exception, warning is logged to console
 			}
 		}
 	}
