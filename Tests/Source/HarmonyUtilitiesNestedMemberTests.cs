@@ -45,11 +45,6 @@ namespace HugsLibTests {
 			Assert.AreEqual(HarmonyUtility.GetNestedMemberName(dyn), memberName);
 		}
 
-		[Test]
-		public void GenericTypeMember() {
-			
-		}
-
 		private static string Resolve(Action method, int maxDepth = 10) {
 			return HarmonyUtility.GetNestedMemberName(method.Method, maxDepth);
 		}
