@@ -234,8 +234,7 @@ namespace HugsLib.Utils {
 		/// </summary>
 		/// <returns></returns>
 		public static string TryGetLogFilePath() {
-			string logfile;
-			if (GenCommandLine.TryGetCommandLineArg("logfile", out logfile) && logfile.NullOrEmpty()) {
+			if (GenCommandLine.TryGetCommandLineArg("logfile", out var logfile) && logfile.NullOrEmpty()) {
 				return logfile;
 			}
 			var platform = PlatformUtility.GetCurrentPlatform();
@@ -243,7 +242,8 @@ namespace HugsLib.Utils {
 				case PlatformType.Linux:
 					return @"/tmp/rimworld_log";
 				case PlatformType.MacOSX:
-					return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Logs/Unity/Player.log");
+					return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
+						$"Library/Logs/{Application.companyName}/{Application.productName}/Player.log");
 				case PlatformType.Windows:
 					return Path.Combine(Application.persistentDataPath, "Player.log");
 				default:
