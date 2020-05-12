@@ -167,6 +167,12 @@
             Wraps settings related to the Quickstart system for storage in a SettingHandle.
             </summary>
         </member>
+        <member name="T:HugsLib.Settings.CachedLabel">
+            <summary>
+            Caches the result of a string translation for performance.
+            Also caches the calculated size of the label that would accomodate the translated string.
+            </summary>
+        </member>
         <member name="T:HugsLib.Settings.ContextMenuEntry">
             <summary>
             Contains data used for the creation of a <see cref="T:Verse.FloatMenuOption"/>.
@@ -190,6 +196,12 @@
         <member name="M:HugsLib.Settings.ContextMenuEntry.#ctor(System.String,System.Action)">
             <param name="label"><inheritdoc cref="P:HugsLib.Settings.ContextMenuEntry.Label"/></param>
             <param name="action"><inheritdoc cref="P:HugsLib.Settings.ContextMenuEntry.Action"/></param>
+        </member>
+        <member name="T:HugsLib.Settings.Dialog_ConfirmReset">
+            <summary>
+            Shown when selecting the reset option from a mod settings dialog context menu.
+            Has an option to include hidden settings in the reset.
+            </summary>
         </member>
         <member name="T:HugsLib.Settings.ModSettingsWidgets">
             <summary>
@@ -458,8 +470,6 @@
             </summary>
             <remarks>
             The following built-in handle drawing features are also disabled when this property is assigned:
-            row highlighting (<see cref="M:Verse.Widgets.DrawHighlight(UnityEngine.Rect)"/>),
-            description tooltip (<see cref="T:Verse.TooltipHandler"/>),
             hovering info/menu buttons (<see cref="M:HugsLib.Settings.ModSettingsWidgets.DrawHandleHoverMenu(UnityEngine.Vector2,System.String,System.Boolean,System.Boolean)"/>).
             </remarks>
         </member>
@@ -564,21 +574,15 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:HugsLib.Spotter.ICurrentDateTimeSource">
-            <summary>
-            Allows to inject arbitrary timestamps into <see cref="T:HugsLib.Spotter.ModSpottingManager"/> entries. Used in unit testing.
-            </summary>
-        </member>
         <member name="T:HugsLib.Spotter.ModSpottingManager">
             <summary>
             Keeps track of mod packageIds that ever were loaded together with HugsLib
             by the player and the first/last time they were seen.
             </summary>
         </member>
-        <member name="M:HugsLib.Spotter.ModSpottingManager.ToggleFirstTimeSeen(System.String,System.Boolean)">
+        <member name="M:HugsLib.Spotter.ModSpottingManager.SetFirstTimeSeen(System.String,System.Boolean)">
             <summary>
-            Toggles the "first time seen" status of a packageId until the game is restarted.
-            If the status is modified, changes are immediately written to disk.
+            Sets the "first time seen" status of a packageId until the game is restarted.
             </summary>
             <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
         </member>
@@ -588,17 +592,9 @@
             </summary>
             <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
         </member>
-        <member name="M:HugsLib.Spotter.ModSpottingManager.TryGetLastSeenTime(System.String)">
+        <member name="M:HugsLib.Spotter.ModSpottingManager.AnytimeSeen(System.String)">
             <summary>
-            Returns the previous time the provided packageId has been recorded.
-            Returns null if packageId is unknown or the current run is the first time the packageId has been recorded.
-            </summary>
-            <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
-        </member>
-        <member name="M:HugsLib.Spotter.ModSpottingManager.TryGetFirstSeenTime(System.String)">
-            <summary>
-            Returns the first time the provided packageId has been recorded.
-            Return null if the packageId has never been seen running together with HugsLib.
+            Returns true if the provided mod packageId was at any time seen running together with HugsLib.
             </summary>
             <exception cref="T:System.ArgumentNullException">Throws on null packageId</exception>
         </member>
