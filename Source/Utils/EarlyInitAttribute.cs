@@ -1,6 +1,7 @@
 ﻿using System;
 using Verse;
 
+// ReSharper disable once CheckNamespace
 namespace HugsLib {
 	/// <summary>
 	/// Used to indicate that a <see cref="ModBase"/> type should be instantiated at the earliest moment possible.

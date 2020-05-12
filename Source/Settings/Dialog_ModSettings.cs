@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HugsLib.Utils;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -16,27 +15,34 @@ namespace HugsLib.Settings {
 		private const float TitleLabelHeight = 40f;
 		private const float ModEntryLabelHeight = 40f;
 		private const float ModEntryLabelPadding = 4f;
-		private const float ModEntryHeight = ModEntryLabelHeight + ModEntryLabelPadding;
+		private const float ModEntryExpandButtonPadding = 20f;
 		private const float ModEntryShowSettingsButtonHeight = 34f;
 		private const float HandleEntryPadding = 3f;
 		private const float HandleEntryHeight = 34f;
 		private const float ScrollBarWidthMargin = 18f;
 
-		// made static to preserve values between dialog openings
-		private static readonly List<ModEntry> listedMods = new List<ModEntry>();
-		private static readonly HashSet<ModEntry> expandedModEntries = new HashSet<ModEntry>();
-		private static Vector2 scrollPosition;
-		
+		private readonly List<ModEntry> listedMods = new List<ModEntry>();
+		private readonly HashSet<ModEntry> expandedModEntries = new HashSet<ModEntry>();
 		private readonly Color ModEntryLineColor = new Color(0.3f, 0.3f, 0.3f);
 		private readonly Color BadValueOutlineColor = new Color(.9f, .1f, .1f, 1f);
 		private readonly Dictionary<SettingHandle, HandleControlInfo> handleControlInfo = new Dictionary<SettingHandle, HandleControlInfo>();
 		private readonly SettingsHandleDrawer defaultHandleDrawer;
 		private readonly Dictionary<Type, SettingsHandleDrawer> handleDrawers;
+		private readonly CachedLabel labelShowVanillaSettings = CachedLabel.FromKey("HugsLib_setting_show_settings");
+		private readonly CachedLabel labelExpandModEntry = CachedLabel.FromKey("HugsLib_setting_expand_mod");
+		private readonly CachedLabel labelCollapseModEntry = CachedLabel.FromKey("HugsLib_setting_collapse_mod");
+		private readonly float expandableToggleButtonWidth;
 
+		private Vector2 scrollPosition;
 		private float totalContentHeight;
+		// TodoMajor: remove this field
+#pragma warning disable 169
 		private bool settingsHaveChanged;
+#pragma warning restore 169
 		private string currentlyDrawnEntry;
 		private bool closingScheduled;
+
+		internal IModSettingsWindowState WindowState { get; set; }
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
@@ -50,6 +56,8 @@ namespace HugsLib.Settings {
 			forcePause = true;
 			absorbInputAroundWindow = true;
 			resizeable = false;
+			expandableToggleButtonWidth = 
+				Mathf.Max(labelExpandModEntry.Size.x, labelCollapseModEntry.Size.x) + ModEntryExpandButtonPadding;
 			defaultHandleDrawer = DrawHandleInputText;
 			// these pairs specify which type of input field will be drawn for handles of this type. defaults to the string input
 			handleDrawers = new Dictionary<Type, SettingsHandleDrawer> {
@@ -61,17 +69,16 @@ namespace HugsLib.Settings {
 
 		public override void PreOpen() {
 			base.PreOpen();
-			settingsHaveChanged = false;
-			if (listedMods.Count == 0) {
-				EnumerateModsWithSettings();
-			}
+			EnumerateModsWithSettings();
 			RefreshSettingsHandles();
 			PopulateControlInfo();
+			TryRestoreWindowState(WindowState);
 		}
 
 		public override void PostClose() {
 			base.PostClose();
-			if (settingsHaveChanged) HugsLibController.Instance.Settings.SaveChanges();
+			TrySaveWindowState(WindowState);
+			HugsLibController.Instance.Settings.SaveChanges();
 		}
 
 		public override void DoWindowContents(Rect inRect) {
@@ -119,7 +126,8 @@ namespace HugsLib.Settings {
 			Text.Font = GameFont.Small;
 			var resetButtonRect = new Rect(0, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (Widgets.ButtonText(resetButtonRect, "HugsLib_settings_resetAll".Translate())) {
-				Find.WindowStack.Add(new Dialog_Confirm("HugsLib_settings_resetAll_prompt".Translate(), ResetHugsLibSettingsForLoadedMods, true));
+				ShowResetPrompt("HugsLib_settings_resetAll_prompt".Translate(),
+					HugsLibController.SettingsManager.ModSettingsPacks.SelectMany(p => p.Handles));
 			}
 			var closeButtonRect = new Rect(inRect.width - windowButtonSize.x, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (closingScheduled) {
@@ -135,36 +143,19 @@ namespace HugsLib.Settings {
 		// draws the header with the name of the mod
 		private void DrawModEntryHeader(ModEntry entry, float width, ref float curY) {
 			if (entry.ModName.NullOrEmpty()) return;
-			var labelRect = new Rect(0f, curY, width, ModEntryLabelHeight).ContractedBy(ModEntryLabelPadding);
+			var entryTitleRect = new Rect(0f, curY, width, ModEntryLabelHeight);
+			var mouseOverTitle = Mouse.IsOver(entryTitleRect);
+			if (mouseOverTitle) {
+				Widgets.DrawHighlight(entryTitleRect);
+			}
+			var labelRect = entryTitleRect.ContractedBy(ModEntryLabelPadding);
 			Text.Font = GameFont.Medium;
 			Widgets.Label(labelRect, entry.ModName);
 			Text.Font = GameFont.Small;
-			// draw open setting or expand handle listing button
-			if (entry.SettingsPack == null || !entry.SettingsPack.AlwaysExpandEntry) {
-				var isVanillaEntry = entry.SettingsPack == null;
-				var isExpanded = expandedModEntries.Contains(entry);
-				string buttonLabel;
-				if (isVanillaEntry) {
-					buttonLabel = "HugsLib_setting_show_settings";
-				} else {
-					buttonLabel = isExpanded ? "HugsLib_setting_collapse_mod" : "HugsLib_setting_expand_mod";
-				}
-				buttonLabel = buttonLabel.Translate();
-				var buttonWidth = Text.CalcSize(buttonLabel).x + 20f;
-				var buttonRect = new Rect(width - (buttonWidth + HandleEntryPadding), curY + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f, buttonWidth,
-					ModEntryShowSettingsButtonHeight);
-				if (Widgets.ButtonText(buttonRect, buttonLabel)) {
-					if (isVanillaEntry) {
-						Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
-					} else {
-						if (isExpanded) {
-							expandedModEntries.Remove(entry);
-						} else {
-							expandedModEntries.Add(entry);
-						}
-					}
-				}
-			}
+
+			var entryButtonsTopRight = new Vector2(width, curY);
+			var activateButtonWidth = DrawActivateEntryButton(entryButtonsTopRight);
+			DrawFloatMenuButton(new Vector2(entryButtonsTopRight.x - activateButtonWidth, entryButtonsTopRight.y));
 
 			curY += ModEntryLabelHeight;
 			var color = GUI.color;
@@ -172,68 +163,164 @@ namespace HugsLib.Settings {
 			Widgets.DrawLineHorizontal(0f, curY, width);
 			GUI.color = color;
 			curY += ModEntryLabelPadding;
+
+			float DrawActivateEntryButton(Vector2 topRight) {
+				if (entry.SettingsPack == null || !entry.SettingsPack.AlwaysExpandEntry) {
+					var isExpanded = expandedModEntries.Contains(entry);
+					CachedLabel buttonLabel;
+					var isVanillaEntry = entry.SettingsPack == null;
+					float toggleButtonWidth;
+					if (isVanillaEntry) {
+						buttonLabel = labelShowVanillaSettings;
+						toggleButtonWidth = labelShowVanillaSettings.Size.x + ModEntryExpandButtonPadding;
+					} else {
+						buttonLabel = isExpanded ? labelCollapseModEntry : labelExpandModEntry;
+						toggleButtonWidth = expandableToggleButtonWidth;
+					}
+					var buttonRect = new Rect(topRight.x - (toggleButtonWidth + ModEntryLabelPadding),
+						topRight.y + (ModEntryLabelHeight - ModEntryShowSettingsButtonHeight) / 2f,
+						toggleButtonWidth, ModEntryShowSettingsButtonHeight);
+					if (Widgets.ButtonText(buttonRect, buttonLabel)) {
+						if (isVanillaEntry) {
+							Find.WindowStack.Add(new Dialog_VanillaModSettings(entry.VanillaMod));
+						} else {
+							if (isExpanded) {
+								expandedModEntries.Remove(entry);
+							} else {
+								expandedModEntries.Add(entry);
+							}
+						}
+					}
+					return topRight.x - buttonRect.x;
+				}
+				return 0f;
+			}
+
+			void DrawFloatMenuButton(Vector2 topRight) {
+				if(!mouseOverTitle) return;
+				var buttonTopRight = new Vector2(topRight.x - ModEntryLabelPadding,
+					topRight.y + (ModEntryLabelHeight - ModSettingsWidgets.HoverMenuHeight) / 2f);
+				var hasExtraMenuEntries = entry.SettingsPack?.ContextMenuEntries != null;
+				if (ModSettingsWidgets.DrawHoverMenuButton(
+					buttonTopRight, entry.HasContextMenuEntries, hasExtraMenuEntries)){ 
+					OpenModEntryContextMenu();
+				}
+
+				void OpenModEntryContextMenu() {
+					var resetOptionLabel = 
+						entry.SettingsPack.CanBeReset ? "HugsLib_settings_resetMod".Translate(entry.ModName) : null;
+					ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
+						OnResetOptionSelected, OnAnyOptionSelected, entry.SettingsPack.ContextMenuEntries);
+				}
+
+				void OnResetOptionSelected() {
+					ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(entry.ModName),
+						entry.SettingsPack.Handles);
+				}
+
+				void OnAnyOptionSelected() {
+					foreach (var handle in entry.SettingsPack.Handles) {
+						ResetHandleControlInfo(handle);
+					}
+				}
+			}
 		}
 
 		// draws the label and appropriate input for a single setting
 		private void DrawHandleEntry(SettingHandle handle, Rect parentRect, ref float curY, float scrollViewHeight) {
 			var entryHeight = HandleEntryHeight;
-			if (handle.CustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
+			var anyCustomDrawer = handle.CustomDrawerFullWidth ?? handle.CustomDrawer;
+			if (anyCustomDrawer != null && handle.CustomDrawerHeight > entryHeight) {
 				entryHeight = handle.CustomDrawerHeight + HandleEntryPadding * 2;
 			}
 			var skipDrawing = curY - scrollPosition.y + entryHeight < 0f || curY - scrollPosition.y > scrollViewHeight;
 			if (!skipDrawing) {
-				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight).ContractedBy(HandleEntryPadding);
-				var mouseOver = Mouse.IsOver(entryRect);
-				if (mouseOver) Widgets.DrawHighlight(entryRect);
-				var controlRect = new Rect(entryRect.x + entryRect.width / 2f, entryRect.y, entryRect.width / 2f, entryRect.height);
-				GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-				var leftHalfRect = new Rect(entryRect.x, entryRect.y, entryRect.width / 2f - HandleEntryPadding, entryRect.height);
-				// give full width to the label if custom control drawer is used- this allows handle titles to be used as section titles
-				var labelRect = handle.CustomDrawer == null ? leftHalfRect : entryRect;
-				// reduce text size if label is long and wraps over to he second line
-				var expectedLabelHeight = Text.CalcHeight(handle.Title, labelRect.width);
-				if (expectedLabelHeight > labelRect.height) {
-					Text.Font = GameFont.Tiny;
-					labelRect = new Rect(labelRect.x, labelRect.y - 1f, labelRect.width, labelRect.height + 2f);
-				} else {
-					Text.Font = GameFont.Small;
-				}
-				Widgets.Label(labelRect, handle.Title);
-				if (Text.Font == GameFont.Tiny) {
-					Text.Font = GameFont.Small;
-					GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-				}
-				GenUI.ResetLabelAlign();
+				var entryRect = new Rect(parentRect.x, parentRect.y + curY, parentRect.width, entryHeight);
+				var mouseOverEntry = Mouse.IsOver(entryRect);
+				if (mouseOverEntry) Widgets.DrawHighlight(entryRect);
+				var trimmedEntryRect = entryRect.ContractedBy(HandleEntryPadding); 
 				bool valueChanged = false;
-				if (handle.CustomDrawer == null) {
-					SettingsHandleDrawer drawer;
-					var handleType = handle.ValueType;
-					if (handleType.IsEnum) handleType = typeof(Enum);
-					handleDrawers.TryGetValue(handleType, out drawer);
-					if (drawer == null) drawer = defaultHandleDrawer;
-					valueChanged = drawer(handle, controlRect, handleControlInfo[handle]);
-				} else {
+				if (handle.CustomDrawerFullWidth != null) {
 					try {
-						valueChanged = handle.CustomDrawer(controlRect);
+						valueChanged = handle.CustomDrawerFullWidth(trimmedEntryRect);
 					} catch (Exception e) {
-						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true, "SettingsHandle.CustomDrawer");
+						HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true,
+							$"{nameof(SettingHandle)}.{nameof(SettingHandle.CustomDrawerFullWidth)}");
 					}
+				} else {
+					valueChanged = DrawDefaultHandleEntry(handle, trimmedEntryRect, mouseOverEntry);
 				}
-				if (valueChanged) settingsHaveChanged = true;
-				if (mouseOver) {
-					if (!handle.Description.NullOrEmpty()) {
-						TooltipHandler.TipRegion(entryRect, handle.Description);
-					}
-					if (handle.CanBeReset && Input.GetMouseButtonUp(1)) {
-						var options = new List<FloatMenuOption>(1);
-						options.Add(new FloatMenuOption("HugsLib_settings_resetValue".Translate(), () => {
-							ResetSetting(handle);
-						}));
-						Find.WindowStack.Add(new FloatMenu(options));
+				if (valueChanged) {
+					if (handle.ValueType.IsClass) {
+						// required for SettingHandleConvertible values to be eligible for saving,
+						// since changes in reference-type values can't be automatically detected
+						handle.HasUnsavedChanges = true;
 					}
 				}
 			}
 			curY += entryHeight;
+		}
+
+		private bool DrawDefaultHandleEntry(SettingHandle handle, Rect trimmedEntryRect, bool mouseOverEntry) {
+			var controlRect = new Rect(trimmedEntryRect.x + trimmedEntryRect.width / 2f, trimmedEntryRect.y,
+				trimmedEntryRect.width / 2f, trimmedEntryRect.height);
+			GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
+			var leftHalfRect = new Rect(trimmedEntryRect.x, trimmedEntryRect.y,
+				trimmedEntryRect.width / 2f - HandleEntryPadding, trimmedEntryRect.height);
+			// give full width to the label if custom control drawer is used- this allows handle titles to be used as section titles
+			var labelRect = handle.CustomDrawer == null ? leftHalfRect : trimmedEntryRect;
+			// reduce text size if label is long and wraps over to the second line
+			var controlInfo = handleControlInfo[handle];
+			var cachedTitle = controlInfo.handleTitle ?? (controlInfo.handleTitle = new CachedLabel(handle.Title));
+			if (cachedTitle.GetHeight(labelRect.width) > labelRect.height) {
+				Text.Font = GameFont.Tiny;
+				labelRect = new Rect(labelRect.x, labelRect.y - 1f, labelRect.width, labelRect.height + 2f);
+			} else {
+				Text.Font = GameFont.Small;
+			}
+			Widgets.Label(labelRect, cachedTitle.Text);
+			Text.Font = GameFont.Small;
+			GenUI.ResetLabelAlign();
+			var valueChanged = false;
+			if (handle.CustomDrawer == null) {
+				var handleType = handle.ValueType;
+				if (handleType.IsEnum) handleType = typeof(Enum);
+				handleDrawers.TryGetValue(handleType, out var drawer);
+				if (drawer == null) drawer = defaultHandleDrawer;
+				valueChanged = drawer(handle, controlRect, controlInfo);
+			} else {
+				try {
+					valueChanged = handle.CustomDrawer(controlRect);
+				} catch (Exception e) {
+					HugsLibController.Logger.ReportException(e, currentlyDrawnEntry, true,
+						$"{nameof(SettingHandle)}.{nameof(SettingHandle.CustomDrawer)}");
+				}
+			}
+			if (mouseOverEntry) {
+				DrawEntryHoverMenu(trimmedEntryRect, handle);
+			}
+			return valueChanged;
+		}
+
+		private void DrawEntryHoverMenu(Rect entryRect, SettingHandle handle) {
+			var topRight = new Vector2(
+				entryRect.x + entryRect.width / 2f - HandleEntryPadding,
+				entryRect.y + entryRect.height / 2f - ModSettingsWidgets.HoverMenuHeight / 2f
+			);
+			var includeResetEntry = handle.CanBeReset && !handle.Unsaved;
+			var menuHasExtraOptions = handle.ContextMenuEntries != null;
+			var menuEnabled = includeResetEntry || menuHasExtraOptions;
+			var menuButtonClicked = ModSettingsWidgets.DrawHandleHoverMenu(
+				topRight, handle.Description, menuEnabled, menuHasExtraOptions);
+			if (menuButtonClicked) {
+				OpenHandleContextMenu();
+			}
+
+			void OpenHandleContextMenu() {
+				var resetOptionLabel = handle.CanBeReset ? "HugsLib_settings_resetValue".Translate() : null;
+				ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
+					() => ResetSettingHandles(handle), () => ResetHandleControlInfo(handle), handle.ContextMenuEntries);
+			}
 		}
 
 		// draws the input control for string settings
@@ -276,16 +363,14 @@ namespace HugsLib.Settings {
 			var rightButtonRect = new Rect(controlRect.x + controlRect.width - buttonSize, controlRect.y, buttonSize, buttonSize);
 			var changed = false;
 			if (Widgets.ButtonText(leftButtonRect, "-")) {
-				int parsed;
-				if (int.TryParse(info.inputValue, out parsed)) {
+				if (int.TryParse(info.inputValue, out var parsed)) {
 					info.inputValue = (parsed - handle.SpinnerIncrement).ToString();
 				}
 				info.validationScheduled = true;
 				changed = true;
 			}
 			if (Widgets.ButtonText(rightButtonRect, "+")) {
-				int parsed;
-				if (int.TryParse(info.inputValue, out parsed)) {
+				if (int.TryParse(info.inputValue, out var parsed)) {
 					info.inputValue = (parsed + handle.SpinnerIncrement).ToString();
 				}
 				info.validationScheduled = true;
@@ -324,7 +409,7 @@ namespace HugsLib.Settings {
 						info.validationScheduled = true;
 					}));
 				}
-				Find.WindowStack.Add(new FloatMenu(floatOptions));
+				ModSettingsWidgets.OpenFloatMenu(floatOptions);
 			}
 			if (info.validationScheduled) {
 				info.validationScheduled = false;
@@ -340,21 +425,73 @@ namespace HugsLib.Settings {
 			GUI.color = prevColor;
 		}
 
-		private void ResetHugsLibSettingsForLoadedMods() {
-			foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
-				foreach (var handle in pack.Handles) {
-					handle.ResetToDefault();
-				}
-			}
-			settingsHaveChanged = true;
-			PopulateControlInfo();
+		private void TryRestoreWindowState(IModSettingsWindowState state) {
+			if (state == null) return;
+			expandedModEntries.Clear();
+			var expandedIdSet = (state.ExpandedSettingPackIds ?? Enumerable.Empty<string>()).ToHashSet();
+			expandedModEntries.AddRange(listedMods.Where(
+				m => m.SettingsPack != null && expandedIdSet.Contains(m.SettingsPack.ModId)
+			));
+			scrollPosition = new Vector2(0f, state.VerticalScrollPosition);
+		}
+		
+		private void TrySaveWindowState(IModSettingsWindowState state) {
+			if (state == null) return;
+			state.ExpandedSettingPackIds = expandedModEntries
+				.Select(e => e.SettingsPack?.ModId)
+				.Where(id => id != null)
+				.ToArray();
+			state.VerticalScrollPosition = scrollPosition.y;
 		}
 
-		private void ResetSetting(SettingHandle handle) {
-			if (!handle.CanBeReset) return;
-			handle.ResetToDefault();
+		private void ShowResetPrompt(string message, IEnumerable<SettingHandle> handlesToReset) {
+			var handles = handlesToReset.ToArray();
+			var hiddenHandlesWithOwners = GetHiddenResettableHandles(handles)
+				.GroupBy(h => h.ParentPack)
+				.Select(grp => (
+					grp.Key.EntryName,
+					grp.Select(h => BlankStringToNull(h.Title) ?? h.Name).ToArray()
+				));
+			Find.WindowStack.Add(new Dialog_ConfirmReset(message, hiddenHandlesWithOwners, OnConfirmReset));
+
+			string BlankStringToNull(string s) {
+				return string.IsNullOrWhiteSpace(s) ? null : s;
+			}
+
+			void OnConfirmReset(Dialog_ConfirmReset dialog) {
+				IEnumerable<SettingHandle> resetHandles = handles;
+				if (!dialog.IncludeHidden) {
+					resetHandles = handles.Except(GetHiddenResettableHandles(handles));
+				}
+				ResetSettingHandles(resetHandles.ToArray());
+			}
+		}
+
+		private void ResetSettingHandles(params SettingHandle[] handles) {
+			var resetCount = 0;
+			foreach (var handle in handles) {
+				if (handle == null || !handle.CanBeReset) continue;
+				try {
+					handle.ResetToDefault();
+					resetCount++;
+				} catch (Exception e) {
+					HugsLibController.Logger.Error(
+						$"Failed to reset handle {handle.ParentPack.ModId}.{handle.Name}: {e}");
+				}
+				ResetHandleControlInfo(handle);
+			}
+			if (resetCount > 0) {
+				Messages.Message("HugsLib_settings_resetSuccessMessage".Translate(resetCount), 
+					MessageTypeDefOf.TaskCompletion);
+			}
+		}
+
+		private void ResetHandleControlInfo(SettingHandle handle) {
 			handleControlInfo[handle] = new HandleControlInfo(handle);
-			settingsHaveChanged = true;
+		}
+
+		private static IEnumerable<SettingHandle> GetHiddenResettableHandles(IEnumerable<SettingHandle> handles) {
+			return handles.Where(h => h.CanBeReset && h.NeverVisible);
 		}
 
 		// pulls all available mods with settings to display
@@ -367,8 +504,9 @@ namespace HugsLib.Settings {
 				// get HugsLib settings packs
 				foreach (var pack in HugsLibController.Instance.Settings.ModSettingsPacks) {
 					try {
-						var entry = new ModEntry(pack.EntryName, pack, null);
-						entry.DisplayPriority = pack.DisplayPriority;
+						var entry = new ModEntry(pack.EntryName, pack, null) {
+							DisplayPriority = pack.DisplayPriority
+						};
 						listedMods.Add(entry);
 					} catch (Exception e) {
 						HugsLibController.Logger.Error("Exception while enumerating HugsLib settings for {0}: {1}", pack.ModId, e);
@@ -430,6 +568,7 @@ namespace HugsLib.Settings {
 			public List<SettingHandle> Handles = new List<SettingHandle>();
 			public readonly ModSettingsPack SettingsPack;
 			public readonly Mod VanillaMod;
+			public readonly bool HasContextMenuEntries;
 
 			public bool Visible {
 				get { return VanillaMod != null || Handles.Count > 0; }
@@ -439,6 +578,8 @@ namespace HugsLib.Settings {
 				ModName = modName;
 				SettingsPack = settingsPack;
 				VanillaMod = vanillaMod;
+				HasContextMenuEntries = settingsPack != null
+					&& (settingsPack.CanBeReset || settingsPack.ContextMenuEntries != null);
 			}
 		}
 
@@ -449,6 +590,7 @@ namespace HugsLib.Settings {
 			public bool badInput;
 			public string inputValue;
 			public bool validationScheduled;
+			public CachedLabel handleTitle;
 
 			public HandleControlInfo(SettingHandle handle) {
 				controlName = "control" + handle.GetHashCode();

@@ -13,8 +13,8 @@ namespace HugsLib.News {
 		private const float HeaderLabelHeight = 40f; 
 		private const float EntryTitleLabelHeight = 40f;
 		private const float EntryTitleLabelPadding = 4f;
+		private const float EntryTitleLinkPadding = 7f;
 		private const float EntryTitleHeight = EntryTitleLabelHeight + EntryTitleLabelPadding;
-		private const float EntryTitleLinkWidth = 40f;
 		private const float EntryContentIndent = 4f;
 		private const float EntryFooterHeight = 16f;
 		private const float ScrollBarWidthMargin = 18f;
@@ -27,6 +27,7 @@ namespace HugsLib.News {
 		private readonly Color LinkTextColor = new Color(.7f, .7f, 1f);
 		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>();
 		private readonly string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
+		private readonly float linkTextWidth;
 		private List<FeatureEntry> entries;
 		private float totalContentHeight = -1;
 		private Vector2 scrollPosition;
@@ -35,30 +36,31 @@ namespace HugsLib.News {
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
 		}
-
+		
+		// TodoMajor: Replace List with IEnumerable
 		public Dialog_UpdateFeatures(List<UpdateFeatureDef> featureDefs, UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) {
 			this.ignoredNewsProviders = ignoredNewsProviders;
 			closeOnCancel = true;
-			doCloseButton = true;
+			doCloseButton = false;
 			doCloseX = true;
 			forcePause = true;
 			draggable = true;
 			absorbInputAroundWindow = false;
 			resizeable = false;
-			GenerateDrawableEntries(featureDefs);
+			linkTextWidth = GetLinkTextWidth() + EntryTitleLinkPadding * 2f;
+			InstallUpdateFeatureDefs(featureDefs);
 		}
 
 		public override void Close(bool doCloseSound = true) {
 			base.Close(doCloseSound);
-			foreach (var resolvedTexture in resolvedImages.Values) {
-				UnityEngine.Object.Destroy(resolvedTexture);
-			}
-			resolvedImages.Clear();
+			DestroyLoadedImages();
 		}
 
 		public override void DoWindowContents(Rect inRect) {
-			var windowButtonSize = CloseButSize;
-			var contentRect = new Rect(0, 0, inRect.width, inRect.height - (windowButtonSize.y + 10f)).ContractedBy(10f);
+			const float contentRectInset = 10f;
+			var bottomButtonRowHeight = CloseButSize.y; 
+			var bottomPadding = bottomButtonRowHeight + (Margin - contentRectInset);
+			var contentRect = new Rect(0, 0, inRect.width, inRect.height - bottomPadding).ContractedBy(contentRectInset);
 			GUI.BeginGroup(contentRect);
 			var titleRect = new Rect(0f, 0f, contentRect.width, HeaderLabelHeight);
 			Text.Font = GameFont.Medium;
@@ -98,35 +100,45 @@ namespace HugsLib.News {
 				Widgets.EndScrollView();
 			}
 			GUI.EndGroup();
+			DrawBottomButtonRow(inRect.BottomPartPixels(bottomButtonRowHeight));
 		}
 
+		protected void InstallUpdateFeatureDefs(IEnumerable<UpdateFeatureDef> featureDefs) {
+			DestroyLoadedImages();
+			GenerateDrawableEntries(featureDefs.ToList());
+			totalContentHeight = -1;
+		}
+
+		protected void ResetScrollPosition() {
+			scrollPosition = Vector2.zero;
+		}
+		
+		protected virtual void DrawBottomButtonRow(Rect inRect) {
+			var closeButtonRect = new Rect(
+				inRect.width / 2f - CloseButSize.x / 2f, inRect.y,
+				CloseButSize.x, CloseButSize.y
+			);
+			DrawCloseButton(closeButtonRect);
+		}
+
+		protected void DrawCloseButton(Rect inRect) {
+			if (Widgets.ButtonText(inRect, "CloseButton".Translate())) {
+				Close();
+			}
+		}
+		
 		private void DrawEntryTitle(FeatureEntry entry, float width, ref float curY, bool skipDrawing) {
 			if (!skipDrawing) {
 				const float toggleSize = Widgets.CheckboxSize;
 				var togglePos = new Vector2(EntryTitleLabelPadding, curY + (EntryTitleLabelHeight / 2f - toggleSize / 2f));
 				DoIgnoreNewsProviderToggle(togglePos, entry);
 				var labelRect = new Rect(togglePos.x + toggleSize, curY,
-					width - EntryTitleLinkWidth, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
+					width, EntryTitleLabelHeight).ContractedBy(EntryTitleLabelPadding);
 				Text.Font = GameFont.Medium;
 				var titleText = entry.def.titleOverride ?? "HugsLib_features_update".Translate(entry.def.modNameReadable, entry.def.assemblyVersion);
 				Widgets.Label(labelRect, $"<size={EntryTitleFontSize}>{titleText}</size>");
 				Text.Font = GameFont.Small;
-				if (entry.def.linkUrl != null) {
-					Text.Anchor = TextAnchor.MiddleCenter;
-					var linkRect = new Rect(width - EntryTitleLinkWidth, curY, EntryTitleLinkWidth, EntryTitleLabelHeight);
-					var prevColor = GUI.color;
-					GUI.color = LinkTextColor;
-					Widgets.Label(linkRect, "HugsLib_features_link".Translate());
-					GUI.color = prevColor;
-					GenUI.ResetLabelAlign();
-					if (Widgets.ButtonInvisible(linkRect)) {
-						Application.OpenURL(entry.def.linkUrl);
-					}
-					if (Mouse.IsOver(linkRect)) {
-						Widgets.DrawHighlight(linkRect);
-						TooltipHandler.TipRegion(linkRect, "HugsLib_features_linkDesc".Translate(entry.def.linkUrl));
-					}
-				}
+				DrawEntryTitleWidgets(new Rect(0, curY, width, EntryTitleLabelHeight), entry.def);
 			}
 			curY += EntryTitleLabelHeight;
 			if (!skipDrawing) {
@@ -136,6 +148,33 @@ namespace HugsLib.News {
 				GUI.color = color;
 			}
 			curY += EntryTitleLabelPadding;
+		}
+
+		protected virtual void DrawEntryTitleWidgets(Rect titleRect, UpdateFeatureDef forDef) {
+			DrawEntryLinkWidget(titleRect, forDef);
+		}
+
+		protected float DrawEntryLinkWidget(Rect titleRect, UpdateFeatureDef forDef) {
+			if (forDef.linkUrl != null) {
+				Text.Anchor = TextAnchor.MiddleCenter;
+				var linkRect = new Rect(titleRect.width - linkTextWidth, titleRect.y, 
+					linkTextWidth, titleRect.height);
+				var prevColor = GUI.color;
+				GUI.color = LinkTextColor;
+				Widgets.Label(linkRect, "HugsLib_features_link".Translate());
+				GUI.color = prevColor;
+				GenUI.ResetLabelAlign();
+				if (Widgets.ButtonInvisible(linkRect)) {
+					Application.OpenURL(forDef.linkUrl);
+				}
+				if (Mouse.IsOver(linkRect)) {
+					Widgets.DrawHighlight(linkRect);
+					var descriptionText = "HugsLib_features_linkDesc".Translate();
+					TooltipHandler.TipRegion(linkRect, descriptionText.Replace("{0}", forDef.linkUrl));
+				}
+				return linkTextWidth;
+			}
+			return 0;
 		}
 
 		private void DoIgnoreNewsProviderToggle(Vector2 togglePos, FeatureEntry entry) {
@@ -200,6 +239,13 @@ namespace HugsLib.News {
 			}
 		}
 		
+		private void DestroyLoadedImages() {
+			foreach (var resolvedTexture in resolvedImages.Values) {
+				UnityEngine.Object.Destroy(resolvedTexture);
+			}
+			resolvedImages.Clear();
+		}
+
 		private List<DescriptionSegment> ParseEntryContent(string content, bool trimWhitespace, out IEnumerable<string> requiredImages) {
 			const char SegmentSeparator = '|';
 			const char ArgumentSeparator = ':';
@@ -271,6 +317,14 @@ namespace HugsLib.News {
 				this.def = def;
 				this.segments = segments;
 			}
+		}
+
+		private static float GetLinkTextWidth() {
+			var prevFont = Text.Font;
+			Text.Font = GameFont.Small;
+			var width = Text.CalcSize("HugsLib_features_link".Translate()).x;
+			Text.Font = prevFont;
+			return width;
 		}
 
 		private class DescriptionSegment {

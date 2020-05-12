@@ -5,7 +5,8 @@ using System.Xml;
 using System.Xml.Serialization;
 using HugsLib.Utils;
 using Verse;
-
+// TodoMajor: remove the 'Source' namespace
+// ReSharper disable once CheckNamespace
 namespace HugsLib.Source.Settings {
 	/// <summary>
 	/// Utility methods for SettingHandleConvertible data objects.

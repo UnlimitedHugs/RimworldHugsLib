@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -26,7 +27,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <NoWarn>NU5128</NoWarn>
-	<Prefer32Bit>false</Prefer32Bit>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -86,12 +87,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\Core\Dialog_LibraryUpdateRequired.cs" />
     <Compile Include="Source\Core\HugsLibMod.cs" />
+    <Compile Include="Source\Core\HugsLibTextures.cs" />
     <Compile Include="Source\Core\KeyBindingHandler.cs" />
+    <Compile Include="Source\Core\LibraryVersionChecker.cs" />
     <Compile Include="Source\Core\LoadOrderChecker.cs" />
+    <Compile Include="Source\Core\ManifestFile.cs" />
     <Compile Include="Source\Core\QuickRestarter.cs" />
     <Compile Include="Source\Core\StaticInitializer.cs" />
+    <Compile Include="Source\News\Dialog_UpdateFeaturesFiltered.cs" />
+    <Compile Include="Source\News\UpdateFeatureDefLoader.cs" />
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
+    <Compile Include="Source\News\UpdateFeatureDefFilteringProvider.cs" />
+    <Compile Include="Source\News\UpdateFeaturesDevMenu.cs" />
+    <Compile Include="Source\Quickstart\QuickstartStatusBox.cs" />
+    <Compile Include="Source\Settings\CachedLabel.cs" />
+    <Compile Include="Source\Settings\ContextMenuEntry.cs" />
+    <Compile Include="Source\Settings\Dialog_ConfirmReset.cs" />
+    <Compile Include="Source\Settings\ModSettingsWidgets.cs" />
+    <Compile Include="Source\Settings\ModSettingsWindowState.cs" />
+    <Compile Include="Source\Spotter\ModSpottingManager.cs" />
+    <Compile Include="Source\Spotter\TrackingEntry.cs" />
     <Compile Include="Source\Utils\EarlyInitAttribute.cs" />
     <Compile Include="Source\Logs\Dialog_PublishLogsOptions.cs" />
     <Compile Include="Source\Logs\LogPublisherOptions.cs" />
@@ -109,7 +126,7 @@
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
     <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
-    <Compile Include="Source\Patches\UIRoot_Patch.cs" />
+    <Compile Include="Source\Patches\Root_OnGUI_Patch.cs" />
     <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />
     <Compile Include="Source\Quickstart\QuickstartController.cs" />
     <Compile Include="Source\Quickstart\QuickstartSettings.cs" />
@@ -141,7 +158,6 @@
     <Compile Include="Source\Settings\ModSettingsManager.cs" />
     <Compile Include="Source\Settings\SettingHandle.cs" />
     <Compile Include="Source\Test\TestMod.cs" />
-    <Compile Include="Source\Test\TestUWO.cs" />
     <Compile Include="Source\Test\TickersTests.cs" />
     <Compile Include="Source\Test\VanillaMod.cs" />
     <Compile Include="Source\Utils\AssemblyVersionInfo.cs" />
@@ -164,9 +180,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>RimWorldWin64.exe</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

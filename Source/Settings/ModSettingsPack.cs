@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 using HugsLib.Core;
+using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Settings {
@@ -28,6 +29,11 @@ namespace HugsLib.Settings {
 		/// Mods are generally ordered by name. Please leave this at Normal unless you have a good reason to change it.
 		/// </summary>
 		public ListPriority DisplayPriority { get; set; }
+		/// <summary>
+		/// Additional context menu options for this entry in the mod settings dialog.
+		/// Will be shown when the hovering menu button for this entry is clicked.
+		/// </summary>
+		public IEnumerable<ContextMenuEntry> ContextMenuEntries { get; set; }
 		/// <summary>
 		/// Returns true if any handles retrieved from this pack have had their values changed.
 		/// Resets to false after the changes are saved.
@@ -168,6 +174,10 @@ namespace HugsLib.Settings {
 			ParentManager.SaveChanges();
 		}
 
+		internal bool CanBeReset {
+			get { return handles.Any(h => h.CanBeReset); }
+		}
+
 		internal void LoadFromXml(XElement xml) {
 			loadedValues.Clear();
 			foreach (var childNode in xml.Elements()) {
@@ -188,6 +198,11 @@ namespace HugsLib.Settings {
 					packElem.Add(new XElement(handle.Name, new XText(handle.StringValue)));
 				}
 			}
+		}
+
+		public override string ToString() {
+			return $"[{nameof(ModSettingsPack)} {nameof(ModId)}:{ModId} " +
+				$"{nameof(Handles)}:{Handles.Select(h => h.Name).Join(",")}]";
 		}
 	}
 }

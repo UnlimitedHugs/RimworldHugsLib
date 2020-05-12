@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
 using HugsLib.Core;
+using HugsLib.Utils;
 
 namespace HugsLib.Settings {
 	/// <summary>
@@ -44,6 +45,12 @@ namespace HugsLib.Settings {
 		}
 
 		internal ModSettingsManager() {
+			LoadData();
+		}
+
+		internal ModSettingsManager(string overrideFilePath, IModLogger logger) {
+			OverrideFilePath = overrideFilePath;
+			DataManagerLogger = logger;
 			LoadData();
 		}
 

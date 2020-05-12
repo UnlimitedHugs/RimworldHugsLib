@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using HugsLib.Settings;
 using HugsLib.Source.Settings;
 using HugsLib.Utils;
+using RimWorld;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Verse;
@@ -99,8 +100,6 @@ namespace HugsLib.Test {
 
 		public override void WorldLoaded() {
 			Logger.Message("WorldLoaded");
-			UtilityWorldObjectManager.GetUtilityWorldObject<TestUWO1>().UpdateAndReport();
-			UtilityWorldObjectManager.GetUtilityWorldObject<TestUWO2>().UpdateAndReport();
 		}
 
 		public override void MapComponentsInitializing(Map map) {
@@ -142,8 +141,19 @@ namespace HugsLib.Test {
 
 		public override void DefsLoaded() {
 			Logger.Message("DefsLoaded");
-			Settings.GetHandle("str", "String value", "", "value");
+			var presets = Settings.GetHandle("presetsTest", "Presets", null, 0);
+			presets.ContextMenuEntries = new[] {
+				("Low", 10), ("Medium", 50), ("High", 80)
+			}.Select(t => new ContextMenuEntry($"Preset: {t.Item1}", () => presets.Value = t.Item2));
+			var testContextEntries = new[] {
+				new ContextMenuEntry("Do a thing",
+					() => Messages.Message("A thing was done!", MessageTypeDefOf.TaskCompletion))
+			};
+			Settings.ContextMenuEntries = testContextEntries;
+			var stringHandle = Settings.GetHandle("str", "String value", "", "value");
+			stringHandle.ContextMenuEntries = testContextEntries;
 			var spinner = Settings.GetHandle("intSpinner", "Spinner", "desc", 5, Validators.IntRangeValidator(0, 30));
+			spinner.ContextMenuEntries = testContextEntries;
 			spinner.SpinnerIncrement = 2;
 			spinner.CanBeReset = false;
 			Settings.GetHandle("enumThing", "Enum setting", "", HandleEnum.DefaultValue, null, "test_enumSetting_");
@@ -156,7 +166,25 @@ namespace HugsLib.Test {
 				}
 				return false;
 			};
-			TestSettingsHasUnsavedChanges();
+			var fullWidth = Settings.GetHandle("fullWidth", null, null, false);
+			fullWidth.CustomDrawerHeight = 30f;
+			fullWidth.CustomDrawerFullWidth = rect => {
+				float SineColor(float offset) => .6f + .4f * Mathf.Sin(offset + Time.unscaledTime); 
+				GUI.color = new Color(SineColor(.5f), SineColor(1f), SineColor(1.5f));
+				GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
+				Widgets.Label(rect, "Full width goodness");
+				GenUI.ResetLabelAlign();
+				GUI.color = fullWidth.Value ? new Color(.5f, 1f, .5f) : new Color(1f, .5f, .5f);
+				bool changed = false;
+				if (Widgets.ButtonText(rect.RightHalf(), "Clicky")) {
+					fullWidth.Value = !fullWidth.Value;
+					changed = true;
+				}
+				GUI.color = Color.white;
+				return changed;
+			};
+
+			TestSettingsChangedCallback();
 			TestCustomTypeSetting();
 			TestGiveShortHash();
 			//TestConditionalVisibilitySettings();	
@@ -181,64 +209,17 @@ namespace HugsLib.Test {
 			}
 		}
 
-		private void TestSettingsHasUnsavedChanges() {
-			void Assert(bool condition, string expectedConditionMessage) {
-				if(!condition) HugsLibController.Logger.Error($"Expected {nameof(TestSettingsHasUnsavedChanges)} condition: {expectedConditionMessage}");
-			}
-			var controllerSaved = false;
-			TestModSettingsChangedDetector.SettingsChangedCalled = false;
-			void OnControllerSaved() {
-				controllerSaved = true;
-			}
-			HugsLibController.SettingsManager.AfterModSettingsSaved += OnControllerSaved;
-			settingsChangedCalled = false;
-			var handle = Settings.GetHandle<int>("changeTestHandle", null, null);
-			handle.NeverVisible = true;
-			
-			if (HugsLibController.SettingsManager.HasUnsavedChanges) {
-				HugsLibController.Logger.Warning("Already modified handles: "+HugsLibController.SettingsManager.ModSettingsPacks
-					.SelectMany(p => p.Handles).Where(h => h.HasUnsavedChanges).Select(h => h.Name).ListElements());
-			}
-			Assert(HugsLibController.SettingsManager.HasUnsavedChanges == false, "controller unsaved false");
-			
-			Settings.SaveChanges();
-
-			Assert(controllerSaved == false, "controller not saving without changes");
-			Assert(settingsChangedCalled == false, "SettingsChanged not called before");
-			Assert(handle.HasUnsavedChanges == false, "handle unsaved false");
-			Assert(Settings.HasUnsavedChanges == false, "pack unsaved false");
-			
-			handle.Value += 1;
-			
-			Assert(handle.HasUnsavedChanges, "handle unsaved true");
-			Assert(Settings.HasUnsavedChanges, "pack unsaved true");
-			Assert(HugsLibController.SettingsManager.HasUnsavedChanges, "controller unsaved true");
-
-			Settings.SaveChanges();
-
-			Assert(controllerSaved, "controller saved changes");
-			Assert(settingsChangedCalled, "SettingsChanged called after");
-			Assert(handle.HasUnsavedChanges == false, "handle unsaved after false");
-			Assert(Settings.HasUnsavedChanges == false, "pack unsaved after false");
-			Assert(TestModSettingsChangedDetector.SettingsChangedCalled == false, "foreign mod not notified");
-			Assert(HugsLibController.SettingsManager.HasUnsavedChanges == false, "controller unsaved after false");
-
+		private void TestSettingsChangedCallback() {
 			settingsChangedCalled = false;
 			TestModSettingsChangedDetector.SettingsChangedCalled = false;
 			TestModSettingsChangedDetector.Handle.Value += 1;
 			Settings.SaveChanges();
-			Assert(settingsChangedCalled == false, "our mod not notified");
-			Assert(TestModSettingsChangedDetector.SettingsChangedCalled, "foreign mod notified");
-
-			settingsChangedCalled = false;
-			Assert(handle.Value != handle.DefaultValue, "has non-default value");
-			Assert(handle.HasUnsavedChanges == false, "saved before default value");
-			handle.Value = handle.DefaultValue;
-			Settings.SaveChanges();
-			Assert(handle.HasUnsavedChanges == false, "default value handle after has no unsaved changes");
-			Assert(settingsChangedCalled, "default value propagated save");
-
-			HugsLibController.SettingsManager.AfterModSettingsSaved -= OnControllerSaved;
+			if (settingsChangedCalled) {
+				Logger.Error($"Unexpected call to {nameof(TestMod)}.{nameof(SettingsChanged)}");
+			}
+			if (!TestModSettingsChangedDetector.SettingsChangedCalled) {
+				Logger.Error($"No expected call to {nameof(TestModSettingsChangedDetector)}.{nameof(SettingsChanged)}");
+			}
 		}
 
 		private void TestCustomTypeSetting() {

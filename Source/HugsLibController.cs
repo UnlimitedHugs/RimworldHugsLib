@@ -1,17 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using HugsLib.Core;
 using HugsLib.Logs;
 using HugsLib.News;
 using HugsLib.Quickstart;
 using HugsLib.Settings;
+using HugsLib.Spotter;
 using HugsLib.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Verse;
+
+[assembly:InternalsVisibleTo("HugsLibTests")]
 
 namespace HugsLib {
 	/// <summary>
@@ -112,6 +116,7 @@ namespace HugsLib {
 		public DistributedTickScheduler DistributedTicker { get; private set; }
 		public DoLaterScheduler DoLater { get; private set; }
 		public LogPublisher LogUploader { get; private set; }
+		public ModSpottingManager ModSpotter { get; private set; }
 
 		internal Harmony HarmonyInst { get; private set; }
 
@@ -133,6 +138,11 @@ namespace HugsLib {
 				DistributedTicker = new DistributedTickScheduler();
 				DoLater = new DoLaterScheduler();
 				LogUploader = new LogPublisher();
+				var librarySettings = Settings.GetModSettings(ModIdentifier);
+				QuickstartController.OnEarlyInitialize(librarySettings);
+				ModSpotter = new ModSpottingManager();
+				ModSpotter.OnEarlyInitialize();
+				new LibraryVersionChecker(LibraryVersion, Logger).OnEarlyInitialize();
 				LoadOrderChecker.ValidateLoadOrder();
 				EnumerateModAssemblies();
 				EarlyInitializeChildMods();
@@ -152,7 +162,9 @@ namespace HugsLib {
 					var modId = childMod.LogIdentifierSafe;
 					try {
 						childMod.EarlyInitialize();
+						#pragma warning disable 618 // Obsolete warning
 						childMod.EarlyInitalize();
+						#pragma warning restore 618
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}
@@ -177,7 +189,7 @@ namespace HugsLib {
 				}
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
-				QuickstartController.Initialize();
+				QuickstartController.OnLateInitialize();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
@@ -279,6 +291,10 @@ namespace HugsLib {
 			}
 		}
 
+		internal void OnGUIUnfiltered() {
+			QuickstartController.OnGUIUnfiltered();
+		}
+
 		internal void OnSceneLoaded(Scene scene) {
 			try {
 				for (int i = 0; i < childMods.Count; i++) {
@@ -288,6 +304,21 @@ namespace HugsLib {
 						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
 					}
 				}
+			} catch (Exception e) {
+				Logger.ReportException(e);
+			}
+		}
+
+		internal void OnApplicationQuit() {
+			try {
+				for (int i = 0; i < childMods.Count; i++) {
+					try {
+						childMods[i].ApplicationQuit();
+					} catch (Exception e) {
+						Logger.ReportException(e, childMods[i].LogIdentifierSafe);
+					}
+				}
+				Settings.SaveChanges();
 			} catch (Exception e) {
 				Logger.ReportException(e);
 			}
@@ -469,6 +500,7 @@ namespace HugsLib {
 		// Ensure that no other mod has accidentally included the dll
 		private void CheckForIncludedHugsLibAssembly() {
 			var controllerTypeName = GetType().FullName;
+			if(controllerTypeName == null) throw new NullReferenceException();
 			foreach (var modContentPack in LoadedModManager.RunningMods) {
 				foreach (var loadedAssembly in modContentPack.assemblies.loadedAssemblies) {
 					if (loadedAssembly.GetType(controllerTypeName, false) != null && modContentPack.Name != ModPackName) {
@@ -499,11 +531,10 @@ namespace HugsLib {
 		private void RegisterOwnSettings() {
 			try {
 				var pack = Settings.GetModSettings(ModIdentifier);
-				pack.EntryName = "HugsLib_ownSettingsName".Translate();
+				pack.EntryName = assemblyContentPacks[Assembly.GetCallingAssembly()]?.Name ?? "HugsLib";
 				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
 				pack.AlwaysExpandEntry = true;
 				UpdateFeatures.RegisterSettings(pack);
-				QuickstartController.RegisterSettings(pack);
 				LogPublisher.RegisterSettings(pack);
 			} catch (Exception e) {
 				Logger.ReportException(e);

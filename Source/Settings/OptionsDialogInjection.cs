@@ -1,4 +1,4 @@
-﻿using RimWorld;
+﻿using HugsLib.Utils;
 using UnityEngine;
 using Verse;
 
@@ -13,8 +13,7 @@ namespace HugsLib.Settings {
 			var prevColor = GUI.color;
 			GUI.color = ButtonColor;
 			if (listing.ButtonText("HugsLib_settings_btn".Translate())) {
-				Find.WindowStack.TryRemove(typeof(Dialog_Options));
-				Find.WindowStack.Add(new Dialog_ModSettings());
+				HugsLibUtility.OpenModSettingsDialog();
 			}
 			GUI.color = prevColor;
 		}

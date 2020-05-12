@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using HugsLib.Settings;
 using JetBrains.Annotations;
 using RimWorld;
 using UnityEngine;
@@ -215,26 +216,25 @@ namespace HugsLib.Utils {
 		/// Expands a shorthand unix user directory path with its full system path.
 		/// </summary>
 		public static string TryReplaceUserDirectory(this string text) {
-	        if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
-		        text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
-	        }
-	        return text;
-        }
+			if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
+				text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
+			}
+			return text;
+		}
 
 		/// <summary>
 		/// Adds double quotes to the start and end of a string.
 		/// </summary>
-        public static string SurroundWithDoubleQuotes(this string text) {
-            return string.Format("\"{0}\"", text);
-        }
+		public static string SurroundWithDoubleQuotes(this string text) {
+			return string.Format("\"{0}\"", text);
+		}
 
 		/// <summary>
 		/// Attempts to return the patch of the log file Unity is writing to.
 		/// </summary>
 		/// <returns></returns>
 		public static string TryGetLogFilePath() {
-			string logfile;
-			if (GenCommandLine.TryGetCommandLineArg("logfile", out logfile) && logfile.NullOrEmpty()) {
+			if (GenCommandLine.TryGetCommandLineArg("logfile", out var logfile) && logfile.NullOrEmpty()) {
 				return logfile;
 			}
 			var platform = PlatformUtility.GetCurrentPlatform();
@@ -242,7 +242,8 @@ namespace HugsLib.Utils {
 				case PlatformType.Linux:
 					return @"/tmp/rimworld_log";
 				case PlatformType.MacOSX:
-					return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Logs/Unity/Player.log");
+					return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
+						$"Library/Logs/{Application.companyName}/{Application.productName}/Player.log");
 				case PlatformType.Windows:
 					return Path.Combine(Application.persistentDataPath, "Player.log");
 				default:
@@ -259,7 +260,11 @@ namespace HugsLib.Utils {
 		/// <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
 		/// <param name="timeout">How long to wait before aborting the request</param>
 		public static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
+			/* TodoMajor: scrap whole method, revert to System.Net.WebClient
+			.NET version has been updated and SSL should work again */
+#pragma warning disable 618
 			request.Send();
+#pragma warning restore 618
 			var timeoutTime = Time.unscaledTime + timeout;
 			Action pollingAction = null;
 			pollingAction = () => {
@@ -321,6 +326,16 @@ namespace HugsLib.Utils {
 			}
 		}
 
+		/// <summary>
+		///	Opens the HugsLib Mod Settings dialog and restores its last known state (expanded entries, scroll position). 
+		/// </summary>
+		public static void OpenModSettingsDialog() {
+			Find.WindowStack.TryRemove(typeof(Dialog_Options));
+			Find.WindowStack.Add(new Settings.Dialog_ModSettings {
+				WindowState = ModSettingsWindowState.Instance
+			});
+		}
+
 		internal static void BlameCallbackException(string schedulerName, Delegate callback, Exception e) {
 			string exceptionCause = null;
 			if (callback != null) {
@@ -343,6 +358,13 @@ namespace HugsLib.Utils {
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
 		}
 
+		internal static string ToSemanticString(this Version v, string nullFallback = "unknown") {
+			if (v == null) return nullFallback;
+			// System.Version parts: Major.Minor.Build.Revision
+			return v.Build < 0 
+				? $"{v.ToString(2)}.0" 
+				: v.ToString(v.Revision <= 0 ? 3 : 4);
+		}
 	}
 
 

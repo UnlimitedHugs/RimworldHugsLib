@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
 using RimWorld;
@@ -28,11 +29,14 @@ namespace HugsLib.Quickstart {
 				return handle.Value ?? (handle.Value = new QuickstartSettings());
 			}
 		}
-
+		
+		// TodoMajor: remove this field
 		private static Texture2D quickstartIconTex;
 		private static Type quickStarterType;
 		private static FieldInfo quickStartedField;
 		private static SettingHandle<QuickstartSettings> handle;
+		private static QuickstartStatusBox statusBox;
+		private static bool quickstartPending;
 		private static bool mapGenerationPending;
 
 		public static void InitateMapGeneration() {
@@ -45,13 +49,11 @@ namespace HugsLib.Quickstart {
 		}
 
 		public static void InitateSaveLoading() {
-			var saveName = Settings.SaveFileToLoad;
-			if (saveName == null) {
-				throw new WarningException("save filename not set");
-			}
+			var saveName = GetSaveNameToLoad()
+				?? throw new WarningException("save filename not set"); 
 			var filePath = GenFilePaths.FilePathForSavedGame(saveName);
 			if (!File.Exists(filePath)) {
-				throw new WarningException("save file not found: " + Settings.SaveFileToLoad);
+				throw new WarningException("save file not found: " + saveName);
 			}
 			HugsLibController.Logger.Message("Quickstarter is loading saved game: " + saveName);
 			Action loadAction = () => {
@@ -73,21 +75,30 @@ namespace HugsLib.Quickstart {
 			if (quickStartedField == null) HugsLibController.Logger.Error("QuickStarter.quickStarted field not found");
 		}
 
-		internal static void Initialize() {
-			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = ContentFinder<Texture2D>.Get("quickstartIcon"));
+		internal static void OnEarlyInitialize(ModSettingsPack librarySettings) {
+			PrepareSettings(librarySettings);
+			PrepareQuickstart();
+		}
+
+		internal static void OnLateInitialize() {
+			RetrofitSettingWithLabel();
+			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = HugsLibTextures.quickstartIcon);
 			EnumerateMapSizes();
 			if (Prefs.DevMode) {
-				LongEventHandler.QueueLongEvent(SetupForQuickstart, null, false, null);
+				LongEventHandler.QueueLongEvent(InitiateQuickstart, null, false, null);
 			}
 		}
 
-		internal static void RegisterSettings(ModSettingsPack settings) {
-			handle = settings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
-			handle.NeverVisible = true;
+		internal static void OnGUIUnfiltered() {
+			if (!quickstartPending) return;
+			statusBox.OnGUI();
 		}
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {
-			if (widgets.ButtonIcon(quickstartIconTex, "Open the quickstart settings.\n\nThis lets you automatically generate a map or load an existing save when the game is started.\nShift-click to quick-generate a new map.")) {
+			const string quickstartButtonTooltip = "Open the quickstart settings.\n\n" +
+				"This lets you automatically generate a map or load an existing save when the game is started.\n" +
+				"Shift-click to quick-generate a new map.";
+			if (widgets.ButtonIcon(quickstartIconTex, quickstartButtonTooltip)) {
 				var stack = Find.WindowStack;
 				if (HugsLibUtility.ShiftIsHeld) {
 					stack.TryRemove(typeof(Dialog_QuickstartSettings));
@@ -114,13 +125,51 @@ namespace HugsLib.Quickstart {
 			return mapGenerationPending ? Settings.MapSizeToGen : original;
 		}
 
-		private static void SetupForQuickstart() {
+		private static void PrepareSettings(ModSettingsPack librarySettings) {
+			handle = librarySettings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
+			handle.NeverVisible = true;
+		}
+
+		private static void RetrofitSettingWithLabel() {
+			// language data is not yet loaded when creating the handle, so we have to postpone adding the label
+			handle.Title = "HugsLib_setting_quickstartSettings_label".Translate();
+		}
+
+		private static void PrepareQuickstart() {
+			if (Settings.OperationMode != QuickstartSettings.QuickstartMode.Disabled) {
+				quickstartPending = true;
+				statusBox = new QuickstartStatusBox(GetStatusBoxOperation(Settings));
+				statusBox.AbortRequested += StatusBoxAbortRequestedHandler;
+			}
+
+			QuickstartStatusBox.IOperationMessageProvider GetStatusBoxOperation(QuickstartSettings settings) {
+				switch (settings.OperationMode) {
+					case QuickstartSettings.QuickstartMode.LoadMap:
+						return new QuickstartStatusBox.LoadSaveOperation(GetSaveNameToLoad() ?? string.Empty);
+					case QuickstartSettings.QuickstartMode.GenerateMap:
+						return new QuickstartStatusBox.GenerateMapOperation(
+							settings.ScenarioToGen, settings.MapSizeToGen);
+					default:
+						throw new ArgumentOutOfRangeException("Unhandled operation mode: "+settings.OperationMode);
+				}
+			}
+		}
+
+		private static void StatusBoxAbortRequestedHandler(bool abortAndDisable) {
+			quickstartPending = false;
+			HugsLibController.Logger.Warning("Quickstart aborted: Space key was pressed.");
+			if (abortAndDisable) {
+				Settings.OperationMode = QuickstartSettings.QuickstartMode.Disabled;
+				LongEventHandler.ExecuteWhenFinished(SaveSettings);
+			}
+		}
+
+		private static void InitiateQuickstart() {
+			if(!quickstartPending) return;
+			quickstartPending = false;
+			statusBox = null;
 			try {
 				if (Settings.OperationMode == QuickstartSettings.QuickstartMode.Disabled) return;
-				if (HugsLibUtility.ShiftIsHeld) {
-					HugsLibController.Logger.Warning("Quickstart aborted: Shift key was held.");
-					return;
-				}
 				CheckForErrorsAndWarnings();
 				if (Settings.OperationMode == QuickstartSettings.QuickstartMode.GenerateMap) {
 					if (GenCommandLine.CommandLineArgPassed("quicktest")) {
@@ -162,7 +211,7 @@ namespace HugsLib.Quickstart {
 					case 300: desc = "MapSizeLarge".Translate(); break;
 					case 350: desc = "MapSizeExtreme".Translate(); break;
 				}
-				var label = string.Format("{0}x{0}", size) + (desc != null ? string.Format(" ({0})", desc) : "");
+				var label = string.Format("{0}x{0}", size) + (desc != null ? $" ({desc})" : "");
 				MapSizes.Add(new MapSizeEntry(size, label));
 			}
 			SnapSettingsMapSizeToClosestValue(Settings, MapSizes);
@@ -183,6 +232,15 @@ namespace HugsLib.Quickstart {
 		// ensure that the settings have a valid map size
 		private static void SnapSettingsMapSizeToClosestValue(QuickstartSettings settings, List<MapSizeEntry> sizes) {
 			Settings.MapSizeToGen = sizes.OrderBy(e => Mathf.Abs(e.Size - settings.MapSizeToGen)).First().Size;
+		}
+
+		private static string GetSaveNameToLoad() {
+			return Settings.SaveFileToLoad ?? TryGetMostRecentSaveFileName();
+		}
+
+		private static string TryGetMostRecentSaveFileName() {
+			var mostRecentFilePath = GenFilePaths.AllSavedGameFiles.FirstOrDefault()?.Name;
+			return Path.GetFileNameWithoutExtension(mostRecentFilePath);
 		}
 
 		public class MapSizeEntry {

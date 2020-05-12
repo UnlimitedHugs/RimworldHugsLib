@@ -49,7 +49,6 @@ namespace HugsLib.Quickstart {
 			const float subListingRowHeight = 30f;
 			const float checkboxListingWidth = 280f;
 			const float listingColumnSpacing = 17f;
-			const string shiftTip = "Hold Shift while starting up to prevent the quickstart.";
 			var settings = QuickstartController.Settings;
 			var mainListing = new Listing_Standard();
 			mainListing.verticalSpacing = mainListingSpacing;
@@ -62,7 +61,7 @@ namespace HugsLib.Quickstart {
 			OperationModeRadioButton(mainListing, radioLabelInset, "Quickstart off", settings, QuickstartSettings.QuickstartMode.Disabled, 
 				"Quickstart functionality is disabled.\nThe game starts normally.");
 			OperationModeRadioButton(mainListing, radioLabelInset, "Quickstart: load save file", settings, QuickstartSettings.QuickstartMode.LoadMap,
-				"Load the selected saved game right after launch.\n"+shiftTip);
+				"Load the selected saved game right after launch.");
 			var expectedHeight = categoryPadding * 2 + (subListingRowHeight + subListingSpacing) * 1;
 			MakeSubListing(mainListing, 0, expectedHeight, categoryPadding, categoryInset, subListingSpacing, (sub, width) => {
 				sub.ColumnWidth = subListingLabelWidth;
@@ -75,7 +74,7 @@ namespace HugsLib.Quickstart {
 				MakeSelectSaveButton(sub, settings);
 			});
 			OperationModeRadioButton(mainListing, radioLabelInset, "Quickstart: generate map", settings, QuickstartSettings.QuickstartMode.GenerateMap,
-				"Generate a new map right after launch.\nWorks the same as using the \"quicktest\" command line option.\n" + shiftTip);
+				"Generate a new map right after launch.\nWorks the same as using the \"quicktest\" command line option.");
 			expectedHeight = categoryPadding * 2 + (subListingRowHeight + subListingSpacing) * 2;
 			MakeSubListing(mainListing, 0, expectedHeight, categoryPadding, categoryInset, subListingSpacing, (sub, width) => {
 				sub.ColumnWidth = subListingLabelWidth;
@@ -145,38 +144,51 @@ namespace HugsLib.Quickstart {
 		}
 
 		private void MakeSelectSaveButton(Listing_Standard sub, QuickstartSettings settings) {
-			const float VersionLabelOffset = 10f;
 			const float LoadNowWidth = 120f;
 			const float HorizontalSpacing = 6f;
 			const float ButtonHeight = 30f;
-			var selected = settings.SaveFileToLoad;
+			const string LatestSaveFileLabel = "Most recent save file";
 			var buttonRect = sub.GetRect(ButtonHeight);
 			var leftHalf = new Rect(buttonRect) {xMax = buttonRect.xMax - (LoadNowWidth + HorizontalSpacing)};
 			var rightHalf = new Rect(buttonRect) { xMin = buttonRect.xMin + leftHalf.width + HorizontalSpacing };
-			if (Widgets.ButtonText(leftHalf, selected ?? "Select a save file")) {
-				var menu = new FloatMenu(saveFiles.Select(s => {
-					return new FloatMenuOption(s.Label, () => { settings.SaveFileToLoad = s.Name; }, MenuOptionPriority.Default, null, null, Text.CalcSize(s.VersionLabel).x + VersionLabelOffset,
-						rect => {
-							var prevColor = GUI.color;
-							GUI.color = s.FileInfo.VersionColor;
-							Text.Anchor = TextAnchor.MiddleLeft;
-							Widgets.Label(new Rect(rect.x + VersionLabelOffset, rect.y, 200f, rect.height), s.VersionLabel);
-							Text.Anchor = TextAnchor.UpperLeft;
-							GUI.color = prevColor;
-							return false;
-						}
-					);
-				}).ToList());
-				Find.WindowStack.Add(menu);
+			var selectedSaveLabel = settings.SaveFileToLoad ?? LatestSaveFileLabel;
+			if (Widgets.ButtonText(leftHalf, selectedSaveLabel)) {
+				ShowSaveFileSelectionFloatMenu();
 			}
 			if (Widgets.ButtonText(rightHalf, "Load now")) {
-				if (!HugsLibUtility.ShiftIsHeld) {
+				if (HugsLibUtility.ShiftIsHeld) {
 					settings.OperationMode = QuickstartSettings.QuickstartMode.LoadMap;
 				}
 				QuickstartController.InitateSaveLoading();
 				Close();
 			}
 			sub.Gap(sub.verticalSpacing);
+
+			void ShowSaveFileSelectionFloatMenu() {
+				var options = new List<FloatMenuOption> {
+					new FloatMenuOption(LatestSaveFileLabel, () => settings.SaveFileToLoad = null)
+				};
+				options.AddRange(GetSaveFileFloatMenuOptions(settings));
+				Find.WindowStack.Add(new FloatMenu(options));
+			}			
+		}
+
+		private IEnumerable<FloatMenuOption> GetSaveFileFloatMenuOptions(QuickstartSettings settings) {
+			const float VersionLabelOffset = 10f;
+			return saveFiles.Select(s => {
+				return new FloatMenuOption(s.Label, () => { settings.SaveFileToLoad = s.Name; }, 
+					MenuOptionPriority.Default, null, null, Text.CalcSize(s.VersionLabel).x + VersionLabelOffset,
+					rect => {
+						var prevColor = GUI.color;
+						GUI.color = s.FileInfo.VersionColor;
+						Text.Anchor = TextAnchor.MiddleLeft;
+						Widgets.Label(new Rect(rect.x + VersionLabelOffset, rect.y, 200f, rect.height), s.VersionLabel);
+						Text.Anchor = TextAnchor.UpperLeft;
+						GUI.color = prevColor;
+						return false;
+					}
+				);
+			});
 		}
 
 		private void MakeSelectScenarioButton(Listing_Standard sub, QuickstartSettings settings) {
@@ -194,7 +206,7 @@ namespace HugsLib.Quickstart {
 				Find.WindowStack.Add(menu);
 			}
 			if (Widgets.ButtonText(rightHalf, "Generate now")) {
-				if (!HugsLibUtility.ShiftIsHeld) {
+				if (HugsLibUtility.ShiftIsHeld) {
 					settings.OperationMode = QuickstartSettings.QuickstartMode.GenerateMap;
 				}
 				QuickstartController.InitateMapGeneration();

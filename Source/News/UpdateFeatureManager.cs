@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.Settings;
@@ -13,7 +13,7 @@ namespace HugsLib.News {
 	/// Stores the highest displayed update news version for all mods that provide update news via <see cref="UpdateFeatureDef"/>.
 	/// Defs are loaded from the News folder in the root mod directory.
 	/// </summary>
-	public class UpdateFeatureManager : PersistentDataManager {
+	public class UpdateFeatureManager : PersistentDataManager, IUpdateFeaturesDevActions {
 		internal const string UpdateFeatureDefFolder = "News/";
 
 		protected override string FileName {
@@ -30,14 +30,31 @@ namespace HugsLib.News {
 			LoadData();
 		}
 
+		// TodoMajor: remove this
 		[Obsolete("Mods no longer need to call in, fresh news are automatically detected based on their defs")]
 		public void InspectActiveMod(string modId, Version currentVersion) {
 		}
 
 		internal void OnEarlyInitialize() {
+			// offload reading and parsing XML files to a worker thread
+			var loadingTask = Task.Run(UpdateFeatureDefLoader.LoadUpdateFeatureDefNodes);
+			
 			// this should put us just before backstory loading in the DoPlayLoad cycle
 			// we inject our defs early on to take advantage of the stock translation injection system
-			LongEventHandler.ExecuteWhenFinished(UpdateFeatureDefLoader.LoadUpdateFeatureDefs);
+			LongEventHandler.ExecuteWhenFinished(ResolveAndInjectNewsDefs);
+			
+			void ResolveAndInjectNewsDefs() {
+				// this must be done synchronously to avoid creating potential race conditions with other mods
+				try {
+					if (!loadingTask.Wait(TimeSpan.FromSeconds(3)))
+						throw new InvalidOperationException("XML loading did not resolve in time");
+					var (nodes, errors) = loadingTask.Result;
+					UpdateFeatureDefLoader.HandleDefLoadingErrors(errors);
+					UpdateFeatureDefLoader.ResolveAndInjectUpdateFeatureDefs(nodes);
+				} catch (Exception e) {
+					HugsLibController.Logger.Error("Failed to load UpdateFeatureDefs: " + e);
+				}
+			}
 		}
 
 		/// <summary>
@@ -50,19 +67,33 @@ namespace HugsLib.News {
 			if (ShowNewsSetting.Value || manuallyOpened) {
 				var allNewsFeatureDefs = DefDatabase<UpdateFeatureDef>.AllDefs;
 				List<UpdateFeatureDef> defsToShow;
+				bool seenVersionsNeedSaving;
 				if (manuallyOpened) {
 					defsToShow = allNewsFeatureDefs.ToList();
+					seenVersionsNeedSaving = true;
 				} else {
-					// try to find defs newer than already featured, exclude ignored mods, remember highest found version
-					defsToShow = EnumerateFeatureDefsWithMoreRecentVersions(allNewsFeatureDefs, highestSeenVersions)
-						.Where(def => !NewsProviderOwningModIdIsIgnored(def.OwningModId))
-						.ToList();
-					UpdateMostRecentKnownFeatureVersions(defsToShow, highestSeenVersions);
+					var filteredByVersion = EnumerateFeatureDefsWithMoreRecentVersions(allNewsFeatureDefs, highestSeenVersions)
+							.Where(def => !NewsProviderOwningModIdIsIgnored(def.OwningModId))
+							.ToArray();
+					UpdateMostRecentKnownFeatureVersions(filteredByVersion, highestSeenVersions);
+					seenVersionsNeedSaving = filteredByVersion.Length > 0;
+					
+					var filteredByAudience = FilterFeatureDefsByMatchingAudience(filteredByVersion,
+						HugsLibController.Instance.ModSpotter.FirstTimeSeen,
+						e => HugsLibController.Logger.ReportException(e)
+					);
+					defsToShow = filteredByAudience.ToList();
+				}
+				if (seenVersionsNeedSaving) {
+					SaveData();
 				}
 				if (defsToShow.Count > 0) {
 					SortFeatureDefsByModNameAndVersion(defsToShow);
-					Find.WindowStack.Add(new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting));
-					SaveData();
+					var newsDialog = manuallyOpened
+						? new Dialog_UpdateFeaturesFiltered(defsToShow, IgnoredNewsProvidersSetting, 
+							this, HugsLibController.Instance.ModSpotter)
+						: new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting);
+					Find.WindowStack.Add(newsDialog);
 					return true;
 				}
 			}
@@ -97,6 +128,26 @@ namespace HugsLib.News {
 			}
 		}
 
+		internal static IEnumerable<UpdateFeatureDef> FilterFeatureDefsByMatchingAudience(
+			IEnumerable<UpdateFeatureDef> featureDefs, Predicate<string> packageIdFirstTimeSeen, Action<Exception> exceptionReporter) {
+			foreach (var featureDef in featureDefs) {
+				bool firstTimeSeen;
+				try {
+					var owningPackageId = featureDef.OwningPackageId;
+					firstTimeSeen = packageIdFirstTimeSeen(owningPackageId);
+				} catch (Exception e) {
+					exceptionReporter(e);
+					continue;
+				}
+				var requiredTargetAudienceFlag = firstTimeSeen
+					? UpdateFeatureTargetAudience.NewPlayers
+					: UpdateFeatureTargetAudience.ReturningPlayers;
+				if ((featureDef.targetAudience & requiredTargetAudienceFlag) != 0) {
+					yield return featureDef;
+				}
+			}
+		}
+
 		private static void SortFeatureDefsByModNameAndVersion(List<UpdateFeatureDef> featureDefs) {
 			// sort defs by modNameReadable first, Version of the news item second
 			featureDefs.Sort((def1, def2) => def1.modNameReadable != def2.modNameReadable
@@ -116,13 +167,20 @@ namespace HugsLib.News {
 				}
 				return false;
 			};
-			IgnoredNewsProvidersSetting = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", null, null);
-			if (IgnoredNewsProvidersSetting.Value == null) {
-				IgnoredNewsProvidersSetting.Value = new IgnoredNewsIds();
-				IgnoredNewsProvidersSetting.HasUnsavedChanges = false;
+			
+			var ignored = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", 
+				"HugsLib_setting_ignoredUpdateNews_label".Translate(), null);
+			IgnoredNewsProvidersSetting = ignored;
+			ignored.OnValueChanged = EnsureIgnoredProvidersInstance;
+			EnsureIgnoredProvidersInstance(null);
+			ignored.NeverVisible = true;
+			ignored.Value.Handle = ignored;
+
+			void EnsureIgnoredProvidersInstance(IgnoredNewsIds _) {
+				if (ignored.Value != null) return;
+				ignored.Value = new IgnoredNewsIds();
+				ignored.HasUnsavedChanges = false;
 			}
-			IgnoredNewsProvidersSetting.NeverVisible = true;
-			IgnoredNewsProvidersSetting.Value.Handle = IgnoredNewsProvidersSetting;
 		}
 
 		protected override void LoadFromXml(XDocument xml) {
@@ -141,7 +199,36 @@ namespace HugsLib.News {
 			}
 		}
 
-		public class IgnoredNewsIds : SettingHandleConvertible {
+		Version IUpdateFeaturesDevActions.GetLastSeenNewsVersion(string modIdentifier) {
+			return highestSeenVersions.TryGetValue(modIdentifier);
+		}
+
+		IEnumerable<UpdateFeatureDef> IUpdateFeaturesDevActions.ReloadAllUpdateFeatureDefs() {
+			UpdateFeatureDefLoader.ReloadAllUpdateFeatureDefs();
+			return DefDatabase<UpdateFeatureDef>.AllDefs;
+		}
+
+		bool IUpdateFeaturesDevActions.TryShowAutomaticNewsPopupDialog() {
+			return TryShowDialog(false);
+		}
+
+		void IUpdateFeaturesDevActions.SetLastSeenNewsVersion(string modIdentifier, Version version) {
+			var changesNeedSaving = false;
+			if (version != null) {
+				highestSeenVersions[modIdentifier] = version;
+				changesNeedSaving = true;
+			} else {
+				if (highestSeenVersions.ContainsKey(modIdentifier)) {
+					highestSeenVersions.Remove(modIdentifier);
+					changesNeedSaving = true;
+				}
+			}
+			if (changesNeedSaving) {
+				SaveData();
+			}
+		}
+
+		public class IgnoredNewsIds : SettingHandleConvertible, IIgnoredNewsProviderStore {
 			private const char SerializationSeparator = '|';
 			private HashSet<string> ignoredOwnerIds = new HashSet<string>();
 
@@ -169,102 +256,9 @@ namespace HugsLib.News {
 				return ignoredOwnerIds.Join(SerializationSeparator.ToString());
 			}
 		}
+	}
 
-		private static class UpdateFeatureDefLoader {
-
-			public static void LoadUpdateFeatureDefs() {
-				ResetUpdateFeatureDefTranslations();
-				var parsedDefs = LoadAndParseNewsFeatureDefs();
-				ReinitUpdateFeatureDefDatabase(parsedDefs);
-			}
-
-			private static IEnumerable<UpdateFeatureDef> LoadAndParseNewsFeatureDefs() {
-				XmlInheritance.Clear();
-				// As we're moving the updates out of /Defs and into /News, we can no longer rely on the DefDatabase to magically 
-				// load all the UpdateFeatureDefs. Instead, we'll have to manually point the reader to the relevant folders. 
-				// Overall, we'll stick as much as we can to the vanilla def loading experience, albeit without patches.
-				// Patch metadata has already been cleared, and parsing it again would add too much overhead.
-				// First, gather all XML nodes that represent an UpdateFeatureDef, and remember where they came from
-				// We can't parse them info defs on the spot, because there is inheritance to consider.
-				var newsItemNodes = new List<(ModContentPack pack, XmlNode node, LoadableXmlAsset asset)>();
-				foreach (var modContentPack in LoadedModManager.RunningMods) {
-					try {
-						var modNewsXmlAssets = DirectXmlLoader.XmlAssetsInModFolder(modContentPack, UpdateFeatureDefFolder);
-						foreach (var xmlAsset in modNewsXmlAssets) {
-							var rootElement = xmlAsset.xmlDoc?.DocumentElement;
-							if (rootElement != null) {
-								foreach (var childNode in rootElement.ChildNodes.OfType<XmlNode>()) {
-									newsItemNodes.Add((modContentPack, childNode, xmlAsset));
-								}
-							}
-						}
-					} catch (Exception e) {
-						HugsLibController.Logger.Error("Failed to load UpdateFeatureDefs for mod " +
-														$"{modContentPack.PackageIdPlayerFacing}: {e}");
-						throw;
-					}
-				}
-
-				// deal with inheritance
-				foreach (var (modContent, node, _) in newsItemNodes) {
-					if (node != null && node.NodeType == XmlNodeType.Element) {
-						XmlInheritance.TryRegister(node, modContent);
-					}
-				}
-				XmlInheritance.Resolve();
-
-				var parsedFeatureDefs = new List<UpdateFeatureDef>();
-				foreach (var (pack, node, asset) in newsItemNodes) {
-					// parse defs
-					try {
-						var def = DirectXmlLoader.DefFromNode(node, asset) as UpdateFeatureDef;
-						if (def != null) {
-							def.modContentPack = pack;
-							def.ResolveReferences();
-							parsedFeatureDefs.Add(def);
-						}
-					} catch (Exception e) {
-						HugsLibController.Logger.Error($"Failed to parse UpdateFeatureDef from mod {pack.PackageIdPlayerFacing}:\n" +
-														$"{GetExceptionChainMessage(e)}\n" +
-														$"Context: {node?.OuterXml.ToStringSafe()}\n" +
-														$"File: {asset?.FullFilePath.ToStringSafe()}\n" +
-														$"Exception: {e}");
-					}
-				}
-				
-				XmlInheritance.Clear();
-
-				return parsedFeatureDefs;
-			}
-
-			private static void ResetUpdateFeatureDefTranslations() {
-				// translations might have already been applied to news defs inherited from 1.0
-				// through the versioning system, and must be reset so they can be applied again
-				if(LanguageDatabase.activeLanguage == null) return;
-				foreach (var defInjection in LanguageDatabase.activeLanguage.defInjections) {
-					if (defInjection.defType == typeof(UpdateFeatureDef)) {
-						foreach (var injection in defInjection.injections) {
-							injection.Value.injected = false;
-						}
-						defInjection.loadErrors.Clear();
-					}
-				}
-			}
-
-			private static void ReinitUpdateFeatureDefDatabase(IEnumerable<UpdateFeatureDef> defs) {
-				// defs "inherited" from 1.0 through the folder versioning system are removed at this point
-				DefDatabase<UpdateFeatureDef>.Clear();
-				DefDatabase<UpdateFeatureDef>.Add(defs);
-			}
-
-			private static string GetExceptionChainMessage(Exception e) {
-				var message = e.Message;
-				while (e.InnerException != null) {
-					e = e.InnerException;
-					message += $" -> {e.Message}";
-				}
-				return message;
-			}
-		}
+	internal interface IIgnoredNewsProviderStore {
+		bool Contains(string providerId);
 	}
 }

@@ -56,23 +56,11 @@ namespace HugsLib.Utils {
 
 		public override string ToString() {
 			if (AssemblyFileVersion == null) {
-				return $"{ToSemanticString(AssemblyVersion)} [no FileVersionInfo]";
+				return $"{AssemblyVersion.ToSemanticString()} [no FileVersionInfo]";
 			} else if(AssemblyFileVersion == AssemblyVersion) {
-				return ToSemanticString(AssemblyVersion);
+				return AssemblyVersion.ToSemanticString();
 			} else {
-				return $"av:{ToSemanticString(AssemblyVersion)},fv:{ToSemanticString(AssemblyFileVersion)}";
-			}
-		}
-
-		private static string ToSemanticString(Version v) {
-			if (v == null) return "unknown";
-			// System.Version parts: Major.Minor.Build.Revision
-			if (v.Build < 0) {
-				return $"{v.ToString(2)}.0";
-			} else if (v.Revision <= 0) {
-				return v.ToString(3);
-			} else {
-				return v.ToString(4);
+				return $"av:{AssemblyVersion.ToSemanticString()},fv:{AssemblyFileVersion.ToSemanticString()}";
 			}
 		}
 	}

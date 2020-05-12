@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using HugsLib.Utils;
 using Verse;
 
 namespace HugsLib.Core {
@@ -18,7 +19,11 @@ namespace HugsLib.Core {
 				return false;
 			}
 		}
-		
+
+		protected string OverrideFilePath { get; set; }
+
+		internal IModLogger DataManagerLogger { get; set; } = HugsLibController.Logger;
+
 		protected abstract string FileName { get; }
 
 		protected abstract void LoadFromXml(XDocument xml);
@@ -29,6 +34,10 @@ namespace HugsLib.Core {
 			get { return "HugsLib"; }
 		}
 
+		protected virtual bool SuppressLoadSaveExceptions {
+			get { return true; }
+		}
+		
 		protected virtual bool DisplayLoadSaveWarnings {
 			get { return true; }
 		}
@@ -40,7 +49,12 @@ namespace HugsLib.Core {
 				var doc = XDocument.Load(filePath);
 				LoadFromXml(doc);
 			} catch (Exception ex) {
-				if(DisplayLoadSaveWarnings) HugsLibController.Logger.Warning("Exception loading xml from " + filePath + ". Loading defaults instead. Exception was: " + ex);
+				if (DisplayLoadSaveWarnings) {
+					DataManagerLogger.Warning("Exception loading xml from " + filePath + ". " +
+						"Loading defaults instead. Exception was: " + ex
+					);
+				}
+				if (!SuppressLoadSaveExceptions) throw;
 			}
 		}
 
@@ -51,11 +65,15 @@ namespace HugsLib.Core {
 				WriteXml(doc);
 				doc.Save(filePath);
 			} catch (Exception ex) {
-				if (DisplayLoadSaveWarnings) HugsLibController.Logger.Warning("Failed to save xml to " + filePath + ". Exception was: " + ex);
+				if (DisplayLoadSaveWarnings) {
+					DataManagerLogger.Warning("Failed to save xml to " + filePath + ". Exception was: " + ex);
+				}
+				if (!SuppressLoadSaveExceptions) throw;
 			}
 		}
 
 		private string GetSettingsFilePath(string fileName) {
+			if (OverrideFilePath != null) return OverrideFilePath;
 			string path = Path.Combine(GenFilePaths.SaveDataFolderPath, FolderName);
 			var directoryInfo = new DirectoryInfo(path);
 			if (!directoryInfo.Exists) {

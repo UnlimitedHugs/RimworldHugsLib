@@ -45,13 +45,8 @@ namespace HugsLib.Utils {
 				var namedMethodList = new List<NameMethodPair>(methodList.Count);
 				foreach (var method in methodList) {
 					if (method == null) continue;
-					string methodName;
-					if (method.DeclaringType != null) {
-						methodName = string.Concat(method.DeclaringType.Name, ".", method.Name);
-					} else {
-						methodName = method.Name;
-					}
-					namedMethodList.Add(new NameMethodPair(methodName, method));
+					var nestedName = GetNestedMemberName(method);
+					namedMethodList.Add(new NameMethodPair(nestedName, method));
 				}
 				if (namedMethodList.Count == 0) {
 					return "No patches have been reported.";
@@ -102,14 +97,26 @@ namespace HugsLib.Utils {
 		/// <returns></returns>
 		public static string DescribeHarmonyVersions(Harmony instance) {
 			try {
-				Version currentVersion;
-				var modVersionPairs = Harmony.VersionInfo(out currentVersion);
+				var modVersionPairs = Harmony.VersionInfo(out _);
 				return "Harmony versions present: " + 
 					modVersionPairs.GroupBy(kv => kv.Value, kv => kv.Key).OrderByDescending(grp => grp.Key)
 					.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");
 			} catch (Exception e) {
 				return "An exception occurred while collating Harmony version data:\n" + e;
 			}
+		}
+
+		internal static string GetNestedMemberName(MemberInfo member, int maxParentTypes = 10) {
+			var sb = new StringBuilder(member.Name);
+			var currentDepth = 0;
+			var currentType = member.DeclaringType;
+			while (currentType != null && currentDepth < maxParentTypes) {
+				sb.Insert(0, '.');
+				sb.Insert(0, currentType.Name);
+				currentType = currentType.DeclaringType;
+				currentDepth++;
+			}
+			return sb.ToString();
 		}
 
 		private static void AppendPatchList(IEnumerable<Patch> patchList, StringBuilder builder) {

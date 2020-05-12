@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using HugsLib.Settings;
@@ -16,8 +15,6 @@ namespace HugsLib.Patches {
 	[HarmonyPatch("DoWindowContents")]
 	[HarmonyPatch(new[] { typeof(Rect) })]
 	internal static class Dialog_Options_Patch {
-		private delegate bool ModSettingsButtonReplacementMethod(Listing_Standard _this, string label, string highlightTag);
-
 		private const string ButtonLabelToKill = "ModSettings";
 		//private static readonly MethodInfo ExpectedButtonMethod = Traverse.Create<Listing_Standard>().Method("ButtonText", new[] {typeof(Listing_Standard), typeof (string), typeof (string)}).GetValue<MethodInfo>();
 

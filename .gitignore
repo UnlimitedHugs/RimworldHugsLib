@@ -8,6 +8,9 @@ bin/
 obj/
 Debug/
 Release/
+packages/
+.vs/
+.idea/
 *.opensdf
 *.tlog
 *.log
@@ -16,5 +19,4 @@ TestResult.xml
 Version.cs
 Version.h
 Version.cpp
-*.sln
 *.tmp
