@@ -1,8 +1,11 @@
 ﻿using System;
+using HugsLib;
 using UnityEngine;
 using Verse;
 
-namespace HugsLib.Settings {
+// TodoMajor: fix namespace
+// ReSharper disable once CheckNamespace
+namespace RimWorld {
 	/// <summary>
 	/// Displays custom settings controls for mods that use the vanilla mod settings system.
 	/// The dialog shows the controls for a single mod only and is opened through Dialog_ModSettings.
