@@ -101,6 +101,7 @@
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\News\UpdateFeatureDefFilteringProvider.cs" />
     <Compile Include="Source\News\UpdateFeaturesDevMenu.cs" />
+    <Compile Include="Source\Patches\UIRoot_OnGUI_Patch.cs" />
     <Compile Include="Source\Quickstart\QuickstartStatusBox.cs" />
     <Compile Include="Source\Settings\CachedLabel.cs" />
     <Compile Include="Source\Settings\ContextMenuEntry.cs" />
