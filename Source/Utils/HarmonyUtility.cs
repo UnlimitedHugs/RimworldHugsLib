@@ -6,7 +6,9 @@ using System.Text;
 using HarmonyLib;
 
 namespace HugsLib.Utils {
-	/// <summary>
+    using Verse;
+
+    /// <summary>
 	/// Tools for working with the Harmony library.
 	/// </summary>
 	public static class HarmonyUtility {
@@ -138,6 +140,24 @@ namespace HugsLib.Utils {
 				builder.Append(patch.PatchMethod.FullName());
 			}
 		}
+
+        public static void CheckHarmonyPatchesForPotentialWarnings()
+        {
+            IEnumerable<(MethodBase, HarmonyLib.Patches)> patchList = Harmony.GetAllPatchedMethods().Select(mb => (mb, Harmony.GetPatchInfo(mb))).Where(mp => HasActivePatches(mp.Item2));
+            StringBuilder builderObsolete = new StringBuilder($"Potentially outdated mods for {typeof(Log).Assembly.GetName().Version}. Please alert the mod authors of the mods in the following list that they may have to update the patches for their mods and include the following information.\n");
+
+            bool printObsolete = false;
+            foreach (IGrouping<string, (string owner, MethodBase)> owners in patchList.Where(mp => mp.Item1.HasAttribute<ObsoleteAttribute>())
+                                                                                   .SelectMany(mp => mp.Item2.Prefixes.Concat(mp.Item2.Postfixes).Concat(mp.Item2.Transpilers)
+                                                                                                    .Select(p => (p.owner, mp.Item1))).GroupBy(p => p.owner))
+            {
+                builderObsolete.AppendLine($"Mod: {owners.Key}: {string.Join(" | ", owners.Select(mb => mb.Item2.Name).Distinct())}");
+                printObsolete = true;
+            }
+
+            if (printObsolete) 
+                HugsLibController.Logger.Error(builderObsolete.ToString());
+        }
 
 		private static bool HasActivePatches(HarmonyLib.Patches patches) {
 			return patches != null &&
