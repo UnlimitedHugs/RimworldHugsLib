@@ -4,11 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using Verse;
 
 namespace HugsLib.Utils {
-    using Verse;
-
-    /// <summary>
+	/// <summary>
 	/// Tools for working with the Harmony library.
 	/// </summary>
 	public static class HarmonyUtility {
@@ -102,7 +101,7 @@ namespace HugsLib.Utils {
 				var modVersionPairs = Harmony.VersionInfo(out _);
 				return "Harmony versions present: " + 
 					modVersionPairs.GroupBy(kv => kv.Value, kv => kv.Key).OrderByDescending(grp => grp.Key)
-					.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");
+						.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");
 			} catch (Exception e) {
 				return "An exception occurred while collating Harmony version data:\n" + e;
 			}
@@ -141,29 +140,45 @@ namespace HugsLib.Utils {
 			}
 		}
 
-        public static void CheckHarmonyPatchesForPotentialWarnings()
-        {
-            IEnumerable<(MethodBase, HarmonyLib.Patches)> patchList = Harmony.GetAllPatchedMethods().Select(mb => (mb, Harmony.GetPatchInfo(mb))).Where(mp => HasActivePatches(mp.Item2));
-            StringBuilder builderObsolete = new StringBuilder($"Potentially outdated mods for {typeof(Log).Assembly.GetName().Version}. Please alert the mod authors of the mods in the following list that they may have to update the patches for their mods and include the following information.\n");
+		/// <summary>
+		/// Logs an error if any issues with Harmony patches are detected
+		/// </summary>
+		public static void CheckHarmonyPatchesForPotentialWarnings() {
+			var obsoleteWarning = TryDescribeObsoleteMethodPatchOwners();
+			if (obsoleteWarning != null) {
+				HugsLibController.Logger.Error(obsoleteWarning);
+			}
+		}
 
-            bool printObsolete = false;
-            foreach (IGrouping<string, (string owner, MethodBase)> owners in patchList.Where(mp => mp.Item1.HasAttribute<ObsoleteAttribute>())
-                                                                                   .SelectMany(mp => mp.Item2.Prefixes.Concat(mp.Item2.Postfixes).Concat(mp.Item2.Transpilers)
-                                                                                                    .Select(p => (p.owner, mp.Item1))).GroupBy(p => p.owner))
-            {
-                builderObsolete.AppendLine($"Mod: {owners.Key}: {string.Join(" | ", owners.Select(mb => mb.Item2.Name).Distinct())}");
-                printObsolete = true;
-            }
+		private static string TryDescribeObsoleteMethodPatchOwners() {
+			IEnumerable<(MethodBase method, HarmonyLib.Patches patches)> patchList = Harmony.GetAllPatchedMethods()
+				.Select(mb => (method:mb, patchInfo:Harmony.GetPatchInfo(mb)))
+				.Where(mp => HasActivePatches(mp.patchInfo));
+			StringBuilder builderObsolete = null;
 
-            if (printObsolete) 
-                HugsLibController.Logger.Error(builderObsolete.ToString());
-        }
-
+			var obsoletePatchOwners = patchList
+				.Where(pair => pair.method.HasAttribute<ObsoleteAttribute>())
+				.SelectMany(pair => pair.patches.Prefixes
+					.Concat(pair.patches.Postfixes)
+					.Concat(pair.patches.Transpilers)
+					.Select(p => (p.owner, pair.method)))
+				.GroupBy(p => p.owner, p => p.method);
+			foreach (var ownerMethods in obsoletePatchOwners) {
+				if (builderObsolete == null) {
+					builderObsolete = new StringBuilder("Warning: detected Harmony patches on obsolete methods. " +
+					"Please alert the authors of the listed mods and include the following information:\n");
+				}
+				builderObsolete.AppendLine(
+					$"Mod: {ownerMethods.Key}: {ownerMethods.Select(method => method.Name).Distinct().ListElements()}");
+			}
+			return builderObsolete?.ToString();
+		}
+		
 		private static bool HasActivePatches(HarmonyLib.Patches patches) {
 			return patches != null &&
-			        ((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
-			         (patches.Postfixes != null && patches.Postfixes.Count != 0) ||
-			         (patches.Transpilers != null && patches.Transpilers.Count != 0));
+				((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
+					(patches.Postfixes != null && patches.Postfixes.Count != 0) ||
+					(patches.Transpilers != null && patches.Transpilers.Count != 0));
 		}
 
 		private static void EnsureEndsWithSpace(StringBuilder builder) {

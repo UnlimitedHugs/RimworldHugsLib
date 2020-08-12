@@ -18,7 +18,7 @@ using Verse;
 [assembly:InternalsVisibleTo("HugsLibTests")]
 
 namespace HugsLib {
-    /// <summary>
+	/// <summary>
 	/// The hub of the library. Instantiates classes that extend ModBase and forwards some of the more useful events to them.
 	/// The assembly version of the library should reflect the current major Rimworld version, i.e.: 0.18.0.0 for B18.
 	/// This gives us the ability to release updates to the library without breaking compatibility with the mods that implement it.
@@ -190,6 +190,7 @@ namespace HugsLib {
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.OnLateInitialize();
+				HarmonyUtility.CheckHarmonyPatchesForPotentialWarnings();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
@@ -217,8 +218,7 @@ namespace HugsLib {
 					}
 				}
 				OnDefsLoaded();
-                HarmonyUtility.CheckHarmonyPatchesForPotentialWarnings();
-            } catch (Exception e) {
+			} catch (Exception e) {
 				Logger.ReportException(e);
 			} finally {
 				initializationInProgress = false;
@@ -541,5 +541,5 @@ namespace HugsLib {
 				Logger.ReportException(e);
 			}
 		}
-    }
+	}
 }
