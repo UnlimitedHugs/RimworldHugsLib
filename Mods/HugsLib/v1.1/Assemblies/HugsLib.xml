@@ -1226,6 +1226,11 @@
             <param name="instance">A Harmony instance that can be queried for version information.</param>
             <returns></returns>
         </member>
+        <member name="M:HugsLib.Utils.HarmonyUtility.LogHarmonyPatchIssueErrors">
+            <summary>
+            Logs an error if any issues with Harmony patches are detected
+            </summary>
+        </member>
         <member name="T:HugsLib.Utils.HugsLibUtility">
             <summary>
             A catch-all place for extension methods and other useful stuff
