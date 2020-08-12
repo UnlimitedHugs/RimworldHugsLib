@@ -352,7 +352,7 @@ namespace HugsLib.Utils {
 			return isAnonymous ? "an anonymous method" : method.DeclaringType + "." + method.Name;
 		}
 
-		internal static string FullName(this MethodInfo methodInfo) {
+		internal static string FullName(this MethodBase methodInfo) {
 			if (methodInfo == null) return "[null reference]";
 			if (methodInfo.DeclaringType == null) return methodInfo.Name;
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;

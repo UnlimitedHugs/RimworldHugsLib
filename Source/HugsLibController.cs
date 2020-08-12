@@ -190,7 +190,7 @@ namespace HugsLib {
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.OnLateInitialize();
-				HarmonyUtility.CheckHarmonyPatchesForPotentialWarnings();
+				HarmonyUtility.LogHarmonyPatchIssueErrors();
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);

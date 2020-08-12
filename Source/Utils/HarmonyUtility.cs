@@ -143,37 +143,26 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Logs an error if any issues with Harmony patches are detected
 		/// </summary>
-		public static void CheckHarmonyPatchesForPotentialWarnings() {
-			var obsoleteWarning = TryDescribeObsoleteMethodPatchOwners();
-			if (obsoleteWarning != null) {
-				HugsLibController.Logger.Error(obsoleteWarning);
+		public static void LogHarmonyPatchIssueErrors() {
+			LogObsoleteMethodPatchErrors();
+		}
+
+		private static void LogObsoleteMethodPatchErrors() {
+			foreach (var (owner, methods) in EnumerateObsoleteMethodPatchOwners()) {
+				Log.Error($"[{owner}] Patches on methods annotated as Obsolete were detected by HugsLib: " +
+					$"{methods.Distinct().Select(HugsLibUtility.FullName).ListElements()}");
 			}
 		}
 
-		private static string TryDescribeObsoleteMethodPatchOwners() {
-			IEnumerable<(MethodBase method, HarmonyLib.Patches patches)> patchList = Harmony.GetAllPatchedMethods()
-				.Select(mb => (method:mb, patchInfo:Harmony.GetPatchInfo(mb)))
-				.Where(mp => HasActivePatches(mp.patchInfo));
-			StringBuilder builderObsolete = null;
-
-			var obsoletePatchOwners = patchList
-				.Where(pair => pair.method.HasAttribute<ObsoleteAttribute>())
-				.SelectMany(pair => pair.patches.Prefixes
-					.Concat(pair.patches.Postfixes)
-					.Concat(pair.patches.Transpilers)
-					.Select(p => (p.owner, pair.method)))
-				.GroupBy(p => p.owner, p => p.method);
-			foreach (var ownerMethods in obsoletePatchOwners) {
-				if (builderObsolete == null) {
-					builderObsolete = new StringBuilder("Warning: detected Harmony patches on obsolete methods. " +
-					"Please alert the authors of the listed mods and include the following information:\n");
-				}
-				builderObsolete.AppendLine(
-					$"Mod: {ownerMethods.Key}: {ownerMethods.Select(method => method.Name).Distinct().ListElements()}");
-			}
-			return builderObsolete?.ToString();
+		private static IEnumerable<(string owner, IEnumerable<MethodBase> methods)> EnumerateObsoleteMethodPatchOwners() {
+			return Harmony.GetAllPatchedMethods()
+				.Select(method => (method, info: Harmony.GetPatchInfo(method)))
+				.Where(pair => HasActivePatches(pair.info) && pair.method.HasAttribute<ObsoleteAttribute>())
+				.SelectMany(pair => pair.info.Owners, (pair, owner) => (owner, pair.method))
+				.GroupBy(pair => pair.owner, pair => pair.method)
+				.Select(grp => (grp.Key, grp as IEnumerable<MethodBase>));
 		}
-		
+
 		private static bool HasActivePatches(HarmonyLib.Patches patches) {
 			return patches != null &&
 				((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
