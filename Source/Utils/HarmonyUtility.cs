@@ -149,7 +149,7 @@ namespace HugsLib.Utils {
 
 		private static void LogObsoleteMethodPatchErrors() {
 			foreach (var (owner, methods) in EnumerateObsoleteMethodPatchOwners()) {
-				Log.Error($"[{owner}] Patches on methods annotated as Obsolete were detected by HugsLib: " +
+				Log.Warning($"[{owner}] Patches on methods annotated as Obsolete were detected by HugsLib: " +
 					$"{methods.Distinct().Select(HugsLibUtility.FullName).ListElements()}");
 			}
 		}
