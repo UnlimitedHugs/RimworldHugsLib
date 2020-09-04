@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -45,7 +45,7 @@ namespace HugsLib {
 		public static Version LibraryVersion {
 			get {
 				if (libraryVersionInfo == null) ReadOwnVersion();
-				if (libraryVersionFile != null && libraryVersionFile.OverrideVersion != null) 
+				if (libraryVersionFile != null && libraryVersionFile.OverrideVersion != null)
 					return libraryVersionFile.OverrideVersion;
 				if (libraryVersionInfo != null) return libraryVersionInfo.HighestVersion;
 				return typeof(HugsLibController).Assembly.GetName().Version;
@@ -190,7 +190,7 @@ namespace HugsLib {
 				lateInitializationCompleted = true;
 				RegisterOwnSettings();
 				QuickstartController.OnLateInitialize();
-				HarmonyUtility.LogHarmonyPatchIssueErrors();
+				LongEventHandler.ExecuteWhenFinished(HarmonyUtility.LogHarmonyPatchIssueErrors);
 				LongEventHandler.QueueLongEvent(LoadReloadInitialize, "Initializing", true, null);
 			} catch (Exception e) {
 				Logger.Error("An exception occurred during late initialization: " + e);
