@@ -1348,7 +1348,7 @@
         </member>
         <member name="M:HugsLib.Utils.HugsLibUtility.TryGetLogFilePath">
             <summary>
-            Attempts to return the patch of the log file Unity is writing to.
+            Attempts to return the path of the log file Unity is writing to.
             </summary>
             <returns></returns>
         </member>

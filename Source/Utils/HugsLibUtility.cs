@@ -230,12 +230,12 @@ namespace HugsLib.Utils {
 		}
 
 		/// <summary>
-		/// Attempts to return the patch of the log file Unity is writing to.
+		/// Attempts to return the path of the log file Unity is writing to.
 		/// </summary>
 		/// <returns></returns>
 		public static string TryGetLogFilePath() {
-			if (GenCommandLine.TryGetCommandLineArg("logfile", out var logfile) && logfile.NullOrEmpty()) {
-				return logfile;
+			if (TryGetCommandLineOptionValue("logfile") is var cmdLog && cmdLog != null) {
+				return cmdLog;
 			}
 			var platform = PlatformUtility.GetCurrentPlatform();
 			switch (platform) {
@@ -364,6 +364,20 @@ namespace HugsLib.Utils {
 			return v.Build < 0 
 				? $"{v.ToString(2)}.0" 
 				: v.ToString(v.Revision <= 0 ? 3 : 4);
+		}
+		
+		private static string TryGetCommandLineOptionValue(string key) {
+			const string keyPrefix = "-";
+			var prefixedKey = keyPrefix + key;
+			var valueExpectedNext = false;
+			foreach (var arg in Environment.GetCommandLineArgs()) {
+				if (arg.EqualsIgnoreCase(prefixedKey)) {
+					valueExpectedNext = true;
+				} else if (valueExpectedNext && !arg.StartsWith(keyPrefix) && !arg.NullOrEmpty()) {
+					return arg;
+				}
+			}
+			return null;
 		}
 	}
 
