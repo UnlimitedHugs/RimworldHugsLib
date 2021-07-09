@@ -26,11 +26,16 @@ namespace HugsLib.Patches {
 
 		[HarmonyTranspiler]
 		public static IEnumerable<CodeInstruction> DrawAdditionalButtons(IEnumerable<CodeInstruction> instructions) {
+
 			patched = false;
 			var instructionsArr = instructions.ToArray();
 			var widgetRowField = AccessTools.Field(typeof(DebugWindowsOpener), "widgetRow");
-			foreach (var inst in instructionsArr) {
-				if (!patched && widgetRowField != null && inst.opcode == OpCodes.Bne_Un_S)
+			var programStateProp = AccessTools.PropertyGetter(typeof(Current), "ProgramState");
+
+            for (int i = 0; i < instructionsArr.Length; i++)
+            {
+				CodeInstruction inst = instructionsArr[i];
+				if (!patched && widgetRowField != null && i == 0 )
 				{
 					yield return new CodeInstruction(OpCodes.Ldarg_0);
 					yield return new CodeInstruction(OpCodes.Ldfld, widgetRowField);
@@ -38,6 +43,7 @@ namespace HugsLib.Patches {
 					patched = true;
 				}
 				yield return inst;
+
 			}
 		}
 	}
