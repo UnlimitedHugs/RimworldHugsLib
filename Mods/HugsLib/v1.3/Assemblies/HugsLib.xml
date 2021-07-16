@@ -326,6 +326,33 @@
             State is not persisted between game restarts.
             </summary>
         </member>
+        <member name="T:HugsLib.Settings.Dialog_VanillaModSettings">
+            <summary>
+            Displays custom settings controls for mods that use the vanilla mod settings system.
+            The dialog shows the controls for a single mod only and is opened through Dialog_ModSettings.
+            </summary>
+        </member>
+        <member name="T:HugsLib.Settings.SettingHandleConvertibleUtility">
+            <summary>
+            Utility methods for SettingHandleConvertible data objects.
+            These are useful for packing and unpacking your custom fields into a string without bothering with manual serialization.
+            </summary>
+        </member>
+        <member name="M:HugsLib.Settings.SettingHandleConvertibleUtility.DeserializeValuesFromString(System.String,System.Object)">
+            <summary>
+            Deserializes an XML string into an existing object instance.
+            </summary>
+            <param name="serializedValues">The serialized values to fill the object with</param>
+            <param name="targetObject">The object to receive the deserialized values</param>
+        </member>
+        <member name="M:HugsLib.Settings.SettingHandleConvertibleUtility.SerializeValuesToString(System.Object)">
+            <summary>
+            Serializes an object into a compact XML string.
+            Whitespace and namespace declarations are omitted.
+            Make sure the object is annotated with SerializableAttribute and the fields to serialize with XmlElementAttribute.
+            </summary>
+            <param name="targetObject">The object to serialize</param>
+        </member>
         <member name="T:HugsLib.Settings.Dialog_ModSettings">
             <summary>
             An options window for all configurable settings exposed by mods using the library
@@ -340,7 +367,7 @@
             <summary>
             Base type for all custom SettingHandle types.
             Allows complex data structures to be stored in setting values by converting them to and from their string representation.
-            See <see cref="T:HugsLib.Source.Settings.SettingHandleConvertibleUtility"/> for an easy way to serialize complex types to XML.
+            See <see cref="T:HugsLib.Settings.SettingHandleConvertibleUtility"/> for an easy way to serialize complex types to XML.
             </summary>
         </member>
         <member name="P:HugsLib.Settings.SettingHandleConvertible.ShouldBeSaved">
@@ -615,6 +642,11 @@
             This is necessary for <see cref="T:HugsLib.Settings.SettingHandleConvertible"/> values, as changes in reference types cannot be automatically detected.
             </summary>
         </member>
+        <member name="E:HugsLib.Settings.SettingHandle.ValueChanged">
+            <summary>
+            Dispatched after the Value of the handle changes.
+            </summary>
+        </member>
         <member name="M:HugsLib.Settings.SettingHandle`1.op_Implicit(HugsLib.Settings.SettingHandle{`0})~`0">
             <summary>
             Implicitly cast handles to the Value they carry.
@@ -733,27 +765,6 @@
             <param name="drawerDelegate">The delegate called each OnGUI to draw the widget.</param>
             <param name="align">The side of the WidgetRow this widget should be drawn into.</param>
         </member>
-        <member name="T:HugsLib.Source.Settings.SettingHandleConvertibleUtility">
-            <summary>
-            Utility methods for SettingHandleConvertible data objects.
-            These are useful for packing and unpacking your custom fields into a string without bothering with manual serialization.
-            </summary>
-        </member>
-        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.DeserializeValuesFromString(System.String,System.Object)">
-            <summary>
-            Deserializes an XML string into an existing object instance.
-            </summary>
-            <param name="serializedValues">The serialized values to fill the object with</param>
-            <param name="targetObject">The object to receive the deserialized values</param>
-        </member>
-        <member name="M:HugsLib.Source.Settings.SettingHandleConvertibleUtility.SerializeValuesToString(System.Object)">
-            <summary>
-            Serializes an object into a compact XML string.
-            Whitespace and namespace declarations are omitted.
-            Make sure the object is annotated with SerializableAttribute and the fields to serialize with XmlElementAttribute.
-            </summary>
-            <param name="targetObject">The object to serialize</param>
-        </member>
         <member name="T:HugsLib.Shell.Shell">
             <summary>
             Commands start a new process on the target machine using platform specific commands and args to pass to the shell.
@@ -861,12 +872,6 @@
         <member name="P:HugsLib.ModBase.VersionInfo">
             <summary>
             Contains the AssemblyVersion and AssemblyFileVersion of the mod. Used by <see cref="M:HugsLib.ModBase.GetVersion"/>.
-            </summary>
-        </member>
-        <member name="P:HugsLib.ModBase.CurrentlyProcessedContentPack">
-            <summary>
-            Added to avoid breaking mod compatibility during the 7.0 update.
-            TodoMajor: kill this during the next major update
             </summary>
         </member>
         <member name="M:HugsLib.ModBase.GetVersion">
@@ -1496,12 +1501,6 @@
             Returns an existing UWO or creates a new one, adding it to the world.
             </summary>
             <typeparam name="T">Your custom type that extends UtilityWorldObject</typeparam>
-        </member>
-        <member name="T:RimWorld.Dialog_VanillaModSettings">
-            <summary>
-            Displays custom settings controls for mods that use the vanilla mod settings system.
-            The dialog shows the controls for a single mod only and is opened through Dialog_ModSettings.
-            </summary>
         </member>
     </members>
 </doc>

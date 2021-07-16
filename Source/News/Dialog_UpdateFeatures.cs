@@ -37,8 +37,7 @@ namespace HugsLib.News {
 			get { return new Vector2(650f, 700f); }
 		}
 		
-		// TodoMajor: Replace List with IEnumerable
-		public Dialog_UpdateFeatures(List<UpdateFeatureDef> featureDefs, UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) {
+		public Dialog_UpdateFeatures(IEnumerable<UpdateFeatureDef> featureDefs, UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) {
 			this.ignoredNewsProviders = ignoredNewsProviders;
 			closeOnCancel = true;
 			doCloseButton = false;

@@ -30,8 +30,6 @@ namespace HugsLib.Quickstart {
 			}
 		}
 		
-		// TodoMajor: remove this field
-		private static Texture2D quickstartIconTex;
 		private static Type quickStarterType;
 		private static FieldInfo quickStartedField;
 		private static SettingHandle<QuickstartSettings> handle;
@@ -82,7 +80,6 @@ namespace HugsLib.Quickstart {
 
 		internal static void OnLateInitialize() {
 			RetrofitSettingWithLabel();
-			LongEventHandler.ExecuteWhenFinished(() => quickstartIconTex = HugsLibTextures.quickstartIcon);
 			EnumerateMapSizes();
 			if (Prefs.DevMode) {
 				LongEventHandler.QueueLongEvent(InitiateQuickstart, null, false, null);
@@ -98,7 +95,7 @@ namespace HugsLib.Quickstart {
 			const string quickstartButtonTooltip = "Open the quickstart settings.\n\n" +
 				"This lets you automatically generate a map or load an existing save when the game is started.\n" +
 				"Shift-click to quick-generate a new map.";
-			if (widgets.ButtonIcon(quickstartIconTex, quickstartButtonTooltip)) {
+			if (widgets.ButtonIcon(HugsLibTextures.quickstartIcon, quickstartButtonTooltip)) {
 				var stack = Find.WindowStack;
 				if (HugsLibUtility.ShiftIsHeld) {
 					stack.TryRemove(typeof(Dialog_QuickstartSettings));

@@ -30,11 +30,11 @@ namespace HugsLib.Patches {
 			var instructionsArr = instructions.ToArray();
 			var widgetRowField = AccessTools.Field(typeof(DebugWindowsOpener), "widgetRow");
 			foreach (var inst in instructionsArr) {
-				if (!patched && widgetRowField != null && inst.opcode == OpCodes.Bne_Un_S)
-				{
+				if (!patched && widgetRowField != null && inst.opcode == OpCodes.Bne_Un) {
 					yield return new CodeInstruction(OpCodes.Ldarg_0);
 					yield return new CodeInstruction(OpCodes.Ldfld, widgetRowField);
-					yield return new CodeInstruction(OpCodes.Call, ((Action<WidgetRow>)QuickstartController.DrawDebugToolbarButton).Method);
+					yield return new CodeInstruction(OpCodes.Call,
+						((Action<WidgetRow>)QuickstartController.DrawDebugToolbarButton).Method);
 					patched = true;
 				}
 				yield return inst;

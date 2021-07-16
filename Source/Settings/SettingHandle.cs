@@ -115,14 +115,21 @@ namespace HugsLib.Settings {
 			ParentPack.SaveChanges();
 		}
 
+		/// <summary>
+		/// Dispatched after the Value of the handle changes.
+		/// </summary>
+		public event Action<SettingHandle> ValueChanged;
+
 		protected SettingHandle() {
 			SpinnerIncrement = 1;
+		}
+
+		protected void DispatchValueChangedEvent() {
+			ValueChanged?.Invoke(this);
 		}
 	}
 
 	public class SettingHandle<T> : SettingHandle {
-		public delegate void ValueChanged(T newValue);
-
 		/// <summary>
 		/// Implicitly cast handles to the Value they carry.
 		/// </summary>
@@ -133,7 +140,8 @@ namespace HugsLib.Settings {
 		/// <summary>
 		/// Called when the Value of the handle changes. Optional.
 		/// </summary>
-		public ValueChanged OnValueChanged { get; set; }
+		[Obsolete("Use SettingHandle.ValueChanged event")]
+		public Action<T> OnValueChanged { get; set; }
 
 		private T _value;
 		/// <summary>
@@ -149,7 +157,10 @@ namespace HugsLib.Settings {
 				if (!SafeEquals(prevValue, _value)) {
 					HasUnsavedChanges = true;
 					try {
+						DispatchValueChangedEvent();
+						#pragma warning disable 618 // Obsolete warning
 						OnValueChanged?.Invoke(_value);
+						#pragma warning restore 618
 					} catch (Exception e) {
 						HugsLibController.Logger.Error("Exception while calling SettingHandle.OnValueChanged. Handle name was: " +
 														"\"{0}\" Value was: \"{1}\". Exception was: {2}", Name, StringValue, e);

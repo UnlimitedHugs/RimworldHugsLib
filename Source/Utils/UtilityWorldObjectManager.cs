@@ -5,7 +5,6 @@ using RimWorld.Planet;
 using Verse;
 
 #pragma warning disable 618 // Obsolete warning
-// TodoMajor: Remove
 namespace HugsLib.Utils {
 	/// <summary>
 	/// Handles utility WorldObjects of custom types.

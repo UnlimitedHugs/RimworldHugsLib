@@ -102,10 +102,6 @@ namespace HugsLib {
 		/// </summary>
 		public AssemblyVersionInfo VersionInfo { get; internal set; }
 
-		/// <summary>
-		/// Added to avoid breaking mod compatibility during the 7.0 update.
-		/// TodoMajor: kill this during the next major update
-		/// </summary>
 		internal static ModContentPack CurrentlyProcessedContentPack { get; set; }
 
 		protected ModBase() {

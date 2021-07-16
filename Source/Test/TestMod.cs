@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 using HugsLib.Settings;
-using HugsLib.Source.Settings;
 using HugsLib.Utils;
 using RimWorld;
 using UnityEngine;
