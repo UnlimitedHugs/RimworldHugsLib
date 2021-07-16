@@ -171,12 +171,12 @@ namespace HugsLib.News {
 			var ignored = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", 
 				"HugsLib_setting_ignoredUpdateNews_label".Translate(), null);
 			IgnoredNewsProvidersSetting = ignored;
-			ignored.OnValueChanged = EnsureIgnoredProvidersInstance;
+			ignored.ValueChanged += EnsureIgnoredProvidersInstance;
 			EnsureIgnoredProvidersInstance(null);
 			ignored.NeverVisible = true;
 			ignored.Value.Handle = ignored;
 
-			void EnsureIgnoredProvidersInstance(IgnoredNewsIds _) {
+			void EnsureIgnoredProvidersInstance(SettingHandle _) {
 				if (ignored.Value != null) return;
 				ignored.Value = new IgnoredNewsIds();
 				ignored.HasUnsavedChanges = false;

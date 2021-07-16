@@ -472,10 +472,10 @@ namespace HugsLib.Logs {
 			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", 
 				"HugsLib_setting_logPublisherSettings_label".Translate(), null);
 			optionsHandle.NeverVisible = true;
-			optionsHandle.OnValueChanged = EnsureNonNullHandleValue;
+			optionsHandle.ValueChanged += EnsureNonNullHandleValue;
 			EnsureNonNullHandleValue(null);
 
-			void EnsureNonNullHandleValue(LogPublisherOptions _) {
+			void EnsureNonNullHandleValue(SettingHandle _) {
 				if (optionsHandle.Value != null) return;
 				optionsHandle.Value = new LogPublisherOptions();
 				optionsHandle.HasUnsavedChanges = false;
