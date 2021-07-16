@@ -259,8 +259,9 @@ namespace HugsLib.Utils {
 		/// <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
 		/// <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
 		/// <param name="timeout">How long to wait before aborting the request</param>
-		public static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
-			/* TodoMajor: scrap whole method, revert to System.Net.WebClient
+		internal static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> 
+		onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
+			/* Todo: scrap whole method, revert to System.Net.WebClient
 			.NET version has been updated and SSL should work again */
 #pragma warning disable 618
 			request.Send();

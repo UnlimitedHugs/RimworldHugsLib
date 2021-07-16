@@ -30,11 +30,6 @@ namespace HugsLib.News {
 			LoadData();
 		}
 
-		// TodoMajor: remove this
-		[Obsolete("Mods no longer need to call in, fresh news are automatically detected based on their defs")]
-		public void InspectActiveMod(string modId, Version currentVersion) {
-		}
-
 		internal void OnEarlyInitialize() {
 			// offload reading and parsing XML files to a worker thread
 			var loadingTask = Task.Run(UpdateFeatureDefLoader.LoadUpdateFeatureDefNodes);
