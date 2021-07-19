@@ -30,11 +30,6 @@ namespace HugsLib.News {
 			LoadData();
 		}
 
-		// TodoMajor: remove this
-		[Obsolete("Mods no longer need to call in, fresh news are automatically detected based on their defs")]
-		public void InspectActiveMod(string modId, Version currentVersion) {
-		}
-
 		internal void OnEarlyInitialize() {
 			// offload reading and parsing XML files to a worker thread
 			var loadingTask = Task.Run(UpdateFeatureDefLoader.LoadUpdateFeatureDefNodes);
@@ -171,12 +166,12 @@ namespace HugsLib.News {
 			var ignored = pack.GetHandle<IgnoredNewsIds>("ignoredUpdateNews", 
 				"HugsLib_setting_ignoredUpdateNews_label".Translate(), null);
 			IgnoredNewsProvidersSetting = ignored;
-			ignored.OnValueChanged = EnsureIgnoredProvidersInstance;
+			ignored.ValueChanged += EnsureIgnoredProvidersInstance;
 			EnsureIgnoredProvidersInstance(null);
 			ignored.NeverVisible = true;
 			ignored.Value.Handle = ignored;
 
-			void EnsureIgnoredProvidersInstance(IgnoredNewsIds _) {
+			void EnsureIgnoredProvidersInstance(SettingHandle _) {
 				if (ignored.Value != null) return;
 				ignored.Value = new IgnoredNewsIds();
 				ignored.HasUnsavedChanges = false;

@@ -1,6 +1,10 @@
 ![HugsLib logo](http://i.imgur.com/1d35OiC.png)
 
-![Version](https://img.shields.io/badge/Rimworld-1.0-brightgreen.svg) ![Version](https://img.shields.io/badge/Rimworld-1.1-brightgreen.svg) [![NuGet](https://img.shields.io/nuget/v/UnlimitedHugs.Rimworld.HugsLib.svg)](https://www.nuget.org/packages/UnlimitedHugs.Rimworld.HugsLib/)
+![Version](https://img.shields.io/badge/Rimworld-1.0-brightgreen.svg)
+![Version](https://img.shields.io/badge/Rimworld-1.1-brightgreen.svg)
+![Version](https://img.shields.io/badge/Rimworld-1.2-brightgreen.svg)
+![Version](https://img.shields.io/badge/Rimworld-1.3-brightgreen.svg)
+[![NuGet](https://img.shields.io/nuget/v/UnlimitedHugs.Rimworld.HugsLib.svg)](https://www.nuget.org/packages/UnlimitedHugs.Rimworld.HugsLib/)
 
 A lightweight shared mod library for Rimworld. Provides a foundation for mods and delivers shared functionality.
 

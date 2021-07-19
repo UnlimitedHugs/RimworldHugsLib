@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Xml.Serialization;
 using HugsLib.Settings;
-using HugsLib.Source.Settings;
 
 namespace HugsLib.Logs {
 	public interface ILogPublisherOptions {

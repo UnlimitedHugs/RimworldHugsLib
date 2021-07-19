@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using Verse;
 
 namespace HugsLib.Utils {
 	/// <summary>
@@ -100,7 +101,7 @@ namespace HugsLib.Utils {
 				var modVersionPairs = Harmony.VersionInfo(out _);
 				return "Harmony versions present: " + 
 					modVersionPairs.GroupBy(kv => kv.Value, kv => kv.Key).OrderByDescending(grp => grp.Key)
-					.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");
+						.Select(grp => string.Format("{0}: {1}", grp.Key, grp.Join(", "))).Join("; ");
 			} catch (Exception e) {
 				return "An exception occurred while collating Harmony version data:\n" + e;
 			}
@@ -139,11 +140,34 @@ namespace HugsLib.Utils {
 			}
 		}
 
+		/// <summary>
+		/// Logs an error if any issues with Harmony patches are detected
+		/// </summary>
+		public static void LogHarmonyPatchIssueErrors() {
+			LogObsoleteMethodPatchErrors();
+		}
+
+		private static void LogObsoleteMethodPatchErrors() {
+			foreach (var (owner, methods) in EnumerateObsoleteMethodPatchOwners()) {
+				Log.Warning($"[{owner}] Patches on methods annotated as Obsolete were detected by HugsLib: " +
+					$"{methods.Distinct().Select(HugsLibUtility.FullName).ListElements()}");
+			}
+		}
+
+		private static IEnumerable<(string owner, IEnumerable<MethodBase> methods)> EnumerateObsoleteMethodPatchOwners() {
+			return Harmony.GetAllPatchedMethods()
+				.Select(method => (method, info: Harmony.GetPatchInfo(method)))
+				.Where(pair => HasActivePatches(pair.info) && pair.method.HasAttribute<ObsoleteAttribute>())
+				.SelectMany(pair => pair.info.Owners, (pair, owner) => (owner, pair.method))
+				.GroupBy(pair => pair.owner, pair => pair.method)
+				.Select(grp => (grp.Key, grp as IEnumerable<MethodBase>));
+		}
+
 		private static bool HasActivePatches(HarmonyLib.Patches patches) {
 			return patches != null &&
-			        ((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
-			         (patches.Postfixes != null && patches.Postfixes.Count != 0) ||
-			         (patches.Transpilers != null && patches.Transpilers.Count != 0));
+				((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
+					(patches.Postfixes != null && patches.Postfixes.Count != 0) ||
+					(patches.Transpilers != null && patches.Transpilers.Count != 0));
 		}
 
 		private static void EnsureEndsWithSpace(StringBuilder builder) {

@@ -230,12 +230,12 @@ namespace HugsLib.Utils {
 		}
 
 		/// <summary>
-		/// Attempts to return the patch of the log file Unity is writing to.
+		/// Attempts to return the path of the log file Unity is writing to.
 		/// </summary>
 		/// <returns></returns>
 		public static string TryGetLogFilePath() {
-			if (GenCommandLine.TryGetCommandLineArg("logfile", out var logfile) && logfile.NullOrEmpty()) {
-				return logfile;
+			if (TryGetCommandLineOptionValue("logfile") is var cmdLog && cmdLog != null) {
+				return cmdLog;
 			}
 			var platform = PlatformUtility.GetCurrentPlatform();
 			switch (platform) {
@@ -259,8 +259,9 @@ namespace HugsLib.Utils {
 		/// <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
 		/// <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
 		/// <param name="timeout">How long to wait before aborting the request</param>
-		public static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
-			/* TodoMajor: scrap whole method, revert to System.Net.WebClient
+		internal static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> 
+		onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
+			/* Todo: scrap whole method, revert to System.Net.WebClient
 			.NET version has been updated and SSL should work again */
 #pragma warning disable 618
 			request.Send();
@@ -352,7 +353,7 @@ namespace HugsLib.Utils {
 			return isAnonymous ? "an anonymous method" : method.DeclaringType + "." + method.Name;
 		}
 
-		internal static string FullName(this MethodInfo methodInfo) {
+		internal static string FullName(this MethodBase methodInfo) {
 			if (methodInfo == null) return "[null reference]";
 			if (methodInfo.DeclaringType == null) return methodInfo.Name;
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
@@ -364,6 +365,20 @@ namespace HugsLib.Utils {
 			return v.Build < 0 
 				? $"{v.ToString(2)}.0" 
 				: v.ToString(v.Revision <= 0 ? 3 : 4);
+		}
+		
+		private static string TryGetCommandLineOptionValue(string key) {
+			const string keyPrefix = "-";
+			var prefixedKey = keyPrefix + key;
+			var valueExpectedNext = false;
+			foreach (var arg in Environment.GetCommandLineArgs()) {
+				if (arg.EqualsIgnoreCase(prefixedKey)) {
+					valueExpectedNext = true;
+				} else if (valueExpectedNext && !arg.StartsWith(keyPrefix) && !arg.NullOrEmpty()) {
+					return arg;
+				}
+			}
+			return null;
 		}
 	}
 

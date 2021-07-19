@@ -25,6 +25,7 @@ namespace HugsLib.Logs {
 		private const string GistPayloadJson = "{{\"description\":\"{0}\",\"public\":true,\"files\":{{\"{1}\":{{\"content\":\"{2}\"}}}}}}";
 		private const string GistDescription = "Rimworld output log published using HugsLib";
 		private const int MaxLogLineCount = 10000;
+		private const float PublishRequestTimeout = 90f;
 		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
 		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
 
@@ -116,7 +117,8 @@ namespace HugsLib.Logs {
 				activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
 				activeRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload)) {contentType = "application/json"};
 				activeRequest.downloadHandler = new DownloadHandlerBuffer();
-				HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUploadComplete, onRequestFailed, HttpStatusCode.Created);
+				HugsLibUtility.AwaitUnityWebResponse(activeRequest, OnUploadComplete, onRequestFailed, 
+					HttpStatusCode.Created, PublishRequestTimeout);
 			} catch (Exception e) {
 				onRequestFailed(e);
 			}
@@ -470,10 +472,10 @@ namespace HugsLib.Logs {
 			optionsHandle = pack.GetHandle<LogPublisherOptions>("logPublisherSettings", 
 				"HugsLib_setting_logPublisherSettings_label".Translate(), null);
 			optionsHandle.NeverVisible = true;
-			optionsHandle.OnValueChanged = EnsureNonNullHandleValue;
+			optionsHandle.ValueChanged += EnsureNonNullHandleValue;
 			EnsureNonNullHandleValue(null);
 
-			void EnsureNonNullHandleValue(LogPublisherOptions _) {
+			void EnsureNonNullHandleValue(SettingHandle _) {
 				if (optionsHandle.Value != null) return;
 				optionsHandle.Value = new LogPublisherOptions();
 				optionsHandle.HasUnsavedChanges = false;

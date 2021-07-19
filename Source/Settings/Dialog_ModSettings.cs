@@ -35,10 +35,6 @@ namespace HugsLib.Settings {
 
 		private Vector2 scrollPosition;
 		private float totalContentHeight;
-		// TodoMajor: remove this field
-#pragma warning disable 169
-		private bool settingsHaveChanged;
-#pragma warning restore 169
 		private string currentlyDrawnEntry;
 		private bool closingScheduled;
 
@@ -210,18 +206,12 @@ namespace HugsLib.Settings {
 					var resetOptionLabel = 
 						entry.SettingsPack.CanBeReset ? "HugsLib_settings_resetMod".Translate(entry.ModName) : null;
 					ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
-						OnResetOptionSelected, OnAnyOptionSelected, entry.SettingsPack.ContextMenuEntries);
+						OnResetOptionSelected, delegate {}, entry.SettingsPack.ContextMenuEntries);
 				}
 
 				void OnResetOptionSelected() {
 					ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(entry.ModName),
 						entry.SettingsPack.Handles);
-				}
-
-				void OnAnyOptionSelected() {
-					foreach (var handle in entry.SettingsPack.Handles) {
-						ResetHandleControlInfo(handle);
-					}
 				}
 			}
 		}
@@ -319,7 +309,7 @@ namespace HugsLib.Settings {
 			void OpenHandleContextMenu() {
 				var resetOptionLabel = handle.CanBeReset ? "HugsLib_settings_resetValue".Translate() : null;
 				ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
-					() => ResetSettingHandles(handle), () => ResetHandleControlInfo(handle), handle.ContextMenuEntries);
+					() => ResetSettingHandles(handle), delegate {}, handle.ContextMenuEntries);
 			}
 		}
 
@@ -478,7 +468,6 @@ namespace HugsLib.Settings {
 					HugsLibController.Logger.Error(
 						$"Failed to reset handle {handle.ParentPack.ModId}.{handle.Name}: {e}");
 				}
-				ResetHandleControlInfo(handle);
 			}
 			if (resetCount > 0) {
 				Messages.Message("HugsLib_settings_resetSuccessMessage".Translate(resetCount), 
@@ -545,11 +534,22 @@ namespace HugsLib.Settings {
 			foreach (var mod in listedMods) {
 				if (mod.SettingsPack != null) {
 					mod.Handles.Clear();
-					mod.Handles.AddRange(mod.SettingsPack.Handles.Where(h => !h.NeverVisible).OrderBy(h => h.DisplayOrder));
+					mod.Handles.AddRange(mod.SettingsPack.Handles
+						.Where(h => !h.NeverVisible)
+						.OrderBy(h => h.DisplayOrder)
+					);
+					foreach (var handle in mod.Handles) {
+						handle.ValueChanged -= OnHandleValueChanged;
+						handle.ValueChanged += OnHandleValueChanged;
+					}
 				}
 			}
 		}
 
+		private void OnHandleValueChanged(SettingHandle handle) {
+			ResetHandleControlInfo(handle);
+		}
+		
 		// prepares support objects to store data for settings handle controls
 		private void PopulateControlInfo() {
 			handleControlInfo.Clear();
