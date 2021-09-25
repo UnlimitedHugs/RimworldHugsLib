@@ -11,6 +11,7 @@ using HugsLib.Utils;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.Profile;
 
 namespace HugsLib.Quickstart {
 	/// <summary>
@@ -42,6 +43,7 @@ namespace HugsLib.Quickstart {
 			HugsLibController.Logger.Message("Quickstarter generating map with scenario: " + TryGetScenarioByName(Settings.ScenarioToGen).name);
 			quickStartedField.SetValue(null, true);
 			LongEventHandler.QueueLongEvent(() => {
+				ClearCurrentWorld();
 				Current.Game = null;
 			}, "Play", "GeneratingMap", true, null);
 		}
@@ -56,6 +58,7 @@ namespace HugsLib.Quickstart {
 			HugsLibController.Logger.Message("Quickstarter is loading saved game: " + saveName);
 			Action loadAction = () => {
 				LongEventHandler.QueueLongEvent(delegate {
+					ClearCurrentWorld();
 					Current.Game = new Game { InitData = new GameInitData { gameToLoad = saveName } };
 				}, "Play", "LoadingLongEvent", true, null);
 			};
@@ -238,6 +241,13 @@ namespace HugsLib.Quickstart {
 		private static string TryGetMostRecentSaveFileName() {
 			var mostRecentFilePath = GenFilePaths.AllSavedGameFiles.FirstOrDefault()?.Name;
 			return Path.GetFileNameWithoutExtension(mostRecentFilePath);
+		}
+
+		private static void ClearCurrentWorld() {
+			if (Current.Game != null) {
+				MemoryUtility.ClearAllMapsAndWorld();
+				Current.Game = null;
+			}
 		}
 
 		public class MapSizeEntry {
