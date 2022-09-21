@@ -125,7 +125,6 @@
     <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
     <Compile Include="Source\Patches\ModsConfig_RestartFromChangedMods_Patch.cs" />
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
-    <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
     <Compile Include="Source\Patches\Root_OnGUI_Patch.cs" />
     <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />

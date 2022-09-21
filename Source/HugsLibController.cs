@@ -526,7 +526,6 @@ namespace HugsLib {
 		private void PrepareReflection() {
 			InjectedDefHasher.PrepareReflection();
 			LogWindowExtensions.PrepareReflection();
-			QuickstartController.PrepareReflection();
 		}
 
 		private void RegisterOwnSettings() {
