@@ -18,7 +18,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>Mods\HugsLib\v1.3\Assemblies\</OutputPath>
+    <OutputPath>Mods\HugsLib\v1.4\Assemblies\</OutputPath>
     <DefineConstants>TRACE;DEBUG;TEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD,xTEST_TICKERS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,7 +32,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>Mods\HugsLib\v1.3\Assemblies\</OutputPath>
+    <OutputPath>Mods\HugsLib\v1.4\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
