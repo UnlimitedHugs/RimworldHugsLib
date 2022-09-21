@@ -190,12 +190,15 @@ namespace HugsLib.Test {
 		}
 
 		private void TestGiveShortHash() {
-			var def = new Def{defName = "randomDefForTesting"};
-			InjectedDefHasher.GiveShortHashToDef(def, typeof(Def));
-			if (def.shortHash == 0) {
+			var knownDef = new ThingDef { defName = "_hashingTestKnownDefType_" };
+			var customDef = new CustomDefType { defName = "_hashingTestCustomDefType_" };
+			InjectedDefHasher.GiveShortHashToDef(knownDef, typeof(ThingDef));
+			InjectedDefHasher.GiveShortHashToDef(customDef, typeof(CustomDefType));
+
+			if (knownDef.shortHash == 0 || customDef.shortHash == 0) {
 				Logger.Error("GiveShortHasToDef has failed");
 			} else {
-				Logger.Message("Given short hash: "+def.shortHash);
+				Logger.Message($"Given short hashes: {knownDef.shortHash}, {customDef.shortHash}");
 			}
 		}
 
@@ -251,6 +254,8 @@ namespace HugsLib.Test {
 			}
 		}
 
+		private class CustomDefType : Def {
+		}
 	}
 
 	/// <summary>
@@ -273,6 +278,5 @@ namespace HugsLib.Test {
 			SettingsChangedCalled = true;
 		}
 	}
-
 }
 #endif
