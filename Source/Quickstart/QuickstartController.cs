@@ -103,6 +103,10 @@ namespace HugsLib.Quickstart {
 			handle.ForceSaveChanges();
 		}
 
+		internal static void AddReplacementQuickstartButton(List<ListableOption> buttons) {
+			buttons.Add(new ListableOption("DevQuickTest".Translate(), InitiateMapGeneration));
+		}
+		
 		private static void PrepareSettings(ModSettingsPack librarySettings) {
 			handle = librarySettings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
 			handle.NeverVisible = true;
