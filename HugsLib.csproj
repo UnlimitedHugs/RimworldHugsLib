@@ -101,14 +101,17 @@
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\News\UpdateFeatureDefFilteringProvider.cs" />
     <Compile Include="Source\News\UpdateFeaturesDevMenu.cs" />
+    <Compile Include="Source\Patches\DialogOptions_Patches.cs" />
     <Compile Include="Source\Patches\MainMenuDrawer_Quickstart_Patch.cs" />
     <Compile Include="Source\Patches\UIRoot_OnGUI_Patch.cs" />
     <Compile Include="Source\Quickstart\QuickstartStatusBox.cs" />
     <Compile Include="Source\Settings\CachedLabel.cs" />
     <Compile Include="Source\Settings\ContextMenuEntry.cs" />
     <Compile Include="Source\Settings\Dialog_ConfirmReset.cs" />
+    <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
     <Compile Include="Source\Settings\ModSettingsWidgets.cs" />
     <Compile Include="Source\Settings\ModSettingsWindowState.cs" />
+    <Compile Include="Source\Settings\OptionsDialogExtensions.cs" />
     <Compile Include="Source\Spotter\ModSpottingManager.cs" />
     <Compile Include="Source\Spotter\TrackingEntry.cs" />
     <Compile Include="Source\Utils\EarlyInitAttribute.cs" />
@@ -118,7 +121,6 @@
     <Compile Include="Source\Patches\Game_FillComponents_Patch.cs" />
     <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
-    <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
     <Compile Include="Source\Patches\EditWindow_Log_Patch.cs" />
     <Compile Include="Source\Patches\Game_FinalizeInit_Patch.cs" />
     <Compile Include="Source\Patches\MapComponentUtility_MapGenerated_Patch.cs" />
@@ -131,7 +133,6 @@
     <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />
     <Compile Include="Source\Quickstart\QuickstartController.cs" />
     <Compile Include="Source\Quickstart\QuickstartSettings.cs" />
-    <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
     <Compile Include="Source\Settings\SettingHandleConvertibleUtility.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
@@ -152,7 +153,6 @@
     <Compile Include="Source\News\UpdateFeatureDef.cs" />
     <Compile Include="Source\News\UpdateFeatureManager.cs" />
     <Compile Include="Source\Settings\Dialog_ModSettings.cs" />
-    <Compile Include="Source\Settings\OptionsDialogInjection.cs" />
     <Compile Include="Source\Settings\SettingHandleConvertible.cs" />
     <Compile Include="Source\Settings\Validators.cs" />
     <Compile Include="Source\Settings\ModSettingsPack.cs" />

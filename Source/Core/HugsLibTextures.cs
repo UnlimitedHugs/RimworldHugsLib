@@ -15,6 +15,7 @@ namespace HugsLib.Core {
 		public static Texture2D HLMenuIcon;
 		public static Texture2D HLMenuIconPlus;
 		public static Texture2D HLInfoIcon;
+		public static Texture2D HLOptionsIcon;
 		
 		static HugsLibTextures() {
 			foreach (var fieldInfo in typeof(HugsLibTextures).GetFields(BindingFlags.Public | BindingFlags.Static)) {
