@@ -22,7 +22,8 @@ namespace HugsLib.Logs {
 		private const string OutputLogFilename = "output_log.txt";
 		private const string GistApiUrl = "https://api.github.com/gists";
 		private const string ShortenerUrl = "https://git.io/";
-		private const string GistPayloadJson = "{{\"description\":\"{0}\",\"public\":true,\"files\":{{\"{1}\":{{\"content\":\"{2}\"}}}}}}";
+		private const string GistPayloadJson = 
+			"{{\"description\":\"{0}\",\"public\":{1},\"files\":{{\"{2}\":{{\"content\":\"{3}\"}}}}}}";
 		private const string GistDescription = "Rimworld output log published using HugsLib";
 		private const int MaxLogLineCount = 10000;
 		private const float PublishRequestTimeout = 90f;
@@ -111,9 +112,15 @@ namespace HugsLib.Logs {
 			};
 			try {
 				collatedData = CleanForJSON(collatedData);
-				var payload = string.Format(GistPayloadJson, GistDescription, OutputLogFilename, collatedData);
+				var useCustomAuthToken = !string.IsNullOrWhiteSpace(publishOptions.AuthToken);
+				var authToken = useCustomAuthToken
+					? publishOptions.AuthToken.Trim()
+					: GitHubAuthToken;
+				var publicVisibility = useCustomAuthToken ? "false" : "true";
+				var payload = string.Format(GistPayloadJson, 
+					GistDescription, publicVisibility, OutputLogFilename, collatedData);
 				activeRequest = new UnityWebRequest(GistApiUrl, UnityWebRequest.kHttpVerbPOST);
-				activeRequest.SetRequestHeader("Authorization", "token " + GitHubAuthToken);
+				activeRequest.SetRequestHeader("Authorization", "token " + authToken);
 				activeRequest.SetRequestHeader("User-Agent", RequestUserAgent);
 				activeRequest.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload)) {contentType = "application/json"};
 				activeRequest.downloadHandler = new DownloadHandlerBuffer();
