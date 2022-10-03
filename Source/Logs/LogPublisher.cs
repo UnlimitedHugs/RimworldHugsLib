@@ -9,6 +9,7 @@ using System.Threading;
 using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
+using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
 using Verse;
@@ -27,6 +28,12 @@ namespace HugsLib.Logs {
 		private const string GistDescription = "Rimworld output log published using HugsLib";
 		private const int MaxLogLineCount = 10000;
 		private const float PublishRequestTimeout = 90f;
+		private const bool DenyPublicUpload =
+#if NO_PUBLIC_LOGS
+			true;
+#else
+			false;
+#endif
 		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
 		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
 
@@ -117,6 +124,11 @@ namespace HugsLib.Logs {
 					? publishOptions.AuthToken.Trim()
 					: GitHubAuthToken;
 				var publicVisibility = useCustomAuthToken ? "false" : "true";
+				if (DenyPublicUpload && authToken == GitHubAuthToken) {
+					Messages.Message("Publishing to the shared account is disabled is this version.",
+						MessageTypeDefOf.RejectInput, false);
+					throw new Exception("Publishing denied");
+				}
 				var payload = string.Format(GistPayloadJson, 
 					GistDescription, publicVisibility, OutputLogFilename, collatedData);
 				activeRequest = new UnityWebRequest(GistApiUrl, UnityWebRequest.kHttpVerbPOST);
@@ -257,9 +269,9 @@ namespace HugsLib.Logs {
 
 		private int IndexOfOccurence(string s, char match, int occurence) {
 			int currentOccurence = 1;
-			int curentIndex = 0;
-			while (currentOccurence <= occurence && (curentIndex = s.IndexOf(match, curentIndex + 1)) != -1) {
-				if (currentOccurence == occurence) return curentIndex;
+			int currentIndex = 0;
+			while (currentOccurence <= occurence && (currentIndex = s.IndexOf(match, currentIndex + 1)) != -1) {
+				if (currentOccurence == occurence) return currentIndex;
 				currentOccurence++;
 			}
 			return -1;
@@ -286,16 +298,9 @@ namespace HugsLib.Logs {
 		}
 
 		private string RedactHomeDirectoryPaths(string log) {
-			// not necessary for windows logs
-			if (PlatformUtility.GetCurrentPlatform() == PlatformType.Windows) {
-				return log;
-			}
 			const string pathReplacement = "[Home_dir]";
-			var homePath = Environment.GetEnvironmentVariable("HOME");
-			if (homePath == null) {
-				return log;
-			}
-			return log.Replace(homePath, pathReplacement);
+			var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			return Regex.Replace(log, Regex.Escape(homePath), pathReplacement, RegexOptions.IgnoreCase);
 		}
 
 		private string RedactRimworldPaths(string log) {
