@@ -298,16 +298,9 @@ namespace HugsLib.Logs {
 		}
 
 		private string RedactHomeDirectoryPaths(string log) {
-			// not necessary for windows logs
-			if (PlatformUtility.GetCurrentPlatform() == PlatformType.Windows) {
-				return log;
-			}
 			const string pathReplacement = "[Home_dir]";
-			var homePath = Environment.GetEnvironmentVariable("HOME");
-			if (homePath == null) {
-				return log;
-			}
-			return log.Replace(homePath, pathReplacement);
+			var homePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			return Regex.Replace(log, Regex.Escape(homePath), pathReplacement, RegexOptions.IgnoreCase);
 		}
 
 		private string RedactRimworldPaths(string log) {
