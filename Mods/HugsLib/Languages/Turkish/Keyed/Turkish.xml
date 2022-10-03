@@ -61,10 +61,10 @@
 	<HugsLib_logs_shortUrls_tip>Yükleme sırasında daha kısa bir bağlantı oluşturur. Steam'de önerilmez - kısa bağlantılar otomatik olarak kaldırılır.</HugsLib_logs_shortUrls_tip>
 	<HugsLib_logs_platformInfo>Platform bilgilerini dahil et</HugsLib_logs_platformInfo>
 	<HugsLib_logs_platformInfo_tip>Günlükte CPU, bellek ve video kartınız hakkında bilgi içerir.</HugsLib_logs_platformInfo_tip>
-<HugsLib_logs_unlimitedLogSize>Sınırsız günlük boyutuna izin ver</HugsLib_logs_unlimitedLogSize>
-<HugsLib_logs_unlimitedLogSize_tip>Devre dışı bırakıldığında, çok uzun günlüklerin sorunlara neden olmasını önlemek için günlük boyutu 10K satırla sınırlıdır.</HugsLib_logs_unlimitedLogSize_tip>
-<HugsLib_logs_toClipboardBtn>Panoya</HugsLib_logs_toClipboardBtn>
-<HugsLib_logs_uploadBtn>Yükle</HugsLib_logs_uploadBtn>
+	<HugsLib_logs_unlimitedLogSize>Sınırsız günlük boyutuna izin ver</HugsLib_logs_unlimitedLogSize>
+	<HugsLib_logs_unlimitedLogSize_tip>Devre dışı bırakıldığında, çok uzun günlüklerin sorunlara neden olmasını önlemek için günlük boyutu 10K satırla sınırlıdır.</HugsLib_logs_unlimitedLogSize_tip>
+	<HugsLib_logs_toClipboardBtn>Panoya</HugsLib_logs_toClipboardBtn>
+	<HugsLib_logs_uploadBtn>Yükle</HugsLib_logs_uploadBtn>
 	
 	<HugsLib_logs_filesBtn>Files</HugsLib_logs_filesBtn>
 	<HugsLib_logs_openLogFile>Open log file</HugsLib_logs_openLogFile>
