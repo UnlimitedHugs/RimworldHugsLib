@@ -269,9 +269,9 @@ namespace HugsLib.Logs {
 
 		private int IndexOfOccurence(string s, char match, int occurence) {
 			int currentOccurence = 1;
-			int curentIndex = 0;
-			while (currentOccurence <= occurence && (curentIndex = s.IndexOf(match, curentIndex + 1)) != -1) {
-				if (currentOccurence == occurence) return curentIndex;
+			int currentIndex = 0;
+			while (currentOccurence <= occurence && (currentIndex = s.IndexOf(match, currentIndex + 1)) != -1) {
+				if (currentOccurence == occurence) return currentIndex;
 				currentOccurence++;
 			}
 			return -1;
