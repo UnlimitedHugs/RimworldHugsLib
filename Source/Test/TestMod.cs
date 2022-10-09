@@ -24,6 +24,7 @@ namespace HugsLib.Test {
 
 		public TestMod() {
 			Instance = this;
+			Settings.EntryName = "HugsLibTestMod";
 		}
 
 		public override string ModIdentifier {
@@ -171,7 +172,7 @@ namespace HugsLib.Test {
 				float SineColor(float offset) => .6f + .4f * Mathf.Sin(offset + Time.unscaledTime); 
 				GUI.color = new Color(SineColor(.5f), SineColor(1f), SineColor(1.5f));
 				GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-				Widgets.Label(rect, "Full width goodness");
+				Widgets.Label(rect, "Full width control");
 				GenUI.ResetLabelAlign();
 				GUI.color = fullWidth.Value ? new Color(.5f, 1f, .5f) : new Color(1f, .5f, .5f);
 				bool changed = false;
