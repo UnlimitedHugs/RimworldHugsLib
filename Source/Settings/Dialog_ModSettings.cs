@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HugsLib.Utils;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -111,8 +112,7 @@ namespace HugsLib.Settings {
 			var resetButtonRect =
 				new Rect(0, inRect.height - windowButtonSize.y, windowButtonSize.x, windowButtonSize.y);
 			if (Widgets.ButtonText(resetButtonRect, "HugsLib_settings_resetAll".Translate())) {
-				ShowResetPrompt("HugsLib_settings_resetAll_prompt".Translate(),
-					HugsLibController.SettingsManager.ModSettingsPacks.SelectMany(p => p.Handles));
+				ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(currentPackName), currentPack.Handles);
 			}
 			var closeButtonRect = new Rect(inRect.width - windowButtonSize.x, inRect.height - windowButtonSize.y,
 				windowButtonSize.x, windowButtonSize.y);
@@ -149,24 +149,18 @@ namespace HugsLib.Settings {
 			curY += ModEntryLabelPadding;
 
 			void DrawFloatMenuButton(Vector2 topRight) {
+				var hasMenuEntries = currentPack.ContextMenuEntries != null;
+				if (!hasMenuEntries) return;
 				var buttonTopRight = new Vector2(topRight.x - ModEntryLabelPadding,
 					topRight.y + (ModEntryLabelHeight - ModSettingsWidgets.HoverMenuHeight) / 2f);
-				var hasExtraMenuEntries = currentPack.ContextMenuEntries != null;
-				var hasContextMenuEntries = currentPack.CanBeReset || currentPack.ContextMenuEntries != null;
-				if (ModSettingsWidgets.DrawHoverMenuButton(
-						buttonTopRight, hasContextMenuEntries, hasExtraMenuEntries)) {
+				var hasContextMenuEntries = currentPack.ContextMenuEntries != null;
+				if (ModSettingsWidgets.DrawHoverMenuButton(buttonTopRight, hasContextMenuEntries, true)) {
 					OpenModEntryContextMenu();
 				}
 
 				void OpenModEntryContextMenu() {
-					var resetOptionLabel =
-						currentPack.CanBeReset ? "HugsLib_settings_resetMod".Translate(currentPackName) : null;
-					ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel,
-						OnResetOptionSelected, delegate { }, currentPack.ContextMenuEntries);
-				}
-
-				void OnResetOptionSelected() {
-					ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(currentPackName), currentPack.Handles);
+					ModSettingsWidgets.OpenExtensibleContextMenu(null, delegate { }, delegate { },
+						currentPack.ContextMenuEntries);
 				}
 			}
 		}
@@ -389,29 +383,19 @@ namespace HugsLib.Settings {
 			state.LastSettingsPackId = currentPack.ModId;
 		}
 
-		private void ShowResetPrompt(string message, IEnumerable<SettingHandle> resetHandles) {
+		private static void ShowResetPrompt(string message, IEnumerable<SettingHandle> resetHandles) {
 			var resetHandlesArr = resetHandles.ToArray();
-			var hiddenHandlesWithOwners = GetHiddenResettableHandles(resetHandlesArr)
-				.GroupBy(h => h.ParentPack)
-				.Select(grp => (
-					grp.Key.EntryName,
-					grp.Select(h => BlankStringToNull(h.Title) ?? h.Name).ToArray()
-				));
-			Find.WindowStack.Add(new Dialog_ConfirmReset(message, hiddenHandlesWithOwners, OnConfirmReset));
+			Find.WindowStack.Add(new Dialog_Confirm(message, OnConfirmReset, true));
 
-			string BlankStringToNull(string s) {
-				return string.IsNullOrWhiteSpace(s) ? null : s;
-			}
-
-			void OnConfirmReset(Dialog_ConfirmReset dialog) {
+			void OnConfirmReset() {
 				ResetSettingHandles(resetHandlesArr.ToArray());
 			}
 		}
 
-		private void ResetSettingHandles(params SettingHandle[] resetHandles) {
+		private static void ResetSettingHandles(params SettingHandle[] resetHandles) {
 			var resetCount = 0;
 			foreach (var handle in resetHandles) {
-				if (handle == null || !handle.CanBeReset) continue;
+				if (handle == null || !handle.CanBeReset || handle.HasDefaultValue()) continue;
 				try {
 					handle.ResetToDefault();
 					resetCount++;
