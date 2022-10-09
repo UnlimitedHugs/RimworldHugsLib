@@ -160,10 +160,6 @@ namespace HugsLib {
 		public virtual void EarlyInitialize() {
 		}
 
-		[Obsolete("Override EarlyInitialize instead (typo).")]
-		public virtual void EarlyInitalize() {
-		}
-
 		/// <summary>
 		/// Called when HugsLib receives the <see cref="StaticConstructorOnStartup"/> call.
 		/// Load order among mods implementing <see cref="ModBase"/> is respected.

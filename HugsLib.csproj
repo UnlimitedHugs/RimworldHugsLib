@@ -137,7 +137,6 @@
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />
-    <Compile Include="Source\Shell\ShellRestartRimWorld.cs" />
     <Compile Include="Source\Core\HugsTickProxy.cs" />
     <Compile Include="Source\Core\KeyBindingDefOf.cs" />
     <Compile Include="Source\Core\PersistentDataManager.cs" />
