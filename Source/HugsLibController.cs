@@ -530,8 +530,6 @@ namespace HugsLib {
 			try {
 				var pack = Settings.GetModSettings(ModIdentifier);
 				pack.EntryName = assemblyContentPacks[Assembly.GetCallingAssembly()]?.Name ?? "HugsLib";
-				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
-				pack.AlwaysExpandEntry = true;
 				UpdateFeatures.RegisterSettings(pack);
 				LogPublisher.RegisterSettings(pack);
 			} catch (Exception e) {

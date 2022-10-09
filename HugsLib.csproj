@@ -108,7 +108,6 @@
     <Compile Include="Source\Settings\CachedLabel.cs" />
     <Compile Include="Source\Settings\ContextMenuEntry.cs" />
     <Compile Include="Source\Settings\Dialog_ConfirmReset.cs" />
-    <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
     <Compile Include="Source\Settings\ModSettingsWidgets.cs" />
     <Compile Include="Source\Settings\ModSettingsWindowState.cs" />
     <Compile Include="Source\Settings\OptionsDialogExtensions.cs" />

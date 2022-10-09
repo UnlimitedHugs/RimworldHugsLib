@@ -9,7 +9,6 @@ using System.Threading;
 using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
-using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
 using Verse;

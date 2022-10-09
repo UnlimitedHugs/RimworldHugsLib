@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using HugsLib.Settings;
 using RimWorld;
 using Verse;
-using Dialog_ModSettings = HugsLib.Settings.Dialog_ModSettings;
 
 namespace HugsLib.Patches {
 	[HarmonyPatch(typeof(Dialog_Options))]

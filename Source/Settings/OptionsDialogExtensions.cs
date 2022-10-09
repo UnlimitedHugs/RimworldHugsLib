@@ -14,11 +14,11 @@ internal static class OptionsDialogExtensions {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
 		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
 			.Where(p => p.Handles.Any(h => !h.NeverVisible))
-			.Select(p => {
-				var label = p.EntryName.NullOrEmpty()
+			.Select(pack => {
+				var label = pack.EntryName.NullOrEmpty()
 					? "HugsLib_setting_unnamed_mod".Translate().ToString()
-					: p.EntryName;
-				return new SettingsProxyMod(label, p.ModId);
+					: pack.EntryName;
+				return new SettingsProxyMod(label, pack);
 			});
 		var combinedEntries = stockEntries
 			.Concat(hugsLibEntries)
@@ -29,11 +29,7 @@ internal static class OptionsDialogExtensions {
 
 	public static Window GetModSettingsWindow(Mod forMod) {
 		return forMod is SettingsProxyMod proxy
-			? new Dialog_ModSettings {
-				WindowState = new ModSettingsWindowState {
-					ExpandedSettingPackIds = new[] { proxy.SettingPackId },
-				}
-			}
+			? new Dialog_ModSettings(proxy.SettingsPack)
 			: new RimWorld.Dialog_ModSettings(forMod);
 	}
 
@@ -47,16 +43,16 @@ internal static class OptionsDialogExtensions {
 }
 
 internal class SettingsProxyMod : Mod {
-	public string SettingPackId { get; }
+	public ModSettingsPack SettingsPack { get; }
 	private readonly string entryLabel;
 
 	[UsedImplicitly]
 	public SettingsProxyMod(ModContentPack content) : base(content) {
 	}
 
-	public SettingsProxyMod(string entryLabel, string settingPackId) : base(null) {
+	public SettingsProxyMod(string entryLabel, ModSettingsPack settingsPack) : base(null) {
+		SettingsPack = settingsPack;
 		this.entryLabel = entryLabel;
-		SettingPackId = settingPackId;
 	}
 
 	public override string SettingsCategory() {
