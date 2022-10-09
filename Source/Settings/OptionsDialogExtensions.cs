@@ -1,29 +1,65 @@
-﻿using HugsLib.Core;
-using HugsLib.Utils;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using JetBrains.Annotations;
 using RimWorld;
-using UnityEngine;
 using Verse;
-using Verse.Sound;
 
 namespace HugsLib.Settings;
 
 internal static class OptionsDialogExtensions {
-	public static void DrawHugsLibSettingsButton(Dialog_Options self, ref int buttonIndex) {
-		// Adapted from Dialog_Options.DoCategoryRow
-		var buttonRect = new Rect(0f, buttonIndex * 50f, 160f, 48f).ContractedBy(4f);
-		Widgets.DrawOptionBackground(buttonRect, false);
-		if (Widgets.ButtonInvisible(buttonRect)) {
-			HugsLibUtility.OpenModSettingsDialog();
-			SoundDefOf.Click.PlayOneShotOnCamera();
-		}
-		var iconLeftPadding = buttonRect.x + 10f;
-		var iconPos = new Rect(iconLeftPadding, buttonRect.y + (buttonRect.height - 20f) / 2f, 20f, 20f);
-		GUI.DrawTexture(iconPos, HugsLibTextures.HLOptionsIcon);
-		var labelLeftPadding = iconLeftPadding + 37f;
-		Widgets.Label(
-			new Rect(labelLeftPadding, buttonRect.y, buttonRect.width - labelLeftPadding, buttonRect.height),
-			"HugsLib_settings_btn".Translate() + " (HugsLib)"
-		);
-		buttonIndex += 1;
+	private static FieldInfo cachedModsField;
+
+	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
+		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
+		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
+			.Where(p => p.Handles.Any(h => !h.NeverVisible))
+			.Select(p => {
+				var label = p.EntryName.NullOrEmpty()
+					? "HugsLib_setting_unnamed_mod".Translate().ToString()
+					: p.EntryName;
+				return new SettingsProxyMod(label, p.ModId);
+			});
+		var combinedEntries = stockEntries
+			.Concat(hugsLibEntries)
+			.OrderBy(m => m.SettingsCategory());
+
+		cachedModsField.SetValue(dialog, combinedEntries);
+	}
+
+	public static Window GetModSettingsWindow(Mod forMod) {
+		return forMod is SettingsProxyMod proxy
+			? new Dialog_ModSettings {
+				WindowState = new ModSettingsWindowState {
+					ExpandedSettingPackIds = new[] { proxy.SettingPackId },
+				}
+			}
+			: new RimWorld.Dialog_ModSettings(forMod);
+	}
+
+	public static void PrepareReflection() {
+		const string fieldName = "cachedModsWithSettings";
+		cachedModsField =
+			typeof(Dialog_Options).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+		if (cachedModsField == null || cachedModsField.FieldType != typeof(IEnumerable<Mod>))
+			HugsLibController.Logger.Error($"Failed to reflect {nameof(Dialog_Options)}.{fieldName}");
+	}
+}
+
+internal class SettingsProxyMod : Mod {
+	public string SettingPackId { get; }
+	private readonly string entryLabel;
+
+	[UsedImplicitly]
+	public SettingsProxyMod(ModContentPack content) : base(content) {
+	}
+
+	public SettingsProxyMod(string entryLabel, string settingPackId) : base(null) {
+		this.entryLabel = entryLabel;
+		SettingPackId = settingPackId;
+	}
+
+	public override string SettingsCategory() {
+		return entryLabel;
 	}
 }
