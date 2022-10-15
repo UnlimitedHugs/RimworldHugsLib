@@ -11,10 +11,10 @@ namespace HugsLib.Core {
 	/// </summary>
 	[StaticConstructorOnStartup]
 	internal static class HugsLibTextures {
-		public static Texture2D quickstartIcon;
-		public static Texture2D HLMenuIcon;
-		public static Texture2D HLMenuIconPlus;
-		public static Texture2D HLInfoIcon;
+		public static Texture2D quickstartIcon = null!;
+		public static Texture2D HLMenuIcon = null!;
+		public static Texture2D HLMenuIconPlus = null!;
+		public static Texture2D HLInfoIcon = null!;
 		
 		static HugsLibTextures() {
 			foreach (var fieldInfo in typeof(HugsLibTextures).GetFields(BindingFlags.Public | BindingFlags.Static)) {

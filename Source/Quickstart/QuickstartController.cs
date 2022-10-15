@@ -31,16 +31,16 @@ namespace HugsLib.Quickstart {
 			}
 		}
 		
-		private static Type quickStarterType;
-		private static FieldInfo quickStartedField;
-		private static SettingHandle<QuickstartSettings> handle;
-		private static QuickstartStatusBox statusBox;
+		private static Type quickStarterType = null!;
+		private static FieldInfo quickStartedField = null!;
+		private static SettingHandle<QuickstartSettings> handle = null!;
+		private static QuickstartStatusBox? statusBox;
 		private static bool quickstartPending;
 		private static bool mapGenerationPending;
 
 		public static void InitateMapGeneration() {
 			PrepareMapGeneration();
-			HugsLibController.Logger.Message("Quickstarter generating map with scenario: " + TryGetScenarioByName(Settings.ScenarioToGen).name);
+			HugsLibController.Logger.Message("Quickstarter generating map with scenario: " + (TryGetScenarioByName(Settings.ScenarioToGen)?.name ?? "[null]"));
 			quickStartedField.SetValue(null, true);
 			LongEventHandler.QueueLongEvent(() => {
 				ClearCurrentWorld();
@@ -91,7 +91,7 @@ namespace HugsLib.Quickstart {
 
 		internal static void OnGUIUnfiltered() {
 			if (!quickstartPending) return;
-			statusBox.OnGUI();
+			statusBox?.OnGUI();
 		}
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {
@@ -117,7 +117,7 @@ namespace HugsLib.Quickstart {
 			handle.ForceSaveChanges();
 		}
 
-		internal static Scenario ReplaceQuickstartScenarioIfNeeded(Scenario original) {
+		internal static Scenario? ReplaceQuickstartScenarioIfNeeded(Scenario? original) {
 			return mapGenerationPending ? TryGetScenarioByName(Settings.ScenarioToGen) : original;
 		}
 
@@ -148,7 +148,7 @@ namespace HugsLib.Quickstart {
 						return new QuickstartStatusBox.LoadSaveOperation(GetSaveNameToLoad() ?? string.Empty);
 					case QuickstartSettings.QuickstartMode.GenerateMap:
 						return new QuickstartStatusBox.GenerateMapOperation(
-							settings.ScenarioToGen, settings.MapSizeToGen);
+							settings.ScenarioToGen!, settings.MapSizeToGen);
 					default:
 						throw new ArgumentOutOfRangeException("Unhandled operation mode: "+settings.OperationMode);
 				}
@@ -204,7 +204,7 @@ namespace HugsLib.Quickstart {
 			MapSizes.Clear();
 			MapSizes.Add(new MapSizeEntry(75, "75x75 (Encounter)"));
 			foreach (var size in vanillaSizes) {
-				string desc = null;
+				string? desc = null;
 				switch (size) {
 					case 200: desc = "MapSizeSmall".Translate(); break;
 					case 250: desc = "MapSizeMedium".Translate(); break;
@@ -225,7 +225,7 @@ namespace HugsLib.Quickstart {
 			mapGenerationPending = true;
 		}
 
-		private static Scenario TryGetScenarioByName(string name) {
+		private static Scenario? TryGetScenarioByName(string? name) {
 			return ScenarioLister.AllScenarios().FirstOrDefault(s => s.name == name);
 		}
 
@@ -234,11 +234,11 @@ namespace HugsLib.Quickstart {
 			Settings.MapSizeToGen = sizes.OrderBy(e => Mathf.Abs(e.Size - settings.MapSizeToGen)).First().Size;
 		}
 
-		private static string GetSaveNameToLoad() {
+		private static string? GetSaveNameToLoad() {
 			return Settings.SaveFileToLoad ?? TryGetMostRecentSaveFileName();
 		}
 
-		private static string TryGetMostRecentSaveFileName() {
+		private static string? TryGetMostRecentSaveFileName() {
 			var mostRecentFilePath = GenFilePaths.AllSavedGameFiles.FirstOrDefault()?.Name;
 			return Path.GetFileNameWithoutExtension(mostRecentFilePath);
 		}

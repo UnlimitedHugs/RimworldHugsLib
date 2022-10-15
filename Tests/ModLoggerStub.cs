@@ -83,5 +83,13 @@ namespace HugsLibTests {
 				}
 			}
 		}
+
+		public static void Main(string[] Args)
+		{
+			
+		}
 	}
+	
+	
 }
+

@@ -9,8 +9,8 @@ namespace HugsLib.News {
 	internal class UpdateFeatureDefFilteringProvider {
 		private readonly FilteringEntry[] filteringEntries;
 
-		private string currentFilterModId;
-		public string CurrentFilterModIdentifier {
+		private string? currentFilterModId;
+		public string? CurrentFilterModIdentifier {
 			get { return currentFilterModId; }
 			set {
 				var matchingEntry = value != null ? TryGetFilteringEntry(value) : null;
@@ -19,7 +19,7 @@ namespace HugsLib.News {
 			}
 		}
 		
-		public string CurrentFilterModNameReadable { get; private set; }
+		public string? CurrentFilterModNameReadable { get; private set; }
 
 		public UpdateFeatureDefFilteringProvider(IEnumerable<UpdateFeatureDef> newsDefs) {
 			filteringEntries = GenerateFilteringEntriesFromDefs(newsDefs);
@@ -38,7 +38,7 @@ namespace HugsLib.News {
 			var seenIdentifiers = new Dictionary<string, (string name, int count)>();
 			foreach (var def in defs) {
 				var defModIdentifier = def.OwningModId;
-				if (defModIdentifier != null) {
+				if (defModIdentifier != null!) {
 					if (!seenIdentifiers.TryGetValue(defModIdentifier, out var seenIdentifier)) {
 						seenIdentifiers.Add(defModIdentifier, (def.modNameReadable, 1));
 					} else {

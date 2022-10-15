@@ -28,15 +28,13 @@ namespace HugsLib.News {
 		private readonly Dictionary<string, Texture2D> resolvedImages = new Dictionary<string, Texture2D>();
 		private readonly string ignoreToggleTip = "HugsLib_features_ignoreTooltip".Translate();
 		private readonly float linkTextWidth;
-		private List<FeatureEntry> entries;
+		private List<FeatureEntry> entries = null!;
 		private float totalContentHeight = -1;
 		private Vector2 scrollPosition;
 		private bool anyImagesPending;
 
-		public override Vector2 InitialSize {
-			get { return new Vector2(650f, 700f); }
-		}
-		
+		public override Vector2 InitialSize => new Vector2(650f, 700f);
+
 		public Dialog_UpdateFeatures(IEnumerable<UpdateFeatureDef> featureDefs, UpdateFeatureManager.IgnoredNewsIds ignoredNewsProviders) {
 			this.ignoredNewsProviders = ignoredNewsProviders;
 			closeOnCancel = true;
@@ -87,7 +85,7 @@ namespace HugsLib.News {
 					bool skipDrawing = curY - scrollPosition.y + EntryTitleHeight < 0f || curY - scrollPosition.y > scrollViewRect.height;
 					DrawEntryTitle(entry, scrollContentRect.width, ref curY, skipDrawing);
 					var indentedContent = new Rect(EntryContentIndent, 0, scrollContentRect.width - EntryContentIndent, scrollContentRect.height);
-					DescriptionSegment lastSegment = null;
+					DescriptionSegment? lastSegment = null;
 					for (int j = 0; j < entry.segments.Count; j++) {
 						var segment = entry.segments[j];
 						skipDrawing = curY - scrollPosition.y + segment.expectedHeight < 0f || curY - scrollPosition.y > scrollViewRect.height;
@@ -222,7 +220,7 @@ namespace HugsLib.News {
 				anyImagesPending = true;
 				var requiredImagesGroupedByMod = requiredImagePairs
 					.GroupBy(pair => pair.pack, pair => pair.fileName);
-				HugsLibController.Instance.DoLater.DoNextUpdate(() => {
+				HugsLibController.Instance.DoLater?.DoNextUpdate(() => {
 					// this must be done in the main thread due to Unity API calls
 					foreach (var group in requiredImagesGroupedByMod) {
 						ResolveImagesForMod(group.Key, group);
@@ -263,8 +261,8 @@ namespace HugsLib.News {
 						segmentString = segmentString.Trim();
 					}
 					DescriptionSegment.SegmentType segmentType;
-					string[] images = null;
-					string text = null;
+					string[]? images = null;
+					string? text = null;
 					if (segmentString.StartsWith(ImageSegmentTag)) {
 						segmentType = DescriptionSegment.SegmentType.Image;
 						var parts = segmentString.Split(ArgumentSeparator);
@@ -332,11 +330,11 @@ namespace HugsLib.News {
 			}
 
 			public readonly SegmentType type;
-			public string[] imageNames;
+			public string[]? imageNames;
 			public float expectedHeight;
 			private float expectedWidth;
-			public string text;
-			private List<Texture2D> cachedTextures;
+			public string? text;
+			private List<Texture2D>? cachedTextures;
 
 			public DescriptionSegment(SegmentType type) {
 				this.type = type;
@@ -354,7 +352,7 @@ namespace HugsLib.News {
 				return 0;
 			}
 
-			public void Draw(Rect rect, ref float curY, Dictionary<string, Texture2D> images, DescriptionSegment previousSegment, bool skipDrawing) {
+			public void Draw(Rect rect, ref float curY, Dictionary<string, Texture2D> images, DescriptionSegment? previousSegment, bool skipDrawing) {
 				if (type == SegmentType.Image && imageNames != null) {
 					if (!skipDrawing) {
 						if (cachedTextures == null) cachedTextures = CacheOwnTextures(images);
@@ -384,7 +382,7 @@ namespace HugsLib.News {
 			}
 
 			private List<Texture2D> CacheOwnTextures(Dictionary<string, Texture2D> images) {
-				var cached = new List<Texture2D>(imageNames.Length);
+				var cached = new List<Texture2D>(imageNames!.Length);
 				expectedHeight = expectedWidth = 0;
 				for (int i = 0; i < imageNames.Length; i++) {
 					Texture2D tex;

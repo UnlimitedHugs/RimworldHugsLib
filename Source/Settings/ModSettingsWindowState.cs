@@ -6,10 +6,8 @@ namespace HugsLib.Settings {
 	/// State is not persisted between game restarts.
 	/// </summary>
 	internal class ModSettingsWindowState : IModSettingsWindowState {
-		private static ModSettingsWindowState instance;
-		public static ModSettingsWindowState Instance {
-			get { return instance ?? (instance = new ModSettingsWindowState()); }
-		}
+		private static ModSettingsWindowState? instance;
+		public static ModSettingsWindowState Instance => instance ??= new ModSettingsWindowState();
 
 		public string[] ExpandedSettingPackIds { get; set; } = Array.Empty<string>();
 		public float VerticalScrollPosition { get; set; }

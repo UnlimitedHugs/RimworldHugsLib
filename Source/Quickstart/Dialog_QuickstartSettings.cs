@@ -91,7 +91,7 @@ namespace HugsLib.Quickstart {
 				MakeSelectMapSizeButton(sub, settings);
 			});
 			expectedHeight = categoryPadding * 2 + (subListingRowHeight + subListingSpacing) * 3;
-			MakeSubListing(mainListing, checkboxListingWidth, expectedHeight, categoryPadding, 0f, subListingSpacing, (sub, width) => {
+			MakeSubListing(mainListing, checkboxListingWidth, expectedHeight, categoryPadding, 0f, subListingSpacing, (sub, _) => {
 				sub.CheckboxLabeled("Abort quickstart on error", ref settings.StopOnErrors, "Prevent quickstart if errors are detected during startup.");
 				sub.CheckboxLabeled("Abort quickstart on warning", ref settings.StopOnWarnings, "Prevent quickstart if warnings are detected during startup.");
 				sub.CheckboxLabeled("Ignore version & mod config mismatch", ref settings.BypassSafetyDialog, "Skip the mod config mismatch dialog and load all saved games regardless.");
@@ -106,7 +106,7 @@ namespace HugsLib.Quickstart {
 			}
 		}
 
-		private void OperationModeRadioButton(Listing_Standard listing, float labelInset, string label, QuickstartSettings settings, QuickstartSettings.QuickstartMode assignedMode, string tooltip) {
+		private void OperationModeRadioButton(Listing_Standard listing, float labelInset, string label, QuickstartSettings settings, QuickstartSettings.QuickstartMode assignedMode, string? tooltip) {
 			const float labelTopMargin = -4f;
 			const float fontSize = 16f;
 			float lineHeight = Text.LineHeight;

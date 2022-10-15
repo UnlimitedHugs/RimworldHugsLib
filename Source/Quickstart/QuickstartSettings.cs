@@ -15,8 +15,8 @@ namespace HugsLib.Quickstart {
 		}
 
 		[XmlElement] public QuickstartMode OperationMode = QuickstartMode.Disabled;
-		[XmlElement] public string SaveFileToLoad;
-		[XmlElement] public string ScenarioToGen;
+		[XmlElement] public string? SaveFileToLoad;
+		[XmlElement] public string? ScenarioToGen;
 		[XmlElement] public int MapSizeToGen = QuickstartController.DefaultMapSize;
 		[XmlElement] public bool StopOnErrors = true;
 		[XmlElement] public bool StopOnWarnings;

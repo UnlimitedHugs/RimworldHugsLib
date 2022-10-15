@@ -153,7 +153,7 @@ namespace HugsLib.News {
 			return options;
 		}
 
-		private void SetFilterAndUpdateShownDefs(string newFilterModIdentifier) {
+		private void SetFilterAndUpdateShownDefs(string? newFilterModIdentifier) {
 			if (defFilter.CurrentFilterModIdentifier == newFilterModIdentifier) return;
 			defFilter.CurrentFilterModIdentifier = newFilterModIdentifier;
 			InstallFilteredDefs(fullDefList);

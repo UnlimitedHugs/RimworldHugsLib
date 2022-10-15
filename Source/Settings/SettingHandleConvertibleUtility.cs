@@ -22,12 +22,11 @@ namespace HugsLib.Settings {
 				if(serializedValues.NullOrEmpty()) return;
 				DoSerializationChecks(targetObject);
 				var serializer = new XmlSerializer(targetObject.GetType());
-				using (var reader = new StringReader(serializedValues)) {
-					var source = serializer.Deserialize(reader);
-					CopySerializedMembersFromObject(source, targetObject);	
-				}
+				using var reader = new StringReader(serializedValues);
+				var source = serializer.Deserialize(reader);
+				CopySerializedMembersFromObject(source, targetObject);
 			} catch (Exception e) {
-				throw new SerializationException(string.Format("Exception while serializing {0}: {1}", targetObject != null ? targetObject.GetType() : null, e));
+				throw new SerializationException(string.Format("Exception while serializing {0}: {1}", targetObject != null! ? targetObject.GetType() : null, e));
 			}
 		}
 
@@ -49,7 +48,7 @@ namespace HugsLib.Settings {
 					return stream.ToString();
 				}
 			} catch (Exception e) {
-				throw new SerializationException(string.Format("Exception while deserializing {0}: {1}", targetObject != null ? targetObject.GetType() : null, e));
+				throw new SerializationException(string.Format("Exception while deserializing {0}: {1}", targetObject != null! ? targetObject.GetType() : null, e));
 			}
 		}
 

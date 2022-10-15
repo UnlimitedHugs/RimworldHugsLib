@@ -163,7 +163,7 @@ namespace HugsLib.Utils {
 				.Select(grp => (grp.Key, grp as IEnumerable<MethodBase>));
 		}
 
-		private static bool HasActivePatches(HarmonyLib.Patches patches) {
+		private static bool HasActivePatches(HarmonyLib.Patches? patches) {
 			return patches != null &&
 				((patches.Prefixes != null && patches.Prefixes.Count != 0) ||
 					(patches.Postfixes != null && patches.Postfixes.Count != 0) ||

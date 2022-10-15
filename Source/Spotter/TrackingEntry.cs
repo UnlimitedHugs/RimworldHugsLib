@@ -13,7 +13,7 @@ namespace HugsLib.Spotter {
 			public static TrackingEntry FromXMLElement(XElement node) {
 				var packageId = node.Attribute(PackageIdAttributeName)?.Value;
 				if (packageId.NullOrEmpty()) throw new FormatException("packageId not defined");
-				return new TrackingEntry(packageId);
+				return new TrackingEntry(packageId!);
 			}
 
 			public string PackageId { get; }

@@ -21,25 +21,23 @@ namespace HugsLib {
 		/// This can be used to log messages specific to your mod.
 		/// It will prefix everything with your ModIdentifier.
 		/// </summary>
-		protected ModLogger Logger { get; private set; }
+		protected ModLogger Logger { get; }
 
 		/// <summary>
 		/// The ModSettingsPack specific to your mod.
 		/// Use this to create settings handles that represent the values of saved settings.
 		/// </summary>
-		protected ModSettingsPack Settings { get; private set; }
+		protected ModSettingsPack? Settings { get; private set; }
 
 		/// <summary>
 		/// Override this and return false to prevent a Harmony instance from being automatically created and scanning your assembly for patches.
 		/// </summary>
-		protected virtual bool HarmonyAutoPatch {
-			get { return true; }
-		}
-		
+		protected virtual bool HarmonyAutoPatch => true;
+
 		/// <summary>
 		/// The reference to Harmony instance that applied the patches in your assembly.
 		/// </summary>
-		protected Harmony HarmonyInst { get; set; }
+		protected Harmony HarmonyInst { get; set; } = null!;
 
 		/// <summary>
 		/// A unique identifier used both as <see cref="SettingsIdentifier"/> and <see cref="LogIdentifier"/>.
@@ -49,45 +47,37 @@ namespace HugsLib {
 		/// <remarks>
 		/// This is no longer used to identify mods since 7.0 (Rimworld 1.1). Use ModBase.ModContentPack.PackageId to that end instead.
 		/// </remarks>
-		public virtual string ModIdentifier {
-			get { return null; } 
-		}
-		
+		public virtual string? ModIdentifier => null;
+
 		/// <summary>
 		/// A unique identifier to use as a key when settings are stored for this mod by <see cref="ModSettingsManager"/>.
 		/// Must start with a letter and contain any of [A-z, 0-9, -, _, :] (identifier must be valid as an XML tag name).
 		/// By default uses the PackageId of the implementing mod.
 		/// Returning null will prevent the <see cref="Settings"/> property from being assigned.
 		/// </summary>
-		public virtual string SettingsIdentifier {
-			get { return ModIdentifier ?? ModContentPack?.PackageId; } 
-		}
-		
+		public virtual string? SettingsIdentifier => ModIdentifier ?? ModContentPack?.PackageId;
+
 		/// <summary>
 		/// A readable identifier for the mod, used as a prefix by <see cref="Logger"/> and in various error messages.
 		/// Appear as "[LogIdentifier] message" when using <see cref="Logger"/>.
 		/// By default uses the non-lowercase PackageId of the implementing mod or the type name if that is not set.
 		/// </summary>
-		public virtual string LogIdentifier {
-			get { return ModIdentifier ?? ModContentPack?.PackageIdPlayerFacing ?? GetType().FullName; } 
-		}
+		public virtual string LogIdentifier => ModIdentifier ?? ModContentPack?.PackageIdPlayerFacing ?? GetType().FullName;
 
 		/// <summary>
 		/// The null-checked version of <see cref="LogIdentifier"/>. 
 		/// Returns the type name if <see cref="LogIdentifier"/> is null.
 		/// </summary>
-		public string LogIdentifierSafe {
-			get { return LogIdentifier ?? GetType().FullName; } 
-		}
+		public string LogIdentifierSafe => LogIdentifier;
 
-		protected ModContentPack modContentPackInt;
+		protected ModContentPack? modContentPackInt;
 
 		/// <summary>
 		/// The content pack for the mod containing the assembly this class belongs to
 		/// </summary>
-		public virtual ModContentPack ModContentPack {
-			get { return modContentPackInt; }
-			internal set { modContentPackInt = value; }
+		public virtual ModContentPack? ModContentPack {
+			get => modContentPackInt;
+			internal set => modContentPackInt = value;
 		}
 		
 		/// <summary>
@@ -96,21 +86,22 @@ namespace HugsLib {
 		/// identified for some unexpected reason.
 		/// </summary>
 		public bool ModIsActive { get; internal set; }
-		
+
 		/// <summary>
 		/// Contains the AssemblyVersion and AssemblyFileVersion of the mod. Used by <see cref="GetVersion"/>.
 		/// </summary>
-		public AssemblyVersionInfo VersionInfo { get; internal set; }
+		public AssemblyVersionInfo VersionInfo { get; internal set; } = null!;
 
-		internal static ModContentPack CurrentlyProcessedContentPack { get; set; }
+		internal static ModContentPack? CurrentlyProcessedContentPack { get; set; }
 
 		protected ModBase() {
 			modContentPackInt = CurrentlyProcessedContentPack;
 			Logger = new ModLogger(LogIdentifierSafe);
+			// ReSharper disable once VirtualMemberCallInConstructor
 			var settingsPackId = SettingsIdentifier;
 			if (!string.IsNullOrEmpty(settingsPackId)) {
-				if (PersistentDataManager.IsValidElementName(settingsPackId)) {
-					Settings = HugsLibController.Instance.Settings.GetModSettings(settingsPackId, modContentPackInt?.Name);
+				if (PersistentDataManager.IsValidElementName(settingsPackId!)) {
+					Settings = HugsLibController.Instance.Settings.GetModSettings(settingsPackId!, modContentPackInt?.Name);
 				} else {
 					Logger.Error($"string \"{settingsPackId}\" cannot be used as a settings identifier. " +
 								$"Override {nameof(ModBase)}.{nameof(SettingsIdentifier)} to manually specify one. " +
@@ -120,12 +111,11 @@ namespace HugsLib {
 		}
 
 		internal void ApplyHarmonyPatches() {
-			ModLogger GetLogger() => Logger ?? new ModLogger(LogIdentifierSafe);
 			if (HarmonyAutoPatch) {
 				var harmonyId = ModContentPack?.PackageIdPlayerFacing;
 				if (harmonyId == null) {
 					harmonyId = $"HugsLib.{LogIdentifierSafe}";
-					GetLogger().Warning($"Failed to identify PackageId, using \"{harmonyId}\" as Harmony id instead.");
+					Logger.Warning($"Failed to identify PackageId, using \"{harmonyId}\" as Harmony id instead.");
 				}
 				try {
 					if (HugsLibController.Instance.ShouldHarmonyAutoPatch(GetType().Assembly, harmonyId)) {
@@ -133,12 +123,12 @@ namespace HugsLib {
 						HarmonyInst.PatchAll(GetType().Assembly);
 					}
 				} catch (Exception e) {
-					GetLogger().Error("Failed to apply Harmony patches for {0}. Exception was: {1}", harmonyId, e);
+					Logger.Error("Failed to apply Harmony patches for {0}. Exception was: {1}", harmonyId, e);
 				}
 			}
 		}
 
-		internal ModSettingsPack SettingsPackInternalAccess {
+		internal ModSettingsPack? SettingsPackInternalAccess {
 			get { return Settings; }
 		}
 
@@ -147,7 +137,7 @@ namespace HugsLib {
 		/// or the higher one between AssemblyVersion and AssemblyFileVersion
 		/// </summary>
 		public virtual Version GetVersion() {
-			var file = VersionFile.TryParseVersionFile(ModContentPack);
+			var file = VersionFile.TryParseVersionFile(ModContentPack!);
 			if (file != null && file.OverrideVersion != null) return file.OverrideVersion;
 			return VersionInfo.HighestVersion;
 		}

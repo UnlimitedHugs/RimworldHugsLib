@@ -26,7 +26,7 @@ namespace HugsLib.Logs {
 		/// <param name="widgetArea">Window area for custom widgets.</param>
 		/// <param name="selectedLogMessage">The currently selected log message, or null.</param>
 		/// <param name="widgetRow">Draw your widget using this to automatically align it with the others.</param>
-		public delegate void WidgetDrawer(Window logWindow, Rect widgetArea, LogMessage selectedLogMessage, WidgetRow widgetRow);
+		public delegate void WidgetDrawer(Window logWindow, Rect widgetArea, LogMessage? selectedLogMessage, WidgetRow widgetRow);
 
 		private static readonly float widgetRowHeight = 23f;
 		private static readonly float buttonRowMarginTop = 2f;
@@ -34,12 +34,10 @@ namespace HugsLib.Logs {
 		private static readonly Color separatorLineColor = GenColor.FromHex("303030");
 		private static readonly List<LogWindowWidget> widgets = new List<LogWindowWidget>();
 		
-		private static Texture2D lineTexture;
-		private static FieldInfo selectedMessageField;
+		private static Texture2D lineTexture = null!;
+		private static FieldInfo? selectedMessageField;
 
-		internal static float ExtensionsAreaHeight {
-			get { return widgets.Count > 0 ? widgetRowHeight : 0f; }
-		}
+		internal static float ExtensionsAreaHeight => widgets.Count > 0 ? widgetRowHeight : 0f;
 
 		/// <summary>
 		/// Adds a new drawing callback to the log window widget drawer.
@@ -89,7 +87,7 @@ namespace HugsLib.Logs {
 
 		private static void AddOwnWidgets() {
 			// publish logs button
-			AddLogWindowWidget((window, area, message, row) => {
+			AddLogWindowWidget((_, _, _, row) => {
 				var prevColor = GUI.color;
 				GUI.color = shareButtonColor;
 				if (row.ButtonText("HugsLib_logs_shareBtn".Translate())) {
@@ -98,7 +96,7 @@ namespace HugsLib.Logs {
 				GUI.color = prevColor;	
 			});
 			// Files drop-down menu
-			AddLogWindowWidget((window, area, message, row) => {
+			AddLogWindowWidget((_, _, _, row) => {
 				if (row.ButtonText("HugsLib_logs_filesBtn".Translate())) {
 					Find.WindowStack.Add(new FloatMenu(new List<FloatMenuOption> {
 					new FloatMenuOption("HugsLib_logs_openLogFile".Translate(), () => {
@@ -114,7 +112,7 @@ namespace HugsLib.Logs {
 				}
 			});
 			// copy button
-			AddLogWindowWidget((window, area, message, row) => {
+			AddLogWindowWidget((_, _, message, row) => {
 				if (message != null) {
 					if (row.ButtonText("HugsLib_logs_copy".Translate())) {
 						CopyMessage(message);

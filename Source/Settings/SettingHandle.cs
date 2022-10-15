@@ -17,33 +17,34 @@ namespace HugsLib.Settings {
 		/// <summary>
 		/// Unique identifier of the setting.
 		/// </summary>
-		public string Name { get; protected set; }
+		public string Name { get; protected set; } = null!;
+
 		/// <summary>
 		/// Name displayed in the settings menu.
 		/// </summary>
-		public string Title { get; set; }
+		public string? Title { get; set; }
 		/// <summary>
 		/// Displayed as a tooltip in the settings menu.
 		/// </summary>
-		public string Description { get; set; }
+		public string? Description { get; set; }
 		/// <summary>
 		/// Should return true if the passed value is valid for this setting. Optional.
 		/// </summary>
-		public ValueIsValid Validator { get; set; }
+		public ValueIsValid? Validator { get; set; }
 		/// <summary>
 		/// The string identifier prefix used to display enum values in the settings menu (e.g. "prefix_" for "prefix_EnumValue")
 		/// </summary>
-		public string EnumStringPrefix { get; set; }
+		public string? EnumStringPrefix { get; set; }
 		/// <summary>
 		/// Return true to make this setting visible in the menu. Optional.
 		/// An invisible setting can still be reset to default using the Reset All button.
 		/// </summary>
-		public ShouldDisplay VisibilityPredicate { get; set; }
+		public ShouldDisplay? VisibilityPredicate { get; set; }
 		/// <summary>
 		/// Draw a custom control for the settings menu entry. Entry name is already drawn when this is called.
 		/// Optional. Return value indicates if the handle value was changed during the drawer call.
 		/// </summary>
-		public DrawCustomControl CustomDrawer { get; set; }
+		public DrawCustomControl? CustomDrawer { get; set; }
 		/// <summary>
 		///	Fully override the drawing of the settings menu entry for this handle.
 		/// This replaces both the title and the control half of the entry.
@@ -53,7 +54,7 @@ namespace HugsLib.Settings {
 		///	The following built-in handle drawing features are also disabled when this property is assigned:
 		/// hovering info/menu buttons (<see cref="ModSettingsWidgets.DrawHandleHoverMenu"/>).
 		/// </remarks>
-		public DrawCustomControl CustomDrawerFullWidth { get; set; }
+		public DrawCustomControl? CustomDrawerFullWidth { get; set; }
 		/// <summary>
 		/// When true, setting will never appear. For serialized data.
 		/// No longer affects value resetting, see <see cref="CanBeReset"/>
@@ -95,13 +96,13 @@ namespace HugsLib.Settings {
 		/// <remarks>
 		/// The "Reset to default" option is always present, but will be disabled if <see cref="CanBeReset"/> is false.
 		/// </remarks>
-		public IEnumerable<ContextMenuEntry> ContextMenuEntries { get; set; }
+		public IEnumerable<ContextMenuEntry>? ContextMenuEntries { get; set; }
 
 		public abstract string StringValue { get; set; }
 		public abstract Type ValueType { get; }
 
 		internal abstract bool ShouldBeSaved { get; }
-		internal ModSettingsPack ParentPack { get; set; }
+		internal ModSettingsPack ParentPack { get; set; } = null!;
 
 		public abstract void ResetToDefault();
 		public abstract bool HasDefaultValue();
@@ -118,7 +119,7 @@ namespace HugsLib.Settings {
 		/// <summary>
 		/// Dispatched after the Value of the handle changes.
 		/// </summary>
-		public event Action<SettingHandle> ValueChanged;
+		public event Action<SettingHandle>? ValueChanged;
 
 		protected SettingHandle() {
 			SpinnerIncrement = 1;
@@ -133,7 +134,7 @@ namespace HugsLib.Settings {
 		/// <summary>
 		/// Implicitly cast handles to the Value they carry.
 		/// </summary>
-		public static implicit operator T(SettingHandle<T> handle) {
+		public static implicit operator T?(SettingHandle<T> handle) {
 			return handle.Value;
 		}
 
@@ -141,15 +142,15 @@ namespace HugsLib.Settings {
 		/// Called when the Value of the handle changes. Optional.
 		/// </summary>
 		[Obsolete("Use SettingHandle.ValueChanged event")]
-		public Action<T> OnValueChanged { get; set; }
+		public Action<T?>? OnValueChanged { get; set; }
 
-		private T _value;
+		private T? _value;
 		/// <summary>
 		/// The actual value of the setting. 
 		/// This is converted to its string representation when settings are saved.
 		/// Assigning a new value will trigger the OnValueChanged delegate.
 		/// </summary>
-		public T Value {
+		public T? Value {
 			get { return _value; }
 			set {
 				var prevValue = _value;
@@ -173,7 +174,7 @@ namespace HugsLib.Settings {
 		/// <summary>
 		/// The value the setting assumes when initially created or reset.
 		/// </summary>
-		public T DefaultValue { get; set; }
+		public T? DefaultValue { get; set; }
 
 		/// <summary>
 		/// Retrieves the string representation of the setting or assigns a new setting value using a string.
@@ -263,8 +264,7 @@ namespace HugsLib.Settings {
 		private T CustomValueFromString(string stringValue) {
 			try {
 				var val = (T) Activator.CreateInstance(typeof (T), true);
-				var convertible = val as SettingHandleConvertible;
-				if (convertible != null) convertible.FromString(stringValue);
+				if (val is SettingHandleConvertible convertible) convertible.FromString(stringValue);
 				return val;
 			} catch (Exception e) {
 				HugsLibController.Logger.Error("Failed to parse setting \"{0}\" as custom type {1}. Setting value was reset. Value was: \"{2}\". Exception was: {3}", Name, typeof(T).FullName, stringValue, e);
@@ -273,7 +273,7 @@ namespace HugsLib.Settings {
 		}
 
 		// Equals comparison with null support
-		private bool SafeEquals(T valueOne, T valueTwo) {
+		private bool SafeEquals(T? valueOne, T? valueTwo) {
 			if (valueOne != null) return valueOne.Equals(valueTwo);
 			return valueTwo == null;
 		}

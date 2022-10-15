@@ -14,7 +14,7 @@ namespace HugsLib.Utils {
 		/// <param name="assembly">The assembly to read</param>
 		/// <param name="overrideLocation">The full path to the assembly file, if <see cref="Assembly.Location"/> is not set</param>
 		/// <returns>An <see cref="AssemblyVersionInfo"/> with only AssemblyVersion set if an exception was encountered</returns>
-		public static AssemblyVersionInfo ReadAssembly(Assembly assembly, string overrideLocation = null) {
+		public static AssemblyVersionInfo ReadAssembly(Assembly assembly, string? overrideLocation = null) {
 			if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 			try {
 				var assemblyFilePath = overrideLocation ?? assembly.Location;
@@ -43,13 +43,13 @@ namespace HugsLib.Utils {
 		}
 
 		public readonly Version AssemblyVersion;
-		public readonly Version AssemblyFileVersion;
+		public readonly Version? AssemblyFileVersion;
 
 		public Version HighestVersion {
 			get { return AssemblyFileVersion != null && AssemblyFileVersion > AssemblyVersion ? AssemblyFileVersion : AssemblyVersion; }
 		}
 
-		public AssemblyVersionInfo(Version assemblyVersion, Version assemblyFileVersion) {
+		public AssemblyVersionInfo(Version assemblyVersion, Version? assemblyFileVersion) {
 			AssemblyVersion = assemblyVersion ?? throw new ArgumentNullException(nameof(assemblyVersion));
 			AssemblyFileVersion = assemblyFileVersion;
 		}

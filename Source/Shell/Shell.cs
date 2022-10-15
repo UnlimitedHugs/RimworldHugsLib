@@ -21,11 +21,9 @@ namespace HugsLib.Shell {
 			}, ref process);
 		}
 
-		public static bool StartProcess(ProcessStartInfo psi, ref Process process) {
-			if (process == null) {
-				process = new Process();
-			}
-			if (psi == null) {
+		public static bool StartProcess(ProcessStartInfo psi, ref Process? process) {
+			process ??= new Process();
+			if (psi == null!) {
 				HugsLibController.Logger.ReportException(new Exception("Could not start process, ProcessStartInfo is empty"));
 				return false;
 			}
@@ -57,9 +55,10 @@ namespace HugsLib.Shell {
 			protected UnsupportedPlatformException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 		}
 
-		public class ShellCommand {
-			public string FileName { get; set; }
-			public string Args { get; set; }
+		public class ShellCommand
+		{
+			public string FileName { get; set; } = null!;
+			public string? Args { get; set; }
 		}
 	}
 }

@@ -20,7 +20,7 @@ namespace HugsLib.Core {
 			}
 		}
 
-		protected string OverrideFilePath { get; set; }
+		protected string? OverrideFilePath { get; set; }
 
 		internal IModLogger DataManagerLogger { get; set; } = HugsLibController.Logger;
 

@@ -12,7 +12,7 @@ namespace HugsLib.Core {
 		public const string VersionFileDir = "About";
 		public const string VersionFileName = "Version.xml";
 
-		public static VersionFile TryParseVersionFile(ModContentPack pack) {
+		public static VersionFile? TryParseVersionFile(ModContentPack pack) {
 			var filePath = Path.Combine(pack.RootDir, Path.Combine(VersionFileDir, VersionFileName));
 			if (!File.Exists(filePath)) return null;
 			try {
@@ -24,8 +24,8 @@ namespace HugsLib.Core {
 			return null;
 		}
 
-		public Version OverrideVersion { get; private set; }
-		public Version RequiredLibraryVersion { get; private set; }
+		public Version? OverrideVersion { get; private set; }
+		public Version? RequiredLibraryVersion { get; private set; }
 
 		private VersionFile(XDocument doc) {
 			ParseXmlDocument(doc);

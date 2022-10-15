@@ -6,7 +6,7 @@ namespace HugsLib.Core {
 	/// This is added as a component to the GameObject on scene to forward events to the controller.
 	/// </summary>
 	public class UnityProxyComponent : MonoBehaviour {
-		public HugsLibController controllerInstance;
+		public HugsLibController controllerInstance = null!;
 
 		public void Start() {
 			controllerInstance = HugsLibController.Instance;

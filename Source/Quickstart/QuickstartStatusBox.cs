@@ -15,7 +15,7 @@ namespace HugsLib.Quickstart {
 		private static readonly Vector2 StatusRectSize = new Vector2(240f, 75f);
 		private static readonly Vector2 StatusRectPadding = new Vector2(26f, 18f);
 
-		public event AbortHandler AbortRequested;
+		public event AbortHandler? AbortRequested;
 
 		private readonly IOperationMessageProvider pendingOperation;
 

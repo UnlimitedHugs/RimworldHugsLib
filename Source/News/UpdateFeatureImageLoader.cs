@@ -42,7 +42,7 @@ namespace HugsLib.News {
 			return missingTexturePlaceholder;
 		}
 
-		private static Texture2D TryResolveTextureRelativeToNewsFolder(ModContentPack modContent, string relativeFilePathNoExtension) {
+		private static Texture2D? TryResolveTextureRelativeToNewsFolder(ModContentPack modContent, string relativeFilePathNoExtension) {
 			var modSpecificNewsFolderPath = Path.Combine(modContent.RootDir, UpdateFeatureImageBaseFolder);
 			if (Directory.Exists(modSpecificNewsFolderPath)) {
 				var imageFilePathNoExtension = Path.Combine(modSpecificNewsFolderPath, relativeFilePathNoExtension);

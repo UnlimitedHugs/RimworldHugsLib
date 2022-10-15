@@ -62,7 +62,7 @@ namespace HugsLibTests {
 			var checker = new LibraryVersionChecker(new Version(1, 0, 0), logger) {
 				RequiredLibraryVersionEnumerator =
 					modIdsToInclude.Select(id => {
-						var requiredVersion = requiredVersionsForMods[id] is string v ? new Version(v) : null;
+						var requiredVersion = requiredVersionsForMods[id] is {} v ? new Version(v) : null;
 						return (id, requiredVersion);
 					})
 			};

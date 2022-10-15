@@ -43,7 +43,7 @@ namespace HugsLib.Utils {
 		/// <param name="dueInTicks">The delay in ticks before the delegate is called</param>
 		/// <param name="owner">Optional owner of the delegate. Callback will not fire if the Thing is not spawned at call time.</param>
 		/// <param name="repeat">If true, the callback will be rescheduled after each call until manually unscheduled</param>
-		public void ScheduleCallback(Action callback, int dueInTicks, Thing owner = null, bool repeat = false) {
+		public void ScheduleCallback(Action callback, int dueInTicks, Thing? owner = null, bool repeat = false) {
 			if (lastProcessedTick < 0) throw new Exception("Adding callback to not initialized TickDelayScheduler");
 			if (callback == null) throw new NullReferenceException("callback cannot be null");
 			if (dueInTicks < 0) throw new Exception("invalid dueInTicks value: " + dueInTicks);
@@ -111,10 +111,10 @@ namespace HugsLib.Utils {
 			public readonly Action callback;
 			public readonly int interval;
 			public readonly bool repeat;
-			public readonly Thing owner;
+			public readonly Thing? owner;
 			public int dueAtTick;
 			
-			public SchedulerEntry(Action callback, int interval, Thing owner, int dueAtTick, bool repeat) {
+			public SchedulerEntry(Action callback, int interval, Thing? owner, int dueAtTick, bool repeat) {
 				this.callback = callback;
 				this.interval = interval;
 				this.owner = owner;

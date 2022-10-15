@@ -34,14 +34,12 @@ namespace HugsLib {
 		private static bool earlyInitializationCompleted;
 		private static bool lateInitializationCompleted;
 
-		private static HugsLibController instance;
+		private static HugsLibController? instance;
 
-		public static HugsLibController Instance {
-			get { return instance ?? (instance = new HugsLibController()); }
-		}
+		public static HugsLibController Instance => instance ??= new HugsLibController();
 
-		private static VersionFile libraryVersionFile;
-		private static AssemblyVersionInfo libraryVersionInfo;
+		private static VersionFile? libraryVersionFile;
+		private static AssemblyVersionInfo? libraryVersionInfo;
 		public static Version LibraryVersion {
 			get {
 				if (libraryVersionInfo == null) ReadOwnVersion();
@@ -71,12 +69,8 @@ namespace HugsLib {
 			}
 		}
 
-		private static ModLogger _logger;
-		internal static ModLogger Logger {
-			get {
-				return _logger ?? (_logger = new ModLogger(ModIdentifier));
-			}
-		}
+		private static ModLogger? _logger;
+		internal static ModLogger Logger => _logger ??= new ModLogger(ModIdentifier);
 
 		private static void CreateSceneObject() {
 			// this must execute in the main thread
@@ -107,18 +101,18 @@ namespace HugsLib {
 		private readonly List<ModBase> earlyInitializedMods = new List<ModBase>();
 		private readonly List<ModBase> initializedMods = new List<ModBase>();
 		private readonly HashSet<Assembly> autoHarmonyPatchedAssemblies = new HashSet<Assembly>();
-		private Dictionary<Assembly, ModContentPack> assemblyContentPacks;
+		private Dictionary<Assembly, ModContentPack> assemblyContentPacks = null!;
 		private bool initializationInProgress;
 
-		public ModSettingsManager Settings { get; private set; }
-		public UpdateFeatureManager UpdateFeatures { get; private set; }
-		public TickDelayScheduler TickDelayScheduler { get; private set; }
-		public DistributedTickScheduler DistributedTicker { get; private set; }
-		public DoLaterScheduler DoLater { get; private set; }
-		public LogPublisher LogUploader { get; private set; }
-		public ModSpottingManager ModSpotter { get; private set; }
+		public ModSettingsManager Settings { get; private set; } = null!;
+		public UpdateFeatureManager UpdateFeatures { get; private set; } = null!;
+		public TickDelayScheduler TickDelayScheduler { get; private set; } = null!;
+		public DistributedTickScheduler DistributedTicker { get; private set; } = null!;
+		public DoLaterScheduler? DoLater { get; private set; }
+		public LogPublisher LogUploader { get; private set; } = null!;
+		public ModSpottingManager ModSpotter { get; private set; } = null!;
 
-		internal Harmony HarmonyInst { get; private set; }
+		internal Harmony HarmonyInst { get; private set; } = null!;
 
 		private HugsLibController() {
 		}
@@ -244,7 +238,7 @@ namespace HugsLib {
 		internal void OnTick() {
 			if (initializationInProgress) return;
 			try {
-				DoLater.OnTick();
+				DoLater?.OnTick();
 				var currentTick = Find.TickManager.TicksGame;
 				for (int i = 0; i < initializedMods.Count; i++) {
 					try {
@@ -278,7 +272,7 @@ namespace HugsLib {
 		internal void OnGUI() {
 			if (initializationInProgress) return;
 			try {
-				if (DoLater != null) DoLater.OnGUI();
+				DoLater?.OnGUI();
 				KeyBindingHandler.OnGUI();
 				for (int i = 0; i < initializedMods.Count; i++) {
 					try {
@@ -396,7 +390,7 @@ namespace HugsLib {
 
 		private void OnMapLoaded(Map map) {
 			try {
-				DoLater.OnMapLoaded(map);
+				DoLater?.OnMapLoaded(map);
 				for (int i = 0; i < childMods.Count; i++) {
 					try {
 						childMods[i].MapLoaded(map);
@@ -460,14 +454,14 @@ namespace HugsLib {
 		// will run on startup and on reload. On reload it will add newly loaded mods
 		private void EnumerateChildMods(bool earlyInitMode) {
 			var modBaseDescendantsInLoadOrder = typeof(ModBase).InstantiableDescendantsAndSelf()
-				.Select(t => new Pair<Type, ModContentPack>(t, assemblyContentPacks.TryGetValue(t.Assembly)))
+				.Select(t => new Pair<Type, ModContentPack?>(t, assemblyContentPacks!.TryGetValue(t.Assembly)))
 				.Where(pair => pair.Second != null) // null pack => mod is disabled
-				.OrderBy(pair => pair.Second.loadOrder).ToArray();
+				.OrderBy(pair => pair.Second!.loadOrder).ToArray();
 
 			var instantiatedThisRun = new List<string>();
 			foreach (var pair in modBaseDescendantsInLoadOrder) {
 				var subclass = pair.First;
-				var pack = pair.Second;
+				var pack = pair.Second!;
 				var hasEarlyInit = subclass.HasAttribute<EarlyInitAttribute>();
 				if (hasEarlyInit != earlyInitMode) continue;
 				if (childMods.Find(cm => cm.GetType() == subclass) != null) continue; // skip duplicate types present in multiple assemblies

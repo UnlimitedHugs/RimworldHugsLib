@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HugsLib", "HugsLib.csproj", "{A5D9BD45-533C-4CA0-9298-8950A3DA724C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HugsLib", "Source\HugsLib.csproj", "{A5D9BD45-533C-4CA0-9298-8950A3DA724C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HugsLibTests", "Tests\HugsLibTests.csproj", "{C17A1E76-8D63-491C-A69B-1CD9C06030D2}"
 EndProject

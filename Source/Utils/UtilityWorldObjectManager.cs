@@ -22,7 +22,7 @@ namespace HugsLib.Utils {
 		[Obsolete("It is recommended to transition to Verse.GameComponent or RimWorld.Planet.WorldComponent for data storage")]
 		public static T GetUtilityWorldObject<T>() where T : UtilityWorldObject {
 			var worldObjects = GetHolder();
-			var obj = (T)worldObjects.ObjectsAt(UtilityObjectTile).FirstOrDefault(o => o is T);
+			var obj = worldObjects.ObjectsAt(UtilityObjectTile).OfType<T>().FirstOrDefault();
 			if (obj == null) {
 				var def = DefDatabase<WorldObjectDef>.GetNamed(InjectedDefName);
 				def.worldObjectClass = typeof(T);

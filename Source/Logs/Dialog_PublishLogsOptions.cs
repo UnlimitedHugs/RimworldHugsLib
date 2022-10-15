@@ -6,20 +6,16 @@ namespace HugsLib.Logs {
 	public class Dialog_PublishLogsOptions : Window {
 		private const float ToggleVerticalSpacing = 4f;
 
-		public Action OnUpload { get; set; }
-		public Action OnCopy { get; set; }
-		public Action OnOptionsToggled { get; set; }
-		public Action OnPostClose { get; set; }
+		public Action? OnUpload { get; set; }
+		public Action? OnCopy { get; set; }
+		public Action? OnOptionsToggled { get; set; }
+		public Action? OnPostClose { get; set; }
 
 		private readonly string title;
 		private readonly string text;
 		private readonly ILogPublisherOptions options;
 
-		public override Vector2 InitialSize {
-			get {
-				return new Vector2(550f, 320f);
-			}
-		}
+		public override Vector2 InitialSize => new Vector2(550f, 320f);
 
 		public Dialog_PublishLogsOptions(string title, string text, ILogPublisherOptions options) {
 			this.title = title;
@@ -97,7 +93,7 @@ namespace HugsLib.Logs {
 
 		}
 
-		private bool AddOptionCheckbox(Listing_Standard listing, string labelKey, string tooltipKey, bool value, out bool changed, float indent = 0f) {
+		private bool AddOptionCheckbox(Listing_Standard listing, string labelKey, string? tooltipKey, bool value, out bool changed, float indent = 0f) {
 			bool valueAfter = value;
 			var checkRect = listing.GetRect(Text.LineHeight).LeftHalf();
 			listing.Gap(ToggleVerticalSpacing);

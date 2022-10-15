@@ -35,7 +35,7 @@ namespace HugsLib.Patches {
 			}
 			foreach (var inst in instructions) {
 				if (inst.opcode == OpCodes.Callvirt && Equals(inst.operand, gameSetScenarioMethod)) {
-					yield return new CodeInstruction(OpCodes.Call, ((Func<Scenario, Scenario>) QuickstartController.ReplaceQuickstartScenarioIfNeeded).Method);
+					yield return new CodeInstruction(OpCodes.Call, ((Func<Scenario?, Scenario?>) QuickstartController.ReplaceQuickstartScenarioIfNeeded).Method);
 					patchedScenario = true;
 				} else if (inst.opcode == OpCodes.Stfld && Equals(inst.operand, gameInitDataMapSizeField)) {
 					yield return new CodeInstruction(OpCodes.Call, ((Func<int, int>) QuickstartController.ReplaceQuickstartMapSizeIfNeeded).Method);

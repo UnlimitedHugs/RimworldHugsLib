@@ -33,7 +33,7 @@ namespace HugsLib.Core {
 
 		private void ShowVersionMismatchDialogIfNeeded(Task<VersionMismatchReport?> versionCheckTask) {
 			// background task should be long since finished, so the wait should be a no-op
-			if (TryWaitForTaskResult(versionCheckTask, TimeSpan.FromSeconds(1)) is VersionMismatchReport report) {
+			if (TryWaitForTaskResult(versionCheckTask, TimeSpan.FromSeconds(1)) is { } report) {
 				Find.WindowStack.Add(new Dialog_LibraryUpdateRequired(report.ModName, report.ExpectedVersion));
 			}
 		}

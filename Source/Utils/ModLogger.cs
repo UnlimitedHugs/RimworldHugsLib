@@ -13,7 +13,7 @@ namespace HugsLib.Utils {
 
 		private readonly StringBuilder builder;
 		private readonly string logPrefix;
-		private string lastExceptionLocation;
+		private string? lastExceptionLocation;
 
 		public ModLogger(string logPrefix) {
 			this.logPrefix = logPrefix;
@@ -53,7 +53,7 @@ namespace HugsLib.Utils {
 			if (!Prefs.DevMode) return;
 			if (strings.Length > 0) {
 				Tracer.ExpandObjectsToTraceableStrings(strings);
-				strings[0] = String.Format("{0} {1}", GetModPrefix(), strings[0]);
+				strings[0] = $"{GetModPrefix()} {strings[0]}";
 			} else {
 				strings = new object[] {GetModPrefix()};
 			}
@@ -65,7 +65,7 @@ namespace HugsLib.Utils {
 		/// </summary>
 		public void TraceFormat(string message, params object[] substitutions) {
 			if (!Prefs.DevMode) return;
-			message = String.Format("{0} {1}", GetModPrefix(), message);
+			message = $"{GetModPrefix()} {message}";
 			Tracer.TraceFormat(message, substitutions);
 		}
 
@@ -77,10 +77,8 @@ namespace HugsLib.Utils {
 		/// <param name="modIdentifier">Optional identifier of the mod that caused the exception</param>
 		/// <param name="reportOnceOnly">True, if the exception should only be reported once for that specific location. Useful for errors that will trigger each frame or tick.</param>
 		/// <param name="location">Optional name of the location where the exception occurred. Will display as "exception during (location)"</param>
-		public void ReportException(Exception e, string modIdentifier = null, bool reportOnceOnly = false, string location = null) {
-			if (location == null) {
-				location = new StackFrame(1, true).GetMethod().Name;
-			}
+		public void ReportException(Exception e, string? modIdentifier = null, bool reportOnceOnly = false, string? location = null) {
+			location ??= new StackFrame(1, true).GetMethod().Name;
 			if(reportOnceOnly && lastExceptionLocation == location) return;
 			lastExceptionLocation = location;
 			string message;
@@ -92,7 +90,7 @@ namespace HugsLib.Utils {
 			Log.Error(message);
 		}
 
-		private string FormatOutput(string message, string extraPrefix, params object[] substitutions) {
+		private string FormatOutput(string message, string? extraPrefix, params object[] substitutions) {
 			builder.Length = 0;
 			builder.Append(GetModPrefix());
 			if (extraPrefix!=null) {
@@ -108,7 +106,7 @@ namespace HugsLib.Utils {
 		}
 
 		private string GetModPrefix() {
-			return String.Format("[{0}]", logPrefix);
+			return $"[{logPrefix}]";
 		}
 	}
 
@@ -116,7 +114,7 @@ namespace HugsLib.Utils {
 		void Message(string message, params object[] substitutions);
 		void Warning(string message, params object[] substitutions);
 		void Error(string message, params object[] substitutions);
-		void ReportException(Exception e, string modIdentifier = null,
-			bool reportOnceOnly = false, string location = null);
+		void ReportException(Exception e, string? modIdentifier = null,
+			bool reportOnceOnly = false, string? location = null);
 	}
 }

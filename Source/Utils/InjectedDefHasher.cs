@@ -8,7 +8,7 @@ namespace HugsLib.Utils {
 	/// </summary>
 	public static class InjectedDefHasher {
 		private delegate void GiveShortHash(Def def, Type defType);
-		private static GiveShortHash giveShortHashDelegate;
+		private static GiveShortHash giveShortHashDelegate = null!;
 
 		internal static void PrepareReflection() {
 			var methodInfo = typeof(ShortHashGiver).GetMethod("GiveShortHash", BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(Def), typeof(Type) }, null);

@@ -42,7 +42,7 @@ namespace HugsLibTests {
 			handle.Value = 1;
 			handle.ParentPack.SaveChanges();
 			handle = GetHandle();
-			Assert.AreEqual(1, handle.Value);
+			Assert.That(handle.Value, Is.EqualTo(1));
 			Assert.IsFalse(handle.ParentPack.ParentManager.HasUnsavedChanges, "unsaved after load");
 		}
 
@@ -121,9 +121,9 @@ namespace HugsLibTests {
 		}
 
 		private void AssertHierarchyUnsavedChanges(SettingHandle handle, bool modified, string message) {
-			Assert.AreEqual(modified, handle.ParentPack.ParentManager.HasUnsavedChanges, "manager unsaved " + message);
-			Assert.AreEqual(modified, handle.ParentPack.HasUnsavedChanges, "pack unsaved " + message);
-			Assert.AreEqual(modified, handle.HasUnsavedChanges, "handle unsaved " + message);
+			Assert.That(handle.ParentPack.ParentManager.HasUnsavedChanges, Is.EqualTo(modified), "manager unsaved " + message);
+			Assert.That(handle.ParentPack.HasUnsavedChanges, Is.EqualTo(modified), "pack unsaved " + message);
+			Assert.That(handle.HasUnsavedChanges, Is.EqualTo(modified), "handle unsaved " + message);
 		}
 	}
 }

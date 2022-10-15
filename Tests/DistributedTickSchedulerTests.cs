@@ -176,7 +176,7 @@ namespace HugsLibTests {
 		}
 		
 		private void AssertTotalCalls(int expectedCalls) {
-			Assert.AreEqual(expectedCalls, totalCallbackCalls, "total calls");
+			Assert.That(totalCallbackCalls, Is.EqualTo(expectedCalls), "total calls");
 		}
 
 		private void AssertNumCallsPerCallback(int expectedNumCalls) {

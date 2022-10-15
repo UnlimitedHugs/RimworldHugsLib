@@ -1,0 +1,26 @@
+﻿<Project Sdk="C:\dev\Zlepper.Rimworld.FastFarm\Zlepper.RimWorld.ModSdk" >
+
+
+  <PropertyGroup>
+    <RimWorldModName>HugsLib</RimWorldModName>
+    <RimWorldPackageId>HugsLib</RimWorldPackageId>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+<!--  <PropertyGroup>-->
+<!--    <OutputPath>..\Mods\HugsLib\v1.4\Assemblies\</OutputPath>-->
+<!--  </PropertyGroup>-->
+
+
+  <ItemGroup>
+    <RimWorldAssemblyReference Include="UnityEngine.InputLegacyModule" />
+    <RimWorldAssemblyReference Include="UnityEngine.TextRenderingModule" />
+    <RimWorldAssemblyReference Include="UnityEngine.UnityWebRequestModule" />
+    <RimWorldAssemblyReference Include="UnityEngine.ImageConversionModule" />
+    <RimWorldAssemblyReference Include="UnityEngine.IMGUIModule" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.1.0" />
+  </ItemGroup>
+</Project>

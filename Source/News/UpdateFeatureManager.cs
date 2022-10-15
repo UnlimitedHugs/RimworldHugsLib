@@ -23,8 +23,8 @@ namespace HugsLib.News {
 		// the highest news item version we have previously displayed for a UpdateFeatureDef.OwningModId
 		private readonly Dictionary<string, Version> highestSeenVersions = new Dictionary<string, Version>();
 
-		private SettingHandle<IgnoredNewsIds> IgnoredNewsProvidersSetting { get; set; }
-		private SettingHandle<bool> ShowNewsSetting { get; set; }
+		private SettingHandle<IgnoredNewsIds> IgnoredNewsProvidersSetting { get; set; } = null!;
+		private SettingHandle<bool> ShowNewsSetting { get; set; } = null!;
 
 		public UpdateFeatureManager() {
 			LoadData();
@@ -85,9 +85,9 @@ namespace HugsLib.News {
 				if (defsToShow.Count > 0) {
 					SortFeatureDefsByModNameAndVersion(defsToShow);
 					var newsDialog = manuallyOpened
-						? new Dialog_UpdateFeaturesFiltered(defsToShow, IgnoredNewsProvidersSetting, 
+						? new Dialog_UpdateFeaturesFiltered(defsToShow, IgnoredNewsProvidersSetting!, 
 							this, HugsLibController.Instance.ModSpotter)
-						: new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting);
+						: new Dialog_UpdateFeatures(defsToShow, IgnoredNewsProvidersSetting!);
 					Find.WindowStack.Add(newsDialog);
 					return true;
 				}
@@ -100,7 +100,7 @@ namespace HugsLib.News {
 			foreach (var featureDef in featureDefs) {
 				var ownerId = featureDef.OwningModId;
 				if (!ownerId.NullOrEmpty()) {
-					var highestSeenVersion = highestSeenVersions.TryGetValue(ownerId);
+					var highestSeenVersion = highestSeenVersions!.TryGetValue(ownerId);
 					if (highestSeenVersion == null || featureDef.Version > highestSeenVersion) {
 						yield return featureDef;
 					}
@@ -109,14 +109,14 @@ namespace HugsLib.News {
 		}
 
 		private bool NewsProviderOwningModIdIsIgnored(string ownerId) {
-			return IgnoredNewsProvidersSetting.Value.Contains(ownerId);
+			return IgnoredNewsProvidersSetting.Value!.Contains(ownerId);
 		}
 
 		private static void UpdateMostRecentKnownFeatureVersions(
 			IEnumerable<UpdateFeatureDef> shownNewsFeatureDefs, Dictionary<string, Version> highestSeenVersions) {
 			foreach (var featureDef in shownNewsFeatureDefs) {
 				var ownerId = featureDef.OwningModId;
-				var highestSeenVersion = highestSeenVersions.TryGetValue(ownerId);
+				var highestSeenVersion = highestSeenVersions!.TryGetValue(ownerId);
 				if (highestSeenVersion == null || featureDef.Version > highestSeenVersion) {
 					highestSeenVersions[ownerId] = featureDef.Version;
 				}
@@ -169,9 +169,9 @@ namespace HugsLib.News {
 			ignored.ValueChanged += EnsureIgnoredProvidersInstance;
 			EnsureIgnoredProvidersInstance(null);
 			ignored.NeverVisible = true;
-			ignored.Value.Handle = ignored;
+			ignored.Value!.Handle = ignored;
 
-			void EnsureIgnoredProvidersInstance(SettingHandle _) {
+			void EnsureIgnoredProvidersInstance(SettingHandle? _) {
 				if (ignored.Value != null) return;
 				ignored.Value = new IgnoredNewsIds();
 				ignored.HasUnsavedChanges = false;
@@ -194,8 +194,8 @@ namespace HugsLib.News {
 			}
 		}
 
-		Version IUpdateFeaturesDevActions.GetLastSeenNewsVersion(string modIdentifier) {
-			return highestSeenVersions.TryGetValue(modIdentifier);
+		Version? IUpdateFeaturesDevActions.GetLastSeenNewsVersion(string modIdentifier) {
+			return highestSeenVersions!.TryGetValue(modIdentifier);
 		}
 
 		IEnumerable<UpdateFeatureDef> IUpdateFeaturesDevActions.ReloadAllUpdateFeatureDefs() {
@@ -207,7 +207,7 @@ namespace HugsLib.News {
 			return TryShowDialog(false);
 		}
 
-		void IUpdateFeaturesDevActions.SetLastSeenNewsVersion(string modIdentifier, Version version) {
+		void IUpdateFeaturesDevActions.SetLastSeenNewsVersion(string modIdentifier, Version? version) {
 			var changesNeedSaving = false;
 			if (version != null) {
 				highestSeenVersions[modIdentifier] = version;
@@ -227,7 +227,7 @@ namespace HugsLib.News {
 			private const char SerializationSeparator = '|';
 			private HashSet<string> ignoredOwnerIds = new HashSet<string>();
 
-			public SettingHandle<IgnoredNewsIds> Handle { private get; set; }
+			public SettingHandle<IgnoredNewsIds> Handle { private get; set; } = null!;
 
 			public bool Contains(string ownerId) {
 				return ignoredOwnerIds.Contains(ownerId);
@@ -238,9 +238,7 @@ namespace HugsLib.News {
 				if (changed) Handle.ForceSaveChanges();
 			}
 
-			public override bool ShouldBeSaved {
-				get { return ignoredOwnerIds.Count > 0; }
-			}
+			public override bool ShouldBeSaved => ignoredOwnerIds.Count > 0;
 
 			public override void FromString(string settingValue) {
 				if (string.IsNullOrEmpty(settingValue)) return;

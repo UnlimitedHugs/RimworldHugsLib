@@ -9,10 +9,10 @@ namespace HugsLib.News {
 	}
 
 	internal interface IUpdateFeaturesDevActions {
-		Version GetLastSeenNewsVersion(string modIdentifier);
+		Version? GetLastSeenNewsVersion(string modIdentifier);
 		IEnumerable<UpdateFeatureDef> ReloadAllUpdateFeatureDefs();
 		bool TryShowAutomaticNewsPopupDialog();
-		void SetLastSeenNewsVersion(string modIdentifier, Version version);
+		void SetLastSeenNewsVersion(string modIdentifier, Version? version);
 	}
 
 	internal interface IStatusMessageSender {
@@ -23,7 +23,7 @@ namespace HugsLib.News {
 	/// Provides the options for the dev tools dropdown menu in the extended update news dialog. 
 	/// </summary>
 	internal class UpdateFeaturesDevMenu {
-		public event Action<IEnumerable<UpdateFeatureDef>> UpdateFeatureDefsReloaded;
+		public event Action<IEnumerable<UpdateFeatureDef>>? UpdateFeatureDefsReloaded;
 		private readonly IUpdateFeaturesDevActions news;
 		private readonly IModSpotterDevActions spotter;
 		private readonly IStatusMessageSender messages;

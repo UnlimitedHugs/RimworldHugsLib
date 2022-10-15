@@ -12,14 +12,14 @@ namespace HugsLib.Settings {
 		private const float TitleLabelHeight = 32f;
 		private readonly Color TitleLineColor = new Color(0.3f, 0.3f, 0.3f);
 
-		private readonly Mod selectedMod;
-		private Exception guiException;
+		private readonly Mod? selectedMod;
+		private Exception? guiException;
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(900f, 700f); }
 		}
 
-		public Dialog_VanillaModSettings(Mod mod) {
+		public Dialog_VanillaModSettings(Mod? mod) {
 			selectedMod = mod;
 			forcePause = true;
 			doCloseX = true;

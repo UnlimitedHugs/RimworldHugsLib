@@ -60,7 +60,7 @@ namespace HugsLib.News {
 			// register for inheritance
 			XmlInheritance.Clear();
 			foreach (var (modContent, node, _) in defNodes) {
-				if (node != null && node.NodeType == XmlNodeType.Element) {
+				if (node is {NodeType: XmlNodeType.Element}) {
 					XmlInheritance.TryRegister(node, modContent);
 				}
 			}
@@ -70,8 +70,7 @@ namespace HugsLib.News {
 			var resolvedDefs = new List<UpdateFeatureDef>();
 			foreach (var (pack, node, asset) in defNodes) {
 				try {
-					var def = DirectXmlLoader.DefFromNode(node, asset) as UpdateFeatureDef;
-					if (def != null) {
+					if (DirectXmlLoader.DefFromNode(node, asset) is UpdateFeatureDef def) {
 						def.modContentPack = pack;
 						def.ResolveReferences();
 						resolvedDefs.Add(def);
@@ -80,8 +79,10 @@ namespace HugsLib.News {
 					HugsLibController.Logger.Error(
 						$"Failed to parse UpdateFeatureDef from mod {pack.PackageIdPlayerFacing}:\n" +
 						$"{GetExceptionChainMessage(e)}\n" +
+						// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 						$"Context: {node?.OuterXml.ToStringSafe()}\n" +
 						$"File: {asset?.FullFilePath.ToStringSafe()}\n" +
+						// ReSharper restore ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
 						$"Exception: {e}");
 				}
 			}

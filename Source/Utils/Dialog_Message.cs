@@ -9,8 +9,8 @@ namespace HugsLib.Utils {
 	public class Dialog_Message : Window {
 		private readonly string title;
 		private readonly string message;
-		private readonly string closeButtonText;
-		private readonly Action postCloseAction;
+		private readonly string? closeButtonText;
+		private readonly Action? postCloseAction;
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(500f, 400f); }
@@ -20,7 +20,7 @@ namespace HugsLib.Utils {
 		/// <param name="message">A message to display in the dialog</param>
 		/// <param name="closeButtonText">A custom label to the close button. Optional- when null, the default label will be used instead.</param>
 		/// <param name="postCloseAction">A callback to call when the dialog is closed</param>
-		public Dialog_Message(string title, string message, string closeButtonText = null, Action postCloseAction = null) {
+		public Dialog_Message(string title, string message, string? closeButtonText = null, Action? postCloseAction = null) {
 			this.title = title;
 			this.message = message;
 			this.closeButtonText = closeButtonText;

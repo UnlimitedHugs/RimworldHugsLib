@@ -18,16 +18,12 @@ namespace HugsLib.Spotter {
 			new Dictionary<string, TrackingEntry>(StringComparer.OrdinalIgnoreCase);
 		private readonly IModLogger logger = HugsLibController.Logger;
 		private bool erroredOnLoad;
-		private Task inspectTask;
+		private Task? inspectTask;
 
-		protected override string FileName {
-			get { return "SpottedMods.xml"; }
-		}
-		
-		protected override bool SuppressLoadSaveExceptions {
-			get { return false; }
-		}
-		
+		protected override string FileName => "SpottedMods.xml";
+
+		protected override bool SuppressLoadSaveExceptions => false;
+
 		internal ModSpottingManager() {
 		}
 
@@ -56,7 +52,7 @@ namespace HugsLib.Spotter {
 		public bool FirstTimeSeen(string packageId) {
 			if (packageId == null) throw new ArgumentNullException(nameof(packageId));
 			WaitForInspectionCompletion();
-			return entries.TryGetValue(packageId)?.FirstTimeSeen ?? false;
+			return entries!.TryGetValue(packageId)?.FirstTimeSeen ?? false;
 		}
 		
 		/// <summary>

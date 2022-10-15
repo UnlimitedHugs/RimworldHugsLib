@@ -18,7 +18,7 @@ namespace HugsLib.Core {
 		/// <returns>
 		/// Returns null if reading or parsing fails for any reason.
 		/// </returns>
-		public static ManifestFile TryParse(ModContentPack pack, bool logError = true) {
+		public static ManifestFile? TryParse(ModContentPack? pack, bool logError = true) {
 			if (pack != null) {
 				try {
 					return Parse(pack);
@@ -39,7 +39,7 @@ namespace HugsLib.Core {
 		/// <returns>
 		/// Returns null if the file does not exist.
 		/// </returns>
-		public static ManifestFile Parse(ModContentPack pack) {
+		public static ManifestFile? Parse(ModContentPack pack) {
 			if (pack == null) throw new ArgumentNullException(nameof(pack));
 			var filePath = GetManifestFilePath(pack);
 			if (File.Exists(filePath)) {
@@ -53,7 +53,7 @@ namespace HugsLib.Core {
 			return Path.Combine(pack.RootDir, Path.Combine(ManifestFileDir, ManifestFileName));
 		}
 
-		public Version Version { get; private set; }
+		public Version? Version { get; private set; }
 
 		private ManifestFile(XDocument doc) {
 			ParseXmlDocument(doc);

@@ -18,20 +18,19 @@ namespace HugsLib.Settings {
 		/// Use <see cref="ModSettingsPacks"/> and <see cref="ModSettingsPack.HasUnsavedChanges"/> to identify changed packs,
 		/// and <see cref="ModSettingsPack.Handles"/> with <see cref="SettingHandle.HasUnsavedChanges"/> to identify changed handles.
 		/// </summary>
-		public event Action BeforeModSettingsSaved;
+		public event Action? BeforeModSettingsSaved;
 		/// <summary>
 		/// Fires when <see cref="SaveChanges"/> is called and the settings file has just been written to disk.
 		/// </summary>
-		public event Action AfterModSettingsSaved;
+		public event Action? AfterModSettingsSaved;
 
 		private readonly List<ModSettingsPack> packs = new List<ModSettingsPack>();
 		
 		/// <summary>
 		/// Enumerates the <see cref="ModSettingsPack"/>s that have been registered up to this point.
 		/// </summary>
-		public IEnumerable<ModSettingsPack> ModSettingsPacks {
-			get { return packs; }
-		}
+		public IEnumerable<ModSettingsPack> ModSettingsPacks => packs;
+
 		/// <summary>
 		/// Returns true when there are handles with values that have changed since the last time settings were saved.
 		/// </summary>
@@ -60,18 +59,16 @@ namespace HugsLib.Settings {
 		/// <param name="modId">The unique identifier of the mod that owns the pack</param>
 		/// <param name="displayModName">If not null, assigns the <see cref="ModSettingsPack.EntryName"/> property of the pack.
 		/// This will be displayed in the Mod Settings dialog as a header.</param>
-		public ModSettingsPack GetModSettings(string modId, string displayModName = null) {
+		public ModSettingsPack GetModSettings(string modId, string? displayModName = null) {
 			if(!IsValidElementName(modId)) throw new Exception("Invalid name for mod settings group: "+modId);
-			ModSettingsPack pack = null;
+			ModSettingsPack? pack = null;
 			for (int i = 0; i < packs.Count; i++) {
 				if (packs[i].ModId == modId) {
 					pack = packs[i];
 					break;
 				}
 			}
-			if (pack == null) {
-				pack = InstantiatePack(modId);
-			}
+			pack ??= InstantiatePack(modId);
 			if (displayModName != null) {
 				pack.EntryName = displayModName;
 			}

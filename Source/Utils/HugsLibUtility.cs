@@ -7,8 +7,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using HugsLib.Settings;
-using JetBrains.Annotations;
 using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -24,24 +22,18 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Returns true if the left or right Shift keys are currently pressed.
 		/// </summary>
-		public static bool ShiftIsHeld {
-			get { return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift); }
-		}
+		public static bool ShiftIsHeld => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
 		/// <summary>
 		/// Returns true if the left or right Alt keys are currently pressed.
 		/// </summary>
-		public static bool AltIsHeld {
-			get { return Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt); }
-		}
+		public static bool AltIsHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
 
 		/// <summary>
 		/// Returns true if the left or right Control keys are currently pressed.
 		/// Mac command keys are supported, as well.
 		/// </summary>
-		public static bool ControlIsHeld {
-			get { return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand); }
-		}
+		public static bool ControlIsHeld => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
 
 		/// <summary>
 		/// Returns an enumerable as a comma-separated string.
@@ -57,7 +49,7 @@ namespace HugsLib.Utils {
 		/// <param name="list">A list of elements to string together</param>
 		/// <param name="separator">A string to inset between elements</param>
 		/// <param name="explicitNullValues">If true, null elements will appear as "[null]"</param>
-		public static string Join(this IEnumerable list, string separator, bool explicitNullValues = false) {
+		public static string Join(this IEnumerable? list, string separator, bool explicitNullValues = false) {
 			if (list == null) return "";
 			var builder = new StringBuilder();
 			var useSeparator = false;
@@ -74,7 +66,7 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Returns a version as major.minor.patch formatted string.
 		/// </summary>
-		public static string ToShortString(this Version version) {
+		public static string ToShortString(this Version? version) {
 			if(version == null) version = new Version();
 			return String.Concat(version.Major, ".", version.Minor, ".", version.Build);
 		}
@@ -111,12 +103,11 @@ namespace HugsLib.Utils {
 		/// <param name="pos">The map position to check</param>
 		/// <param name="def">The DesignationDef to detect</param>
 		/// <param name="map">The map to look on. When null, defaults to VisibleMap.</param>
-		public static bool HasDesignation(this IntVec3 pos, DesignationDef def, Map map = null) {
-			if (map == null) {
-				map = Find.CurrentMap;
-			}
-			if (map == null || map.designationManager == null) return false;
-			return map.designationManager.DesignationAt(pos, def) != null;
+		public static bool HasDesignation(this IntVec3 pos, DesignationDef def, Map? map = null)
+		{
+			map ??= Find.CurrentMap;
+
+			return map?.designationManager?.DesignationAt(pos, def) != null;
 		}
 
 		/// <summary>
@@ -126,11 +117,11 @@ namespace HugsLib.Utils {
 		/// <param name="def">The DesignationDef to apply or remove</param>
 		/// <param name="enable">True to add the designation, false to remove</param>
 		/// <param name="map">The map to operate on. When null, defaults to VisibleMap.</param>
-		public static void ToggleDesignation(this IntVec3 pos, DesignationDef def, bool enable, Map map = null) {
-			if (map == null) {
-				map = Find.CurrentMap;
-			}
-			if (map == null || map.designationManager == null) throw new Exception("ToggleDesignation requires a map argument or VisibleMap must be set");
+		public static void ToggleDesignation(this IntVec3 pos, DesignationDef def, bool enable, Map? map = null) {
+			map ??= Find.CurrentMap;
+			
+			if (map?.designationManager == null) throw new Exception("ToggleDesignation requires a map argument or VisibleMap must be set");
+			
 			var des = map.designationManager.DesignationAt(pos, def);
 			if (enable && des == null) {
 				map.designationManager.AddDesignation(new Designation(pos, def));
@@ -146,7 +137,7 @@ namespace HugsLib.Utils {
 		/// <param name="method">The method to check</param>
 		/// <param name="expectedReturnType">Expected return type of the checked method</param>
 		/// <param name="expectedParameters">Expected parameter types of the checked method</param>
-		public static bool MethodMatchesSignature(this MethodInfo method, Type expectedReturnType, params Type[] expectedParameters) {
+		public static bool MethodMatchesSignature(this MethodInfo? method, Type expectedReturnType, params Type[]? expectedParameters) {
 			if (method == null) return false;
 			if (method.ReturnType != expectedReturnType) return false;
 			var methodParams = method.GetParameters();
@@ -167,10 +158,9 @@ namespace HugsLib.Utils {
 		/// </summary>
 		/// <typeparam name="T">The type of the attribute to fetch</typeparam>
 		/// <param name="member">The member to fetch the attribute from</param>
-		public static T TryGetAttributeSafely<T>(this MemberInfo member) where T : Attribute {
+		public static T? TryGetAttributeSafely<T>(this MemberInfo member) where T : Attribute {
 			try {
-				var attrs = member.GetCustomAttributes(typeof (T), false);
-				if (attrs.Length > 0) return (T)attrs[0];
+				return member.GetCustomAttribute<T>(false);
 			} catch {
 				//
 			}
@@ -215,7 +205,7 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Expands a shorthand unix user directory path with its full system path.
 		/// </summary>
-		public static string TryReplaceUserDirectory(this string text) {
+		public static string? TryReplaceUserDirectory(this string? text) {
 			if (text != null && (text.StartsWith(@"~\") || text.StartsWith(@"~/"))) {
 				text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), text.Remove(0, 2));
 			}
@@ -233,8 +223,8 @@ namespace HugsLib.Utils {
 		/// Attempts to return the path of the log file Unity is writing to.
 		/// </summary>
 		/// <returns></returns>
-		public static string TryGetLogFilePath() {
-			if (TryGetCommandLineOptionValue("logfile") is var cmdLog && cmdLog != null) {
+		public static string? TryGetLogFilePath() {
+			if (TryGetCommandLineOptionValue("logfile") is { } cmdLog) {
 				return cmdLog;
 			}
 			var platform = PlatformUtility.GetCurrentPlatform();
@@ -259,7 +249,7 @@ namespace HugsLib.Utils {
 		/// <param name="onFailure">Called with the error message in case of a network error or if server replied with status other than 200.</param>
 		/// <param name="successStatus">The expected status code in the response for the request to be considered successful</param>
 		/// <param name="timeout">How long to wait before aborting the request</param>
-		internal static void AwaitUnityWebResponse(UnityWebRequest request, Action<string> onSuccess, Action<Exception> 
+		internal static void AwaitUnityWebResponse(UnityWebRequest request, Action<string>? onSuccess, Action<Exception>?
 		onFailure, HttpStatusCode successStatus = HttpStatusCode.OK, float timeout = 30f) {
 			/* Todo: scrap whole method, revert to System.Net.WebClient
 			.NET version has been updated and SSL should work again */
@@ -267,12 +257,12 @@ namespace HugsLib.Utils {
 			request.Send();
 #pragma warning restore 618
 			var timeoutTime = Time.unscaledTime + timeout;
-			Action pollingAction = null;
+			Action pollingAction = null!;
 			pollingAction = () => {
 				var timedOut = Time.unscaledTime > timeoutTime;
 				try {
 					if (!request.isDone && !timedOut) {
-						HugsLibController.Instance.DoLater.DoNextUpdate(pollingAction);
+						HugsLibController.Instance.DoLater?.DoNextUpdate(pollingAction);
 					} else {
 						if (timedOut) {
 							if (!request.isDone) {
@@ -285,9 +275,10 @@ namespace HugsLib.Utils {
 						}
 						var status = (HttpStatusCode)request.responseCode;
 						if (status != successStatus) {
-							throw new Exception(string.Format("{0} replied with {1}: {2}", request.url, status, request.downloadHandler.text));
-						} else {
-							if (onSuccess != null) onSuccess(request.downloadHandler.text);
+							throw new Exception($"{request.url} replied with {status}: {request.downloadHandler.text}");
+						} else
+						{
+							onSuccess?.Invoke(request.downloadHandler.text);
 						}
 					}
 				} catch (Exception e) {
@@ -308,7 +299,7 @@ namespace HugsLib.Utils {
 		/// <param name="assemblyName">The <see cref="AssemblyName.Name"/> of the assembly</param>
 		/// <param name="contentPack">The content pack the assembly was presumably loaded from</param>
 		/// <returns>Returns null if the file is not found</returns>
-		public static FileInfo GetModAssemblyFileInfo(string assemblyName, [NotNull] ModContentPack contentPack) {
+		public static FileInfo? GetModAssemblyFileInfo(string assemblyName, ModContentPack contentPack) {
 			if (contentPack == null) throw new ArgumentNullException(nameof(contentPack));
 			const string AssembliesFolderName = "Assemblies";
 			var expectedAssemblyFileName = $"{assemblyName}.dll"; 
@@ -319,7 +310,7 @@ namespace HugsLib.Utils {
 		/// <summary>
 		/// Same as <see cref="GetModAssemblyFileInfo"/> but suppresses all exceptions.
 		/// </summary>
-		public static FileInfo TryGetModAssemblyFileInfo(string assemblyName, ModContentPack modPack) {
+		public static FileInfo? TryGetModAssemblyFileInfo(string assemblyName, ModContentPack modPack) {
 			try {
 				return GetModAssemblyFileInfo(assemblyName, modPack);
 			} catch (Exception) {
@@ -332,34 +323,32 @@ namespace HugsLib.Utils {
 		/// </summary>
 		public static void OpenModSettingsDialog() {
 			Find.WindowStack.TryRemove(typeof(Dialog_Options));
-			Find.WindowStack.Add(new Settings.Dialog_ModSettings {
-				WindowState = ModSettingsWindowState.Instance
-			});
+			Find.WindowStack.Add(new Settings.Dialog_ModSettings());
 		}
 
-		internal static void BlameCallbackException(string schedulerName, Delegate callback, Exception e) {
-			string exceptionCause = null;
+		internal static void BlameCallbackException(string schedulerName, Delegate? callback, Exception e) {
+			string? exceptionCause = null;
 			if (callback != null) {
 				var methodName = DescribeDelegate(callback);
-				exceptionCause = String.Format("{0} ({1})", methodName, e.Source);
+				exceptionCause = $"{methodName} ({e.Source})";
 			}
-			HugsLibController.Logger.ReportException(e, exceptionCause, true, String.Format("a {0} callback", schedulerName));
+			HugsLibController.Logger.ReportException(e, exceptionCause, true, $"a {schedulerName} callback");
 		}
 
-		internal static string DescribeDelegate(Delegate del) {
+		internal static string DescribeDelegate(Delegate? del) {
 			if (del == null) return "null";
 			var method = del.Method;
 			var isAnonymous = method.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Any();
 			return isAnonymous ? "an anonymous method" : method.DeclaringType + "." + method.Name;
 		}
 
-		internal static string FullName(this MethodBase methodInfo) {
+		internal static string FullName(this MethodBase? methodInfo) {
 			if (methodInfo == null) return "[null reference]";
 			if (methodInfo.DeclaringType == null) return methodInfo.Name;
 			return methodInfo.DeclaringType.FullName + "." + methodInfo.Name;
 		}
 
-		internal static string ToSemanticString(this Version v, string nullFallback = "unknown") {
+		internal static string ToSemanticString(this Version? v, string nullFallback = "unknown") {
 			if (v == null) return nullFallback;
 			// System.Version parts: Major.Minor.Build.Revision
 			return v.Build < 0 
@@ -367,7 +356,7 @@ namespace HugsLib.Utils {
 				: v.ToString(v.Revision <= 0 ? 3 : 4);
 		}
 		
-		private static string TryGetCommandLineOptionValue(string key) {
+		private static string? TryGetCommandLineOptionValue(string key) {
 			const string keyPrefix = "-";
 			var prefixedKey = keyPrefix + key;
 			var valueExpectedNext = false;

@@ -38,13 +38,13 @@ namespace HugsLib.Logs {
 		}
 
 		public PublisherStatus Status { get; private set; }
-		public string ErrorMessage { get; private set; }
-		public string ResultUrl { get; private set; }
-		private static SettingHandle<LogPublisherOptions> optionsHandle;
-		private LogPublisherOptions publishOptions;
+		public string? ErrorMessage { get; private set; }
+		public string ResultUrl { get; private set; } = null!;
+		private static SettingHandle<LogPublisherOptions> optionsHandle = null!;
+		private LogPublisherOptions publishOptions = null!;
 		private bool userAborted;
-		private UnityWebRequest activeRequest;
-		private Thread mockThread;
+		private UnityWebRequest? activeRequest;
+		private Thread? mockThread;
 
 		public void ShowPublishPrompt() {
 			if (PublisherIsReady()) {
@@ -52,7 +52,7 @@ namespace HugsLib.Logs {
 				Find.WindowStack.Add(new Dialog_PublishLogsOptions(
 					"HugsLib_logs_shareConfirmTitle".Translate(),
 					"HugsLib_logs_shareConfirmMessage".Translate(),
-					optionsHandle.Value
+					optionsHandle.Value!
 				) {
 					OnUpload = OnPublishConfirmed,
 					OnCopy = CopyToClipboard,
@@ -65,17 +65,17 @@ namespace HugsLib.Logs {
 		}
 
 		private void UpdateCustomOptionsUsage() {
-			publishOptions = optionsHandle.Value.UseCustomOptions ? optionsHandle.Value : new LogPublisherOptions();
+			publishOptions = optionsHandle.Value!.UseCustomOptions ? optionsHandle.Value : new LogPublisherOptions();
 		}
 
 		public void AbortUpload() {
 			if (Status != PublisherStatus.Uploading && Status != PublisherStatus.Shortening) return;
 			userAborted = true;
-			if (activeRequest != null && !activeRequest.isDone) {
+			if (activeRequest is {isDone: false}) {
 				activeRequest.Abort();
 			}
 			activeRequest = null;
-			if (mockThread != null && mockThread.IsAlive) {
+			if (mockThread is {IsAlive: true}) {
 				mockThread.Interrupt();
 			}
 			if (Status == PublisherStatus.Shortening) {
@@ -127,7 +127,7 @@ namespace HugsLib.Logs {
 
 		public void CopyToClipboard() {
 			UpdateCustomOptionsUsage();
-			HugsLibUtility.CopyToClipboard(PrepareLogData());
+			HugsLibUtility.CopyToClipboard(PrepareLogData()!);
 		}
 
 		// this is for testing the uploader gui without making requests	
@@ -191,7 +191,7 @@ namespace HugsLib.Logs {
 		}
 
 		private void OnUrlShorteningComplete(string shortUrl) {
-			ResultUrl = activeRequest.GetResponseHeader("Location");
+			ResultUrl = activeRequest!.GetResponseHeader("Location");
 			FinalizeUpload(true);
 		}
 
@@ -201,7 +201,7 @@ namespace HugsLib.Logs {
 			mockThread = null;
 		}
 
-		private string TryExtractGistUrlFromUploadResponse(string response) {
+		private string? TryExtractGistUrlFromUploadResponse(string response) {
 			var match = UploadResponseUrlMatch.Match(response);
 			if (!match.Success) return null;
 			return match.Groups[1].ToString();
@@ -211,7 +211,7 @@ namespace HugsLib.Logs {
 			return Status == PublisherStatus.Ready || Status == PublisherStatus.Done || Status == PublisherStatus.Error;
 		}
 
-		private string PrepareLogData() {
+		private string? PrepareLogData() {
 			try {
 				var logSection = GetLogFileContents();
 				logSection = NormalizeLineEndings(logSection);
@@ -330,7 +330,7 @@ namespace HugsLib.Logs {
 			var tempPath = Path.GetTempFileName();
 			File.Delete(tempPath);
 			// we need to copy the log file since the original is already opened for writing by Unity
-			File.Copy(filePath, tempPath);
+			File.Copy(filePath!, tempPath);
 			var fileContents = File.ReadAllText(tempPath);
 			File.Delete(tempPath);
 			return "Log file contents:\n" + fileContents;
@@ -473,7 +473,7 @@ namespace HugsLib.Logs {
 				"HugsLib_setting_logPublisherSettings_label".Translate(), null);
 			optionsHandle.NeverVisible = true;
 			optionsHandle.ValueChanged += EnsureNonNullHandleValue;
-			EnsureNonNullHandleValue(null);
+			EnsureNonNullHandleValue(null!);
 
 			void EnsureNonNullHandleValue(SettingHandle _) {
 				if (optionsHandle.Value != null) return;

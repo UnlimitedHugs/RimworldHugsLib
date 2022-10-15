@@ -13,7 +13,7 @@ namespace HugsLibTests {
 
 		[Test]
 		public void TopLevelParent() {
-			Assert.AreEqual(OwnPrefix + "One", Resolve(One));
+			Assert.That(Resolve(One), Is.EqualTo(OwnPrefix + "One"));
 		}
 
 		private static class A {
@@ -23,7 +23,7 @@ namespace HugsLibTests {
 
 		[Test]
 		public void NestedParent() {
-			Assert.AreEqual(OwnPrefix + "A.Two", Resolve(A.Two));
+			Assert.That(Resolve(A.Two), Is.EqualTo(OwnPrefix + "A.Two"));
 		}
 
 		private static class B {
@@ -35,14 +35,14 @@ namespace HugsLibTests {
 
 		[Test]
 		public void DepthLimit() {
-			Assert.AreEqual("B.C.Three", Resolve(B.C.Three, 2));
+			Assert.That(Resolve(B.C.Three, 2), Is.EqualTo("B.C.Three"));
 		}
 
 		[Test]
 		public void DynamicMethod() {
 			const string memberName = "testy";
 			var dyn = new DynamicMethod(memberName, null, null, typeof(HarmonyUtilitiesNestedMemberTests).Module);
-			Assert.AreEqual(HarmonyUtility.GetNestedMemberName(dyn), memberName);
+			Assert.That(HarmonyUtility.GetNestedMemberName(dyn), Is.EqualTo(memberName));
 		}
 
 		private static string Resolve(Action method, int maxDepth = 10) {

@@ -20,7 +20,7 @@ namespace HugsLib.Core {
 			return ver;
 		}
 
-		public static VersionShort TryParse(string version) {
+		public static VersionShort? TryParse(string version) {
 			try {
 				return Parse(version);
 			} catch (Exception) {
@@ -32,25 +32,25 @@ namespace HugsLib.Core {
 			return new VersionShort(version.Major, version.Minor, version.Build);
 		}
 
-		public static bool operator ==(VersionShort v1, VersionShort v2) {
+		public static bool operator ==(VersionShort? v1, VersionShort? v2) {
 			if (ReferenceEquals(v1, null)) return ReferenceEquals(v2, null);
 			return v1.Equals(v2);
 		}
-		public static bool operator !=(VersionShort v1, VersionShort v2) {
+		public static bool operator !=(VersionShort? v1, VersionShort? v2) {
 			return !(v1 == v2);
 		}
-		public static bool operator <(VersionShort v1, VersionShort v2) {
+		public static bool operator <(VersionShort? v1, VersionShort? v2) {
 			if (v1 == null) throw new ArgumentNullException("v1");
-			return v1.CompareTo(v2) < 0;
+			return v1.CompareTo(v2!) < 0;
 		}
-		public static bool operator <=(VersionShort v1, VersionShort v2) {
+		public static bool operator <=(VersionShort? v1, VersionShort? v2) {
 			if (v1 == null) throw new ArgumentNullException("v1");
-			return v1.CompareTo(v2) <= 0;
+			return v1.CompareTo(v2!) <= 0;
 		}
-		public static bool operator >(VersionShort v1, VersionShort v2) {
+		public static bool operator >(VersionShort? v1, VersionShort? v2) {
 			return v2 < v1;
 		}
-		public static bool operator >=(VersionShort v1, VersionShort v2) {
+		public static bool operator >=(VersionShort? v1, VersionShort? v2) {
 			return v2 <= v1;
 		}
 
@@ -95,12 +95,12 @@ namespace HugsLib.Core {
 			}
 		}
 
-		public override bool Equals(object obj) {
+		public override bool Equals(object? obj) {
 			var other = obj as VersionShort;
 			return Equals(other);
 		}
 
-		public bool Equals(VersionShort other) {
+		public bool Equals(VersionShort? other) {
 			if (other == null) return false;
 			return major == other.major && minor == other.minor && patch == other.patch;
 		}
@@ -112,7 +112,7 @@ namespace HugsLib.Core {
 			return patch > ver.patch ? 1 : -1;
 		}
 
-		public int CompareTo(object obj) {
+		public int CompareTo(object? obj) {
 			if (obj == null) return 1;
 			var ver = obj as VersionShort;
 			if (ver == null) throw new ArgumentException("Argument must be VersionShort");

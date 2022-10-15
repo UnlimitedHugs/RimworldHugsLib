@@ -90,11 +90,11 @@ namespace HugsLibTests {
 
 		private void AssertCalls(string sample) {
 			var joined = string.Join(",", MethodsCalled.Select(i => i.ToString()).ToArray());
-			Assert.AreEqual(sample, joined, "order");
+			Assert.That(joined, Is.EqualTo(sample), "order");
 		}
 		private void AssertTimestamps(string sample) {
 			var joined = string.Join(",", CallTimestamps.Select(i => i.ToString()).ToArray());
-			Assert.AreEqual(sample, joined, "timestamps");
+			Assert.That(joined, Is.EqualTo(sample), "timestamps");
 		}
 
 		private void Callback1() { StampCallback(1); }

@@ -39,7 +39,7 @@ namespace HugsLib.Settings {
 		/// <returns>true if the menu button was clicked</returns>
 		/// <returns>true if the menu button was clicked</returns>
 		public static bool DrawHandleHoverMenu(
-			Vector2 topRight, string infoTooltip, bool menuEnabled, bool extraMenuOptions) {
+			Vector2 topRight, string? infoTooltip, bool menuEnabled, bool extraMenuOptions) {
 			var menuClicked = DrawHoverMenuButton(topRight, menuEnabled, extraMenuOptions);
 
 			var infoEnabled = !string.IsNullOrEmpty(infoTooltip); 
@@ -47,7 +47,7 @@ namespace HugsLib.Settings {
 				topRight.x - HoverMenuIconSize - HoverMenuButtonSpacing - InfoIconTexture.width, topRight.y);
 			var (infoHovered, _) = DoHoverMenuButton(infoButtonTopLeft, InfoIconTexture, infoEnabled);
 			if (infoHovered) {
-				DrawImmediateTooltip(infoTooltip);
+				DrawImmediateTooltip(infoTooltip!);
 			}
 
 			return menuClicked;
@@ -80,17 +80,17 @@ namespace HugsLib.Settings {
 			);
 		}
 
-		private static IEnumerable<FloatMenuOption> GetOptionalMenuEntry(string label, Action onActivated) {
+		private static IEnumerable<FloatMenuOption> GetOptionalMenuEntry(string? label, Action onActivated) {
 			return label != null
 				? new[] {new FloatMenuOption(label, onActivated)}
 				: Enumerable.Empty<FloatMenuOption>();
 		}
 
 		private static IEnumerable<FloatMenuOption> CreateContextMenuOptions(
-			IEnumerable<ContextMenuEntry> entries, Action anyEntryActivated) {
+			IEnumerable<ContextMenuEntry>? entries, Action anyEntryActivated) {
 			var options = new List<FloatMenuOption>();
 			try {
-				entries = entries ?? Enumerable.Empty<ContextMenuEntry>();
+				entries ??= Enumerable.Empty<ContextMenuEntry>();
 				foreach (var entry in entries) {
 					entry.Validate();
 					options.Add(

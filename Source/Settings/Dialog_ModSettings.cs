@@ -35,10 +35,10 @@ namespace HugsLib.Settings {
 
 		private Vector2 scrollPosition;
 		private float totalContentHeight;
-		private string currentlyDrawnEntry;
+		private string? currentlyDrawnEntry;
 		private bool closingScheduled;
 
-		internal IModSettingsWindowState WindowState { get; set; }
+		internal IModSettingsWindowState WindowState { get; set; } = ModSettingsWindowState.Instance;
 
 		public override Vector2 InitialSize {
 			get { return new Vector2(650f, 700f); }
@@ -98,7 +98,7 @@ namespace HugsLib.Settings {
 					if (!entry.Visible) continue;
 					currentlyDrawnEntry = entry.ModName;
 					DrawModEntryHeader(entry, scrollViewTotal.width, ref curY);
-					if ((entry.SettingsPack != null && entry.SettingsPack.AlwaysExpandEntry) || expandedModEntries.Contains(entry)) {
+					if (entry.SettingsPack is {AlwaysExpandEntry: true} || expandedModEntries.Contains(entry)) {
 						for (int j = 0; j < entry.Handles.Count; j++) {
 							var handle = entry.Handles[j];
 							if (handle.VisibilityPredicate != null) {
@@ -149,6 +149,8 @@ namespace HugsLib.Settings {
 			Widgets.Label(labelRect, entry.ModName);
 			Text.Font = GameFont.Small;
 
+			var settingsPack = entry.SettingsPack;
+			
 			var entryButtonsTopRight = new Vector2(width, curY);
 			var activateButtonWidth = DrawActivateEntryButton(entryButtonsTopRight);
 			DrawFloatMenuButton(new Vector2(entryButtonsTopRight.x - activateButtonWidth, entryButtonsTopRight.y));
@@ -160,11 +162,12 @@ namespace HugsLib.Settings {
 			GUI.color = color;
 			curY += ModEntryLabelPadding;
 
+
 			float DrawActivateEntryButton(Vector2 topRight) {
-				if (entry.SettingsPack == null || !entry.SettingsPack.AlwaysExpandEntry) {
+				if (settingsPack is not {AlwaysExpandEntry: true}) {
 					var isExpanded = expandedModEntries.Contains(entry);
 					CachedLabel buttonLabel;
-					var isVanillaEntry = entry.SettingsPack == null;
+					var isVanillaEntry = settingsPack == null;
 					float toggleButtonWidth;
 					if (isVanillaEntry) {
 						buttonLabel = labelShowVanillaSettings;
@@ -196,22 +199,28 @@ namespace HugsLib.Settings {
 				if(!mouseOverTitle) return;
 				var buttonTopRight = new Vector2(topRight.x - ModEntryLabelPadding,
 					topRight.y + (ModEntryLabelHeight - ModSettingsWidgets.HoverMenuHeight) / 2f);
-				var hasExtraMenuEntries = entry.SettingsPack?.ContextMenuEntries != null;
-				if (ModSettingsWidgets.DrawHoverMenuButton(
-					buttonTopRight, entry.HasContextMenuEntries, hasExtraMenuEntries)){ 
-					OpenModEntryContextMenu();
-				}
+				if (settingsPack != null)
+				{
+					var hasExtraMenuEntries = settingsPack.ContextMenuEntries != null;
+					if (ModSettingsWidgets.DrawHoverMenuButton(
+						    buttonTopRight, entry.HasContextMenuEntries, hasExtraMenuEntries))
+					{
+						OpenModEntryContextMenu();
+					}
 
-				void OpenModEntryContextMenu() {
-					var resetOptionLabel = 
-						entry.SettingsPack.CanBeReset ? "HugsLib_settings_resetMod".Translate(entry.ModName) : null;
-					ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
-						OnResetOptionSelected, delegate {}, entry.SettingsPack.ContextMenuEntries);
-				}
+					void OpenModEntryContextMenu()
+					{
+						var resetOptionLabel =
+							settingsPack.CanBeReset ? "HugsLib_settings_resetMod".Translate(entry.ModName) : null;
+						ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel,
+							OnResetOptionSelected, delegate { }, settingsPack.ContextMenuEntries!);
+					}
 
-				void OnResetOptionSelected() {
-					ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(entry.ModName),
-						entry.SettingsPack.Handles);
+					void OnResetOptionSelected()
+					{
+						ShowResetPrompt("HugsLib_settings_resetMod_prompt".Translate(entry.ModName),
+							settingsPack.Handles);
+					}
 				}
 			}
 		}
@@ -309,7 +318,7 @@ namespace HugsLib.Settings {
 			void OpenHandleContextMenu() {
 				var resetOptionLabel = handle.CanBeReset ? "HugsLib_settings_resetValue".Translate() : null;
 				ModSettingsWidgets.OpenExtensibleContextMenu(resetOptionLabel, 
-					() => ResetSettingHandles(handle), delegate {}, handle.ContextMenuEntries);
+					() => ResetSettingHandles(handle), delegate {}, handle.ContextMenuEntries!);
 			}
 		}
 
@@ -415,22 +424,22 @@ namespace HugsLib.Settings {
 			GUI.color = prevColor;
 		}
 
-		private void TryRestoreWindowState(IModSettingsWindowState state) {
+		private void TryRestoreWindowState(IModSettingsWindowState? state) {
 			if (state == null) return;
 			expandedModEntries.Clear();
-			var expandedIdSet = (state.ExpandedSettingPackIds ?? Enumerable.Empty<string>()).ToHashSet();
+			var expandedIdSet = state.ExpandedSettingPackIds.ToHashSet();
 			expandedModEntries.AddRange(listedMods.Where(
 				m => m.SettingsPack != null && expandedIdSet.Contains(m.SettingsPack.ModId)
 			));
 			scrollPosition = new Vector2(0f, state.VerticalScrollPosition);
 		}
 		
-		private void TrySaveWindowState(IModSettingsWindowState state) {
+		private void TrySaveWindowState(IModSettingsWindowState? state) {
 			if (state == null) return;
 			state.ExpandedSettingPackIds = expandedModEntries
 				.Select(e => e.SettingsPack?.ModId)
 				.Where(id => id != null)
-				.ToArray();
+				.ToArray()!;
 			state.VerticalScrollPosition = scrollPosition.y;
 		}
 
@@ -444,7 +453,7 @@ namespace HugsLib.Settings {
 				));
 			Find.WindowStack.Add(new Dialog_ConfirmReset(message, hiddenHandlesWithOwners, OnConfirmReset));
 
-			string BlankStringToNull(string s) {
+			string? BlankStringToNull(string? s) {
 				return string.IsNullOrWhiteSpace(s) ? null : s;
 			}
 
@@ -457,10 +466,10 @@ namespace HugsLib.Settings {
 			}
 		}
 
-		private void ResetSettingHandles(params SettingHandle[] handles) {
+		private void ResetSettingHandles(params SettingHandle?[] handles) {
 			var resetCount = 0;
 			foreach (var handle in handles) {
-				if (handle == null || !handle.CanBeReset) continue;
+				if (handle is not {CanBeReset: true}) continue;
 				try {
 					handle.ResetToDefault();
 					resetCount++;
@@ -566,15 +575,13 @@ namespace HugsLib.Settings {
 			public string ModName;
 			public ModSettingsPack.ListPriority DisplayPriority;
 			public List<SettingHandle> Handles = new List<SettingHandle>();
-			public readonly ModSettingsPack SettingsPack;
-			public readonly Mod VanillaMod;
+			public readonly ModSettingsPack? SettingsPack;
+			public readonly Mod? VanillaMod;
 			public readonly bool HasContextMenuEntries;
 
-			public bool Visible {
-				get { return VanillaMod != null || Handles.Count > 0; }
-			}
+			public bool Visible => VanillaMod != null || Handles.Count > 0;
 
-			public ModEntry(string modName, ModSettingsPack settingsPack, Mod vanillaMod) {
+			public ModEntry(string modName, ModSettingsPack? settingsPack, Mod? vanillaMod) {
 				ModName = modName;
 				SettingsPack = settingsPack;
 				VanillaMod = vanillaMod;
@@ -586,11 +593,11 @@ namespace HugsLib.Settings {
 		// support data for each settings handle to allow gui controls to properly display and validate
 		private class HandleControlInfo {
 			public readonly string controlName;
-			public readonly List<string> enumNames;
+			public readonly List<string>? enumNames;
 			public bool badInput;
 			public string inputValue;
 			public bool validationScheduled;
-			public CachedLabel handleTitle;
+			public CachedLabel? handleTitle;
 
 			public HandleControlInfo(SettingHandle handle) {
 				controlName = "control" + handle.GetHashCode();
@@ -598,7 +605,7 @@ namespace HugsLib.Settings {
 				enumNames = TryGetEnumNames(handle);
 			}
 
-			private List<string> TryGetEnumNames(SettingHandle handle) {
+			private List<string>? TryGetEnumNames(SettingHandle handle) {
 				var valueType = handle.ValueType;
 				if (!valueType.IsEnum) return null;
 				var values = Enum.GetValues(valueType);

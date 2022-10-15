@@ -40,7 +40,7 @@ namespace HugsLibTests {
 			void AssertFilteredDefs(IEnumerable<string> firstTimeSeenPackageIds,
 				IEnumerable<string> expectedDefNames, string assertionMessage) {
 				var results = UpdateFeatureManager.FilterFeatureDefsByMatchingAudience(
-					defs, firstTimeSeenPackageIds.Contains, null
+					defs, firstTimeSeenPackageIds.Contains, null!
 				).Select(d => d.defName);
 				Assert.That(results, Is.EquivalentTo(expectedDefNames), assertionMessage);
 			}
@@ -74,7 +74,7 @@ namespace HugsLibTests {
 			Assert.IsNull(noPackageDef.OverridePackageId);
 			Assert.Throws<InvalidOperationException>(() => {
 					var _ = UpdateFeatureManager.FilterFeatureDefsByMatchingAudience(
-						new[] {noPackageDef}, s => false, ex => throw ex
+						new[] {noPackageDef}, _ => false, ex => throw ex
 					).ToArray();
 				}
 			);
