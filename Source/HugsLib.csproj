@@ -1,20 +1,38 @@
 ﻿<Project Sdk="Zlepper.RimWorld.ModSdk/0.0.4">
 
 
-  <PropertyGroup>
-    <RimWorldModName>HugsLib</RimWorldModName>
-    <RimWorldPackageId>HugsLib</RimWorldPackageId>
-  </PropertyGroup>
+    <PropertyGroup>
+        <RimWorldModName>HugsLib</RimWorldModName>
+        <RimWorldPackageId>HugsLib</RimWorldPackageId>
+        <PackageId>UnlimitedHugs.Rimworld.HugsLib</PackageId>
+        <Title>HugsLib</Title>
+        <Authors>UnlimitedHugs</Authors>
+        <Description>A lightweight shared library for Rimworld modding.</Description>
+        <Copyright>Copyright 2022</Copyright>
+        <PackageProjectUrl>https://github.com/UnlimitedHugs/RimworldHugsLib</PackageProjectUrl>
+        <PackageIcon>NuGetIcon.png</PackageIcon>
+        <RepositoryUrl>https://github.com/UnlimitedHugs/RimworldHugsLib</RepositoryUrl>
+        <PackageTags>Rimworld Mod</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <RimWorldAssemblyReference Include="UnityEngine.InputLegacyModule" />
-    <RimWorldAssemblyReference Include="UnityEngine.TextRenderingModule" />
-    <RimWorldAssemblyReference Include="UnityEngine.UnityWebRequestModule" />
-    <RimWorldAssemblyReference Include="UnityEngine.ImageConversionModule" />
-    <RimWorldAssemblyReference Include="UnityEngine.IMGUIModule" />
-  </ItemGroup>
+    <ItemGroup>
+        <RimWorldAssemblyReference Include="UnityEngine.InputLegacyModule"/>
+        <RimWorldAssemblyReference Include="UnityEngine.TextRenderingModule"/>
+        <RimWorldAssemblyReference Include="UnityEngine.UnityWebRequestModule"/>
+        <RimWorldAssemblyReference Include="UnityEngine.ImageConversionModule"/>
+        <RimWorldAssemblyReference Include="UnityEngine.IMGUIModule"/>
+    </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.1.0" ExcludeAssets="runtime" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Lib.Harmony" Version="2.1.0" ExcludeAssets="runtime"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\ArtSource\NuGetIcon.png">
+            <Pack>True</Pack>
+            <PackagePath />
+            <Link>NuGetIcon.png</Link>
+        </None>
+    </ItemGroup>
 </Project>
