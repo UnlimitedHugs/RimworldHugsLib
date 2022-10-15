@@ -1,4 +1,4 @@
-﻿<Project Sdk="C:\dev\Zlepper.Rimworld.FastFarm\Zlepper.RimWorld.ModSdk" >
+﻿<Project Sdk="C:\dev\Zlepper.Rimworld.FastFarm\Zlepper.RimWorld.ModSdk">
 
 
   <PropertyGroup>
@@ -6,11 +6,6 @@
     <RimWorldPackageId>HugsLib</RimWorldPackageId>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-<!--  <PropertyGroup>-->
-<!--    <OutputPath>..\Mods\HugsLib\v1.4\Assemblies\</OutputPath>-->
-<!--  </PropertyGroup>-->
-
 
   <ItemGroup>
     <RimWorldAssemblyReference Include="UnityEngine.InputLegacyModule" />
@@ -21,6 +16,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.1.0" />
+    <PackageReference Include="Lib.Harmony" Version="2.1.0" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>
