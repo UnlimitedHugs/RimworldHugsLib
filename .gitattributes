@@ -15,3 +15,6 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Everything in the Mods directory is generated
+Mods/**/* linguist-generated=true
