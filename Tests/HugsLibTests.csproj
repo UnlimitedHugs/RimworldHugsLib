@@ -1,4 +1,4 @@
-<Project Sdk="Zlepper.RimWorld.ModSdk.Testing/0.0.4">
+<Project Sdk="Zlepper.RimWorld.ModSdk.Testing/0.0.5">
 
     <PropertyGroup>
         <Nullable>disable</Nullable>
