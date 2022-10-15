@@ -1,10 +1,9 @@
-﻿<Project Sdk="C:\dev\Zlepper.Rimworld.FastFarm\Zlepper.RimWorld.ModSdk">
+﻿<Project Sdk="Zlepper.RimWorld.ModSdk/0.0.4">
 
 
   <PropertyGroup>
     <RimWorldModName>HugsLib</RimWorldModName>
     <RimWorldPackageId>HugsLib</RimWorldPackageId>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

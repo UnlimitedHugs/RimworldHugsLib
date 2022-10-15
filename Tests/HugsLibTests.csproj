@@ -1,4 +1,4 @@
-<Project Sdk="C:\dev\Zlepper.Rimworld.FastFarm\Zlepper.RimWorld.ModSdk.Testing">
+<Project Sdk="Zlepper.RimWorld.ModSdk.Testing/0.0.4">
 
     <PropertyGroup>
         <Nullable>disable</Nullable>
