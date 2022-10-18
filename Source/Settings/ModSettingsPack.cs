@@ -12,10 +12,6 @@ namespace HugsLib.Settings {
 	/// Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
 	/// </summary>
 	public class ModSettingsPack {
-		public enum ListPriority {
-			Higher, Normal, Lower, Lowest
-		}
-
 		/// <summary>
 		/// Identifier of the mod that owns this pack
 		/// </summary>
