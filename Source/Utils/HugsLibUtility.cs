@@ -327,7 +327,7 @@ namespace HugsLib.Utils {
 		}
 
 		/// <summary>
-		///	Opens the HugsLib Mod Settings dialog and restores its last known state (expanded entries, scroll position). 
+		///	Opens the Options dialog on the Mod Settings page. 
 		/// </summary>
 		public static void OpenModSettingsDialog() {
 			Find.WindowStack.TryRemove(typeof(Dialog_Options));
