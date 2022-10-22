@@ -36,9 +36,8 @@ namespace HugsLib.Quickstart {
 		private static bool quickstartPending;
 
 		public static void InitiateMapGeneration() {
-			PrepareMapGeneration();
-			HugsLibController.Logger.Message("Quickstarter generating map with scenario: "
-				+ TryGetScenarioByName(Settings.ScenarioToGen).name);
+			HugsLibController.Logger.Message(
+				"Quickstarter generating map with scenario: " + GetMapGenerationScenario().name);
 			LongEventHandler.QueueLongEvent(() => {
 				MemoryUtility.ClearAllMapsAndWorld();
 				ApplyQuickstartConfiguration();
@@ -200,11 +199,8 @@ namespace HugsLib.Quickstart {
 			SnapSettingsMapSizeToClosestValue(Settings, MapSizes);
 		}
 
-		private static void PrepareMapGeneration() {
-			var scenario = TryGetScenarioByName(Settings.ScenarioToGen);
-			if (scenario == null) {
-				throw new WarningException("scenario not found: " + Settings.ScenarioToGen);
-			}
+		private static Scenario GetMapGenerationScenario() {
+			return TryGetScenarioByName(Settings.ScenarioToGen) ?? ScenarioDefOf.Crashlanded.scenario;
 		}
 
 		private static void ApplyQuickstartConfiguration() {
@@ -212,7 +208,7 @@ namespace HugsLib.Quickstart {
 			Current.ProgramState = ProgramState.Entry;
 			Current.Game = new Game {
 				InitData = new GameInitData(),
-				Scenario = TryGetScenarioByName(Settings.ScenarioToGen) ?? ScenarioDefOf.Crashlanded.scenario,
+				Scenario = GetMapGenerationScenario(),
 			};
 			Find.Scenario.PreConfigure();
 			Current.Game.storyteller = new Storyteller(StorytellerDefOf.Cassandra, DifficultyDefOf.Rough);
