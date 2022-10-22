@@ -10,7 +10,7 @@ A lightweight shared mod library for Rimworld. Provides a foundation for mods an
 
 **Notice:** HugsLib must be installed as a separate mod by the players. The library assembly itself is not to be shipped with your mod.
 
-**Notice:** HugsLib requires the Harmony mod to be installed to work correctly. [Download here](https://github.com/pardeike/Harmony/releases/latest).
+**Notice:** HugsLib requires the Harmony mod to be installed to work correctly. [Download here](https://github.com/pardeike/HarmonyRimWorld/releases/latest).
 
 ## Dependency tags
 

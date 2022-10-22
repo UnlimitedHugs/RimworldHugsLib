@@ -4,7 +4,7 @@ using Verse;
 
 namespace HugsLib.Utils {
 	/// <summary>
-	/// A classic A15-style confirm dialog with Esc and Enter key support.
+	/// A compact confirm dialog with Esc and Enter key support.
 	/// </summary>
 	public class Dialog_Confirm : Dialog_MessageBox {
 		private const float TitleHeight = 42f;

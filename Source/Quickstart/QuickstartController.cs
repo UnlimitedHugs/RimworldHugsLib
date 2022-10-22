@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using HarmonyLib;
 using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
 using RimWorld;
+using RimWorld.Planet;
 using UnityEngine;
 using Verse;
+using Verse.Profile;
 
 namespace HugsLib.Quickstart {
 	/// <summary>
@@ -25,52 +26,39 @@ namespace HugsLib.Quickstart {
 
 		public static QuickstartSettings Settings {
 			get {
-				if(handle == null) throw new NullReferenceException("Setting handle not initialized");
+				if (handle == null) throw new NullReferenceException("Setting handle not initialized");
 				return handle.Value ?? (handle.Value = new QuickstartSettings());
 			}
 		}
-		
-		private static Type quickStarterType;
-		private static FieldInfo quickStartedField;
+
 		private static SettingHandle<QuickstartSettings> handle;
 		private static QuickstartStatusBox statusBox;
 		private static bool quickstartPending;
-		private static bool mapGenerationPending;
 
-		public static void InitateMapGeneration() {
-			PrepareMapGeneration();
-			HugsLibController.Logger.Message("Quickstarter generating map with scenario: " + TryGetScenarioByName(Settings.ScenarioToGen).name);
-			quickStartedField.SetValue(null, true);
+		public static void InitiateMapGeneration() {
+			HugsLibController.Logger.Message(
+				"Quickstarter generating map with scenario: " + GetMapGenerationScenario().name);
 			LongEventHandler.QueueLongEvent(() => {
-				Current.Game = null;
-			}, "Play", "GeneratingMap", true, null);
+				MemoryUtility.ClearAllMapsAndWorld();
+				ApplyQuickstartConfiguration();
+				PageUtility.InitGameStart();
+			}, "GeneratingMap", true, GameAndMapInitExceptionHandlers.ErrorWhileGeneratingMap);
 		}
 
-		public static void InitateSaveLoading() {
+		public static void InitiateSaveLoading() {
 			var saveName = GetSaveNameToLoad()
-				?? throw new WarningException("save filename not set"); 
+				?? throw new WarningException("save filename not set");
 			var filePath = GenFilePaths.FilePathForSavedGame(saveName);
 			if (!File.Exists(filePath)) {
 				throw new WarningException("save file not found: " + saveName);
 			}
 			HugsLibController.Logger.Message("Quickstarter is loading saved game: " + saveName);
-			Action loadAction = () => {
-				LongEventHandler.QueueLongEvent(delegate {
-					Current.Game = new Game { InitData = new GameInitData { gameToLoad = saveName } };
-				}, "Play", "LoadingLongEvent", true, null);
-			};
+			var loadAction = () => GameDataSaveLoader.LoadGame(saveName);
 			if (Settings.BypassSafetyDialog) {
 				loadAction();
 			} else {
 				PreLoadUtility.CheckVersionAndLoad(filePath, ScribeMetaHeaderUtility.ScribeHeaderMode.Map, loadAction);
 			}
-		}
-
-		internal static void PrepareReflection() {
-			quickStarterType = typeof(Root).Assembly.GetType("Verse.QuickStarter");
-			if (quickStarterType == null) HugsLibController.Logger.Error("Verse.QuickStarter type not found");
-			quickStartedField = AccessTools.Field(quickStarterType, "quickStarted");
-			if (quickStartedField == null) HugsLibController.Logger.Error("QuickStarter.quickStarted field not found");
 		}
 
 		internal static void OnEarlyInitialize(ModSettingsPack librarySettings) {
@@ -92,14 +80,14 @@ namespace HugsLib.Quickstart {
 		}
 
 		internal static void DrawDebugToolbarButton(WidgetRow widgets) {
-			const string quickstartButtonTooltip = "Open the quickstart settings.\n\n" +
-				"This lets you automatically generate a map or load an existing save when the game is started.\n" +
-				"Shift-click to quick-generate a new map.";
+			const string quickstartButtonTooltip = "Open the quickstart settings.\n\n"
+				+ "This lets you automatically generate a map or load an existing save when the game is started.\n"
+				+ "Shift-click to quick-generate a new map.";
 			if (widgets.ButtonIcon(HugsLibTextures.quickstartIcon, quickstartButtonTooltip)) {
 				var stack = Find.WindowStack;
 				if (HugsLibUtility.ShiftIsHeld) {
 					stack.TryRemove(typeof(Dialog_QuickstartSettings));
-					InitateMapGeneration();
+					InitiateMapGeneration();
 				} else {
 					if (stack.IsOpen<Dialog_QuickstartSettings>()) {
 						stack.TryRemove(typeof(Dialog_QuickstartSettings));
@@ -114,14 +102,10 @@ namespace HugsLib.Quickstart {
 			handle.ForceSaveChanges();
 		}
 
-		internal static Scenario ReplaceQuickstartScenarioIfNeeded(Scenario original) {
-			return mapGenerationPending ? TryGetScenarioByName(Settings.ScenarioToGen) : original;
+		internal static void AddReplacementQuickstartButton(List<ListableOption> buttons) {
+			buttons.Add(new ListableOption("DevQuickTest".Translate(), InitiateMapGeneration));
 		}
-
-		internal static int ReplaceQuickstartMapSizeIfNeeded(int original) {
-			return mapGenerationPending ? Settings.MapSizeToGen : original;
-		}
-
+		
 		private static void PrepareSettings(ModSettingsPack librarySettings) {
 			handle = librarySettings.GetHandle<QuickstartSettings>("quickstartSettings", null, null);
 			handle.NeverVisible = true;
@@ -140,15 +124,13 @@ namespace HugsLib.Quickstart {
 			}
 
 			QuickstartStatusBox.IOperationMessageProvider GetStatusBoxOperation(QuickstartSettings settings) {
-				switch (settings.OperationMode) {
-					case QuickstartSettings.QuickstartMode.LoadMap:
-						return new QuickstartStatusBox.LoadSaveOperation(GetSaveNameToLoad() ?? string.Empty);
-					case QuickstartSettings.QuickstartMode.GenerateMap:
-						return new QuickstartStatusBox.GenerateMapOperation(
-							settings.ScenarioToGen, settings.MapSizeToGen);
-					default:
-						throw new ArgumentOutOfRangeException("Unhandled operation mode: "+settings.OperationMode);
-				}
+				return settings.OperationMode switch {
+					QuickstartSettings.QuickstartMode.LoadMap => new QuickstartStatusBox.LoadSaveOperation(
+						GetSaveNameToLoad() ?? string.Empty),
+					QuickstartSettings.QuickstartMode.GenerateMap => new QuickstartStatusBox.GenerateMapOperation(
+						settings.ScenarioToGen, settings.MapSizeToGen),
+					_ => throw new ArgumentOutOfRangeException("Unhandled operation mode: " + settings.OperationMode)
+				};
 			}
 		}
 
@@ -160,26 +142,21 @@ namespace HugsLib.Quickstart {
 				LongEventHandler.ExecuteWhenFinished(SaveSettings);
 			}
 		}
-
+		
 		private static void InitiateQuickstart() {
-			if(!quickstartPending) return;
+			if (!quickstartPending) return;
 			quickstartPending = false;
 			statusBox = null;
 			try {
 				if (Settings.OperationMode == QuickstartSettings.QuickstartMode.Disabled) return;
 				CheckForErrorsAndWarnings();
 				if (Settings.OperationMode == QuickstartSettings.QuickstartMode.GenerateMap) {
-					if (GenCommandLine.CommandLineArgPassed("quicktest")) {
-						// vanilla QuickStarter will change the scene, only set up scenario and map size injection
-						PrepareMapGeneration();
-					} else {
-						InitateMapGeneration();
-					}
-				} else if(Settings.OperationMode == QuickstartSettings.QuickstartMode.LoadMap) {
-					InitateSaveLoading();
+					InitiateMapGeneration();
+				} else if (Settings.OperationMode == QuickstartSettings.QuickstartMode.LoadMap) {
+					InitiateSaveLoading();
 				}
 			} catch (WarningException e) {
-				HugsLibController.Logger.Error("Quickstart aborted: "+e.Message);
+				HugsLibController.Logger.Error("Quickstart aborted: " + e.Message);
 			}
 		}
 
@@ -203,10 +180,18 @@ namespace HugsLib.Quickstart {
 			foreach (var size in vanillaSizes) {
 				string desc = null;
 				switch (size) {
-					case 200: desc = "MapSizeSmall".Translate(); break;
-					case 250: desc = "MapSizeMedium".Translate(); break;
-					case 300: desc = "MapSizeLarge".Translate(); break;
-					case 350: desc = "MapSizeExtreme".Translate(); break;
+					case 200:
+						desc = "MapSizeSmall".Translate();
+						break;
+					case 250:
+						desc = "MapSizeMedium".Translate();
+						break;
+					case 300:
+						desc = "MapSizeLarge".Translate();
+						break;
+					case 350:
+						desc = "MapSizeExtreme".Translate();
+						break;
 				}
 				var label = string.Format("{0}x{0}", size) + (desc != null ? $" ({desc})" : "");
 				MapSizes.Add(new MapSizeEntry(size, label));
@@ -214,12 +199,26 @@ namespace HugsLib.Quickstart {
 			SnapSettingsMapSizeToClosestValue(Settings, MapSizes);
 		}
 
-		private static void PrepareMapGeneration() {
-			var scenario = TryGetScenarioByName(Settings.ScenarioToGen);
-			if (scenario == null) {
-				throw new WarningException("scenario not found: " + Settings.ScenarioToGen);
-			}
-			mapGenerationPending = true;
+		private static Scenario GetMapGenerationScenario() {
+			return TryGetScenarioByName(Settings.ScenarioToGen) ?? ScenarioDefOf.Crashlanded.scenario;
+		}
+
+		private static void ApplyQuickstartConfiguration() {
+			// adapted from Root_Play.SetupForQuickTestPlay
+			Current.ProgramState = ProgramState.Entry;
+			Current.Game = new Game {
+				InitData = new GameInitData(),
+				Scenario = GetMapGenerationScenario(),
+			};
+			Find.Scenario.PreConfigure();
+			Current.Game.storyteller = new Storyteller(StorytellerDefOf.Cassandra, DifficultyDefOf.Rough);
+			Current.Game.World = WorldGenerator.GenerateWorld(0.05f, GenText.RandomSeedString(),
+				OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal);
+			Find.GameInitData.ChooseRandomStartingTile();
+			Find.GameInitData.mapSize = Settings.MapSizeToGen;
+			Find.Scenario.PostIdeoChosen();
+			Find.GameInitData.PrepForMapGen();
+			Find.Scenario.PreMapGenerate();
 		}
 
 		private static Scenario TryGetScenarioByName(string name) {

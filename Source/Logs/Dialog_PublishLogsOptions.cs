@@ -61,19 +61,21 @@ namespace HugsLib.Logs {
 			l.Gap(gapSize * 2f);
 			
 			options.UseCustomOptions = !AddOptionCheckbox(l, "HugsLib_logs_useRecommendedSettings", null, 
-				!options.UseCustomOptions, out bool optionsUsageChanged);
+				!options.UseCustomOptions, out bool optionsUsageChanged, 0f);
 			if (optionsUsageChanged) {
 				UpdateWindowSize();
 				OnOptionsToggled?.Invoke();
 			}
 			if (options.UseCustomOptions) {
 				const float indent = gapSize * 2f;
-				options.UseUrlShortener = AddOptionCheckbox(l, "HugsLib_logs_shortUrls", "HugsLib_logs_shortUrls_tip", 
-					options.UseUrlShortener, out _, indent);
-				options.IncludePlatformInfo = AddOptionCheckbox(l, "HugsLib_logs_platformInfo", "HugsLib_logs_platformInfo_tip", 
-					options.IncludePlatformInfo, out _, indent);
-				options.AllowUnlimitedLogSize = AddOptionCheckbox(l, "HugsLib_logs_unlimitedLogSize", "HugsLib_logs_unlimitedLogSize_tip", 
-					options.AllowUnlimitedLogSize, out _, indent);
+				options.UseUrlShortener = AddOptionCheckbox(l, "HugsLib_logs_shortUrls", 
+					"HugsLib_logs_shortUrls_tip", options.UseUrlShortener, out _, indent);
+				options.IncludePlatformInfo = AddOptionCheckbox(l, "HugsLib_logs_platformInfo", 
+					"HugsLib_logs_platformInfo_tip", options.IncludePlatformInfo, out _, indent);
+				options.AllowUnlimitedLogSize = AddOptionCheckbox(l, "HugsLib_logs_unlimitedLogSize", 
+					"HugsLib_logs_unlimitedLogSize_tip", options.AllowUnlimitedLogSize, out _, indent);
+				options.AuthToken = AddOptionTextField(l, "HugsLib_logs_github_token", 
+					"HugsLib_logs_github_token_tip", options.AuthToken, indent);
 			}
 
 			l.End();
@@ -97,11 +99,12 @@ namespace HugsLib.Logs {
 
 		}
 
-		private bool AddOptionCheckbox(Listing_Standard listing, string labelKey, string tooltipKey, bool value, out bool changed, float indent = 0f) {
+		private static bool AddOptionCheckbox(
+			Listing listing, string labelKey, string tooltipKey, bool value, out bool changed, float indent) {
 			bool valueAfter = value;
-			var checkRect = listing.GetRect(Text.LineHeight).LeftHalf();
+			var fullRect = listing.GetRect(Text.LineHeight);
+			var checkRect = fullRect.RightPartPixels(fullRect.width - indent).LeftHalf();
 			listing.Gap(ToggleVerticalSpacing);
-			checkRect.x += indent;
 			if (tooltipKey != null && Mouse.IsOver(checkRect)) {
 				Widgets.DrawHighlight(checkRect);
 				TooltipHandler.TipRegion(checkRect, tooltipKey.Translate());
@@ -109,10 +112,26 @@ namespace HugsLib.Logs {
 			Widgets.CheckboxLabeled(checkRect, labelKey.Translate(), ref valueAfter);
 			changed = valueAfter != value;
 			return valueAfter;
+		}		
+		
+		private static string AddOptionTextField(
+			Listing listing, string labelKey, string tooltipKey, string value, float indent) {
+			listing.Gap(ToggleVerticalSpacing);
+			var fullRect = listing.GetRect(Text.LineHeight);
+			var indentedRect = fullRect.RightPartPixels(fullRect.width - indent);
+			const float leftPartPixels = 222;
+			var labelRect = indentedRect.LeftPartPixels(leftPartPixels);
+			var textFieldRect = indentedRect.RightPartPixels(indentedRect.width - leftPartPixels);
+			if (tooltipKey != null && Mouse.IsOver(indentedRect)) {
+				Widgets.DrawHighlight(indentedRect);
+				TooltipHandler.TipRegion(indentedRect, tooltipKey.Translate());
+			}
+			Widgets.Label(labelRect, labelKey.Translate());
+			return Widgets.TextField(textFieldRect, value);
 		}
 
 		private void UpdateWindowSize() {
-			const int numHiddenOptions = 3;
+			const int numHiddenOptions = 4;
 			float extraWindowHeight = options.UseCustomOptions ? (Text.LineHeight + ToggleVerticalSpacing) * numHiddenOptions : 0;
 			windowRect = new Rect(windowRect.x, windowRect.y, InitialSize.x, InitialSize.y + extraWindowHeight);
 		}

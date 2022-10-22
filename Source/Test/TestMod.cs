@@ -24,6 +24,7 @@ namespace HugsLib.Test {
 
 		public TestMod() {
 			Instance = this;
+			Settings.EntryName = "HugsLibTestMod";
 		}
 
 		public override string ModIdentifier {
@@ -171,7 +172,7 @@ namespace HugsLib.Test {
 				float SineColor(float offset) => .6f + .4f * Mathf.Sin(offset + Time.unscaledTime); 
 				GUI.color = new Color(SineColor(.5f), SineColor(1f), SineColor(1.5f));
 				GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
-				Widgets.Label(rect, "Full width goodness");
+				Widgets.Label(rect, "Full width control");
 				GenUI.ResetLabelAlign();
 				GUI.color = fullWidth.Value ? new Color(.5f, 1f, .5f) : new Color(1f, .5f, .5f);
 				bool changed = false;
@@ -190,12 +191,15 @@ namespace HugsLib.Test {
 		}
 
 		private void TestGiveShortHash() {
-			var def = new Def{defName = "randomDefForTesting"};
-			InjectedDefHasher.GiveShortHashToDef(def, typeof(Def));
-			if (def.shortHash == 0) {
+			var knownDef = new ThingDef { defName = "_hashingTestKnownDefType_" };
+			var customDef = new CustomDefType { defName = "_hashingTestCustomDefType_" };
+			InjectedDefHasher.GiveShortHashToDef(knownDef, typeof(ThingDef));
+			InjectedDefHasher.GiveShortHashToDef(customDef, typeof(CustomDefType));
+
+			if (knownDef.shortHash == 0 || customDef.shortHash == 0) {
 				Logger.Error("GiveShortHasToDef has failed");
 			} else {
-				Logger.Message("Given short hash: "+def.shortHash);
+				Logger.Message($"Given short hashes: {knownDef.shortHash}, {customDef.shortHash}");
 			}
 		}
 
@@ -251,6 +255,8 @@ namespace HugsLib.Test {
 			}
 		}
 
+		private class CustomDefType : Def {
+		}
 	}
 
 	/// <summary>
@@ -273,6 +279,5 @@ namespace HugsLib.Test {
 			SettingsChangedCalled = true;
 		}
 	}
-
 }
 #endif

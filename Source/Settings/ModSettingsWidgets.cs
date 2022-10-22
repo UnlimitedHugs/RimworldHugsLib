@@ -37,7 +37,6 @@ namespace HugsLib.Settings {
 		/// <param name="menuEnabled">When false, the menu button is semi-transparent and non-interactable</param>
 		/// <param name="extraMenuOptions">When true, uses menu-with-plus-badge icon for the button</param>
 		/// <returns>true if the menu button was clicked</returns>
-		/// <returns>true if the menu button was clicked</returns>
 		public static bool DrawHandleHoverMenu(
 			Vector2 topRight, string infoTooltip, bool menuEnabled, bool extraMenuOptions) {
 			var menuClicked = DrawHoverMenuButton(topRight, menuEnabled, extraMenuOptions);
