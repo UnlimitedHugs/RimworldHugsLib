@@ -8,6 +8,7 @@ namespace HugsLib.Logs {
 		bool UseUrlShortener { get; set; }
 		bool IncludePlatformInfo { get; set; }
 		bool AllowUnlimitedLogSize { get; set; }
+		string AuthToken { get; set; }
 	}
 
 	[Serializable]
@@ -20,6 +21,8 @@ namespace HugsLib.Logs {
 		public bool IncludePlatformInfo { get; set; }
 		[XmlElement]
 		public bool AllowUnlimitedLogSize { get; set; }
+		[XmlElement]
+		public string AuthToken { get; set; }
 
 		public override void FromString(string settingValue) {
 			SettingHandleConvertibleUtility.DeserializeValuesFromString(settingValue, this);
@@ -39,7 +42,8 @@ namespace HugsLib.Logs {
 			return UseCustomOptions == other.UseCustomOptions 
 				&& UseUrlShortener == other.UseUrlShortener 
 				&& IncludePlatformInfo == other.IncludePlatformInfo 
-				&& AllowUnlimitedLogSize == other.AllowUnlimitedLogSize;
+				&& AllowUnlimitedLogSize == other.AllowUnlimitedLogSize
+				&& AuthToken == other.AuthToken;
 		}
 	}
 }

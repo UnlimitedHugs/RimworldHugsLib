@@ -159,7 +159,7 @@ namespace HugsLib.Quickstart {
 				if (HugsLibUtility.ShiftIsHeld) {
 					settings.OperationMode = QuickstartSettings.QuickstartMode.LoadMap;
 				}
-				QuickstartController.InitateSaveLoading();
+				QuickstartController.InitiateSaveLoading();
 				Close();
 			}
 			sub.Gap(sub.verticalSpacing);
@@ -209,7 +209,7 @@ namespace HugsLib.Quickstart {
 				if (HugsLibUtility.ShiftIsHeld) {
 					settings.OperationMode = QuickstartSettings.QuickstartMode.GenerateMap;
 				}
-				QuickstartController.InitateMapGeneration();
+				QuickstartController.InitiateMapGeneration();
 				Close();
 			}
 			sub.Gap(sub.verticalSpacing);

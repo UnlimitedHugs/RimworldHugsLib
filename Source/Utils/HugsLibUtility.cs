@@ -7,7 +7,6 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using HugsLib.Settings;
 using JetBrains.Annotations;
 using RimWorld;
 using UnityEngine;
@@ -328,13 +327,11 @@ namespace HugsLib.Utils {
 		}
 
 		/// <summary>
-		///	Opens the HugsLib Mod Settings dialog and restores its last known state (expanded entries, scroll position). 
+		///	Opens the Options dialog on the Mod Settings page. 
 		/// </summary>
 		public static void OpenModSettingsDialog() {
 			Find.WindowStack.TryRemove(typeof(Dialog_Options));
-			Find.WindowStack.Add(new Settings.Dialog_ModSettings {
-				WindowState = ModSettingsWindowState.Instance
-			});
+			Find.WindowStack.Add(new Dialog_Options { selectedCategory = OptionCategoryDefOf.Mods });
 		}
 
 		internal static void BlameCallbackException(string schedulerName, Delegate callback, Exception e) {

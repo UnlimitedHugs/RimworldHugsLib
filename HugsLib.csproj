@@ -18,7 +18,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>Mods\HugsLib\v1.3\Assemblies\</OutputPath>
+    <OutputPath>Mods\HugsLib\v1.4\Assemblies\</OutputPath>
     <DefineConstants>TRACE;DEBUG;TEST_MOD,xTEST_ATTRIB,TEST_MOCK_UPLOAD,xTEST_TICKERS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,7 +32,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>Mods\HugsLib\v1.3\Assemblies\</OutputPath>
+    <OutputPath>Mods\HugsLib\v1.4\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -43,8 +43,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.1.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>packages\Lib.Harmony.2.1.0\lib\net472\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Lib.Harmony.2.2.2\lib\net472\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -101,13 +101,15 @@
     <Compile Include="Source\News\UpdateFeatureImageLoader.cs" />
     <Compile Include="Source\News\UpdateFeatureDefFilteringProvider.cs" />
     <Compile Include="Source\News\UpdateFeaturesDevMenu.cs" />
+    <Compile Include="Source\Patches\DialogOptions_Patches.cs" />
+    <Compile Include="Source\Patches\MainMenuDrawer_Quickstart_Patch.cs" />
     <Compile Include="Source\Patches\UIRoot_OnGUI_Patch.cs" />
     <Compile Include="Source\Quickstart\QuickstartStatusBox.cs" />
     <Compile Include="Source\Settings\CachedLabel.cs" />
     <Compile Include="Source\Settings\ContextMenuEntry.cs" />
-    <Compile Include="Source\Settings\Dialog_ConfirmReset.cs" />
     <Compile Include="Source\Settings\ModSettingsWidgets.cs" />
     <Compile Include="Source\Settings\ModSettingsWindowState.cs" />
+    <Compile Include="Source\Settings\OptionsDialogExtensions.cs" />
     <Compile Include="Source\Spotter\ModSpottingManager.cs" />
     <Compile Include="Source\Spotter\TrackingEntry.cs" />
     <Compile Include="Source\Utils\EarlyInitAttribute.cs" />
@@ -117,7 +119,6 @@
     <Compile Include="Source\Patches\Game_FillComponents_Patch.cs" />
     <Compile Include="Source\Patches\LanguageDatabase_Patch.cs" />
     <Compile Include="Source\Patches\Game_DeinitAndRemoveMap_Patch.cs" />
-    <Compile Include="Source\Patches\Dialog_Options_Patch.cs" />
     <Compile Include="Source\Patches\EditWindow_Log_Patch.cs" />
     <Compile Include="Source\Patches\Game_FinalizeInit_Patch.cs" />
     <Compile Include="Source\Patches\MapComponentUtility_MapGenerated_Patch.cs" />
@@ -125,18 +126,15 @@
     <Compile Include="Source\Patches\Map_FinalizeInit_Patch.cs" />
     <Compile Include="Source\Patches\ModsConfig_RestartFromChangedMods_Patch.cs" />
     <Compile Include="Source\Patches\PlayDataLoader_Patch.cs" />
-    <Compile Include="Source\Patches\RootPlay_TestPlay_Patch.cs" />
     <Compile Include="Source\Patches\Root_Patch.cs" />
     <Compile Include="Source\Patches\Root_OnGUI_Patch.cs" />
     <Compile Include="Source\Quickstart\Dialog_QuickstartSettings.cs" />
     <Compile Include="Source\Quickstart\QuickstartController.cs" />
     <Compile Include="Source\Quickstart\QuickstartSettings.cs" />
-    <Compile Include="Source\Settings\Dialog_VanillaModSettings.cs" />
     <Compile Include="Source\Settings\SettingHandleConvertibleUtility.cs" />
     <Compile Include="Source\Shell\Shell.cs" />
     <Compile Include="Source\Shell\ShellOpenDirectory.cs" />
     <Compile Include="Source\Shell\ShellOpenLog.cs" />
-    <Compile Include="Source\Shell\ShellRestartRimWorld.cs" />
     <Compile Include="Source\Core\HugsTickProxy.cs" />
     <Compile Include="Source\Core\KeyBindingDefOf.cs" />
     <Compile Include="Source\Core\PersistentDataManager.cs" />
@@ -152,7 +150,6 @@
     <Compile Include="Source\News\UpdateFeatureDef.cs" />
     <Compile Include="Source\News\UpdateFeatureManager.cs" />
     <Compile Include="Source\Settings\Dialog_ModSettings.cs" />
-    <Compile Include="Source\Settings\OptionsDialogInjection.cs" />
     <Compile Include="Source\Settings\SettingHandleConvertible.cs" />
     <Compile Include="Source\Settings\Validators.cs" />
     <Compile Include="Source\Settings\ModSettingsPack.cs" />

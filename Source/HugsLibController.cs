@@ -162,9 +162,6 @@ namespace HugsLib {
 					var modId = childMod.LogIdentifierSafe;
 					try {
 						childMod.EarlyInitialize();
-						#pragma warning disable 618 // Obsolete warning
-						childMod.EarlyInitalize();
-						#pragma warning restore 618
 					} catch (Exception e) {
 						Logger.ReportException(e, modId);
 					}
@@ -526,15 +523,13 @@ namespace HugsLib {
 		private void PrepareReflection() {
 			InjectedDefHasher.PrepareReflection();
 			LogWindowExtensions.PrepareReflection();
-			QuickstartController.PrepareReflection();
+			OptionsDialogExtensions.PrepareReflection();
 		}
 
 		private void RegisterOwnSettings() {
 			try {
 				var pack = Settings.GetModSettings(ModIdentifier);
 				pack.EntryName = assemblyContentPacks[Assembly.GetCallingAssembly()]?.Name ?? "HugsLib";
-				pack.DisplayPriority = ModSettingsPack.ListPriority.Lowest;
-				pack.AlwaysExpandEntry = true;
 				UpdateFeatures.RegisterSettings(pack);
 				LogPublisher.RegisterSettings(pack);
 			} catch (Exception e) {

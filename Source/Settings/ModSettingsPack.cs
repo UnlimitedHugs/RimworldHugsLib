@@ -12,10 +12,6 @@ namespace HugsLib.Settings {
 	/// Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
 	/// </summary>
 	public class ModSettingsPack {
-		public enum ListPriority {
-			Higher, Normal, Lower, Lowest
-		}
-
 		/// <summary>
 		/// Identifier of the mod that owns this pack
 		/// </summary>
@@ -24,11 +20,6 @@ namespace HugsLib.Settings {
 		/// The name of the owning mod that will display is the Mod Settings dialog
 		/// </summary>
 		public string EntryName { get; set; }
-		/// <summary>
-		/// Special display order for the mod in the Mod Settings dialog.
-		/// Mods are generally ordered by name. Please leave this at Normal unless you have a good reason to change it.
-		/// </summary>
-		public ListPriority DisplayPriority { get; set; }
 		/// <summary>
 		/// Additional context menu options for this entry in the mod settings dialog.
 		/// Will be shown when the hovering menu button for this entry is clicked.
@@ -52,10 +43,6 @@ namespace HugsLib.Settings {
 		public IEnumerable<SettingHandle> Handles {
 			get { return handles; }
 		}
-		/// <summary>
-		/// Set to true to disable the collapsing of setting handles in the Mod Settings dialog.
-		/// </summary>
-		internal bool AlwaysExpandEntry;
 
 		internal ModSettingsManager ParentManager { get; set; }
 
@@ -64,7 +51,6 @@ namespace HugsLib.Settings {
 
 		internal ModSettingsPack(string modId) {
 			ModId = modId;
-			DisplayPriority = ListPriority.Normal;
 		}
 
 		/// <summary>
