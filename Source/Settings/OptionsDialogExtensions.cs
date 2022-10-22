@@ -9,6 +9,7 @@ namespace HugsLib.Settings;
 
 internal static class OptionsDialogExtensions {
 	private static FieldInfo cachedModsField;
+	private static FieldInfo hasModSettingsField;
 
 	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
@@ -25,6 +26,7 @@ internal static class OptionsDialogExtensions {
 			.OrderBy(m => m.SettingsCategory());
 
 		cachedModsField.SetValue(dialog, combinedEntries);
+		hasModSettingsField.SetValue(dialog, true);
 	}
 
 	public static Window GetModSettingsWindow(Mod forMod) {
@@ -34,11 +36,16 @@ internal static class OptionsDialogExtensions {
 	}
 
 	public static void PrepareReflection() {
-		const string fieldName = "cachedModsWithSettings";
+		const string cachedModsFieldName = "cachedModsWithSettings";
 		cachedModsField =
-			typeof(Dialog_Options).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+			typeof(Dialog_Options).GetField(cachedModsFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
 		if (cachedModsField == null || cachedModsField.FieldType != typeof(IEnumerable<Mod>))
-			HugsLibController.Logger.Error($"Failed to reflect {nameof(Dialog_Options)}.{fieldName}");
+			HugsLibController.Logger.Error($"Failed to reflect {nameof(Dialog_Options)}.{cachedModsFieldName}");
+		const string hasModSettingsFieldName = "hasModSettings";
+		hasModSettingsField = 
+			typeof(Dialog_Options).GetField(hasModSettingsFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+		if (hasModSettingsField == null || hasModSettingsField.FieldType != typeof(bool))
+			HugsLibController.Logger.Error($"Failed to reflect {nameof(Dialog_Options)}.{hasModSettingsFieldName}");
 	}
 }
 
