@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using HugsLib.Core;
 using HugsLib.Utils;
@@ -12,6 +13,11 @@ namespace HugsLib.Settings {
 	/// Loaded values are stored until they are "claimed" by their mod by requesting a handle for a setting with the same name.
 	/// </summary>
 	public class ModSettingsPack {
+		/// <summary>
+		/// Required for search bar. Contains all the mod information.
+		/// </summary>
+		public ModContentPack Content { get; private set; }
+
 		/// <summary>
 		/// Identifier of the mod that owns this pack
 		/// </summary>
@@ -50,6 +56,7 @@ namespace HugsLib.Settings {
 		private readonly List<SettingHandle> handles = new List<SettingHandle>();
 
 		internal ModSettingsPack(string modId) {
+			Content = LoadedModManager.RunningMods.First(x => Regex.Replace(x.PackageId.Split('.').Last(), "(_copy|_steam)$", "") == modId);
 			ModId = modId;
 		}
 
