@@ -56,7 +56,7 @@ namespace HugsLib.Settings {
 		private readonly List<SettingHandle> handles = new List<SettingHandle>();
 
 		internal ModSettingsPack(string modId) {
-			Content = LoadedModManager.RunningMods.First(x => Regex.Replace(x.PackageId.Split('.').Last(), "(_copy|_steam)$", "") == modId);
+			Content = LoadedModManager.RunningMods.First(x => Regex.Replace(x.PackageId.Split('.').Last().ToLower(), "(_copy|_steam)$", "") == modId.ToLower());
 			ModId = modId;
 		}
 
