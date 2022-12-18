@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using HarmonyLib;
 using HugsLib.Utils;
 using JetBrains.Annotations;
 using RimWorld;
@@ -18,7 +17,6 @@ internal static class OptionsDialogExtensions {
 	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
 		var modLookup = LoadedModManager.RunningMods.ToDictionary(m => m.Name, m => m);
-		FileLog.Log($"modLookup: {modLookup.Select(kp => $"{kp.Key}: {kp.Value}").Join(",")}");
 		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
 			.Where(p => p.Handles.Any(h => !h.NeverVisible) && modLookup.ContainsKey(p.ModId))
 			.Select(pack => {
