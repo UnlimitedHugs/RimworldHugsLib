@@ -16,7 +16,20 @@ internal static class OptionsDialogExtensions {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
 		var modLookup = LoadedModManager.RunningMods.ToDictionary(m => m.Name, m => m);
 		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
-			.Where(p => p.Handles.Any(h => !h.NeverVisible) && modLookup.ContainsKey(p.ModId))
+			.Where(p =>
+			{
+				if (p.Handles.All(h => !h.NeverVisible))
+				{
+					return false;
+				}
+				if (!modLookup.ContainsKey(p.ModId))
+				{
+					Log.Warning($"[HugsLib]: ModId not found in mod list, does it not match the name?");
+					return false;
+				}
+
+				return true;
+			})
 			.Select(pack => {
 				var label = pack.EntryName.NullOrEmpty()
 					? "HugsLib_setting_unnamed_mod".Translate().ToString()
