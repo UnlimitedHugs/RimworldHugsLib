@@ -58,7 +58,8 @@ namespace HugsLib {
 
 		// most of the initialization happens during Verse.Mod instantiation. Pretty much no vanilla data is yet loaded at this point.
 		internal static void EarlyInitialize() {
-			try {
+			try
+			{
 				if (earlyInitializationCompleted) {
 					Logger.Warning("Attempted repeated early initialization of controller: " + Environment.StackTrace);
 					return;

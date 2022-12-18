@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
+using HugsLib.Utils;
 using JetBrains.Annotations;
 using RimWorld;
 using Verse;
@@ -11,15 +14,19 @@ internal static class OptionsDialogExtensions {
 	private static FieldInfo cachedModsField;
 	private static FieldInfo hasModSettingsField;
 
+
 	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
+		var modLookup = LoadedModManager.RunningMods.ToDictionary(m => m.Name, m => m);
+		FileLog.Log($"modLookup: {modLookup.Select(kp => $"{kp.Key}: {kp.Value}").Join(",")}");
 		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
-			.Where(p => p.Handles.Any(h => !h.NeverVisible))
+			.Where(p => p.Handles.Any(h => !h.NeverVisible) && modLookup.ContainsKey(p.ModId))
 			.Select(pack => {
 				var label = pack.EntryName.NullOrEmpty()
 					? "HugsLib_setting_unnamed_mod".Translate().ToString()
 					: pack.EntryName;
-				return new SettingsProxyMod(label, pack);
+
+				return new SettingsProxyMod(label, pack, modLookup[pack.ModId]);
 			});
 		var combinedEntries = stockEntries
 			.Concat(hugsLibEntries)
@@ -57,7 +64,7 @@ internal class SettingsProxyMod : Mod {
 	public SettingsProxyMod(ModContentPack content) : base(content) {
 	}
 
-	public SettingsProxyMod(string entryLabel, ModSettingsPack settingsPack) : base(null) {
+	public SettingsProxyMod(string entryLabel, ModSettingsPack settingsPack, ModContentPack basis) : base(basis) {
 		SettingsPack = settingsPack;
 		this.entryLabel = entryLabel;
 	}
