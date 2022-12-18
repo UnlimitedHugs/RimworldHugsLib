@@ -11,15 +11,31 @@ internal static class OptionsDialogExtensions {
 	private static FieldInfo cachedModsField;
 	private static FieldInfo hasModSettingsField;
 
+
 	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
+		var modLookup = LoadedModManager.RunningMods.ToDictionary(m => m.Name, m => m);
 		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
-			.Where(p => p.Handles.Any(h => !h.NeverVisible))
+			.Where(p =>
+			{
+				if (p.Handles.All(h => h.NeverVisible))
+				{
+					return false;
+				}
+				if (!modLookup.ContainsKey(p.EntryName))
+				{
+					Log.Warning($"[HugsLib]: mod EntryName not found in mod list, does it not match the name? {p.EntryName}");
+					return false;
+				}
+
+				return true;
+			})
 			.Select(pack => {
 				var label = pack.EntryName.NullOrEmpty()
 					? "HugsLib_setting_unnamed_mod".Translate().ToString()
 					: pack.EntryName;
-				return new SettingsProxyMod(label, pack);
+
+				return new SettingsProxyMod(label, pack, modLookup[pack.EntryName]);
 			});
 		var combinedEntries = stockEntries
 			.Concat(hugsLibEntries)
@@ -57,7 +73,7 @@ internal class SettingsProxyMod : Mod {
 	public SettingsProxyMod(ModContentPack content) : base(content) {
 	}
 
-	public SettingsProxyMod(string entryLabel, ModSettingsPack settingsPack) : base(null) {
+	public SettingsProxyMod(string entryLabel, ModSettingsPack settingsPack, ModContentPack basis) : base(basis) {
 		SettingsPack = settingsPack;
 		this.entryLabel = entryLabel;
 	}
