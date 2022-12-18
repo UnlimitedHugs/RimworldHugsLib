@@ -18,13 +18,13 @@ internal static class OptionsDialogExtensions {
 		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
 			.Where(p =>
 			{
-				if (p.Handles.All(h => !h.NeverVisible))
+				if (p.Handles.All(h => h.NeverVisible))
 				{
 					return false;
 				}
-				if (!modLookup.ContainsKey(p.ModId))
+				if (!modLookup.ContainsKey(p.EntryName))
 				{
-					Log.Warning($"[HugsLib]: ModId not found in mod list, does it not match the name?");
+					Log.Warning($"[HugsLib]: mod EntryName not found in mod list, does it not match the name? {p.EntryName}");
 					return false;
 				}
 
@@ -35,7 +35,7 @@ internal static class OptionsDialogExtensions {
 					? "HugsLib_setting_unnamed_mod".Translate().ToString()
 					: pack.EntryName;
 
-				return new SettingsProxyMod(label, pack, modLookup[pack.ModId]);
+				return new SettingsProxyMod(label, pack, modLookup[pack.EntryName]);
 			});
 		var combinedEntries = stockEntries
 			.Concat(hugsLibEntries)
