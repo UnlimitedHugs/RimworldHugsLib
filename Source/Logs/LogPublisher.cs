@@ -28,7 +28,7 @@ namespace HugsLib.Logs {
 		private const int MaxLogLineCount = 10000;
 		private const float PublishRequestTimeout = 90f;
 		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
-		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
+		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/[\\w/]+)\"");
 
 		public enum PublisherStatus {
 			Ready,
