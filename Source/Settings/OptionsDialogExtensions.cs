@@ -13,19 +13,23 @@ internal static class OptionsDialogExtensions {
 
 	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
-		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
-			.Where(p => p.Handles.Any(h => !h.NeverVisible))
-			.Select(pack => {
-				var label = pack.EntryName.NullOrEmpty()
+		var hugsLibEntries = HugsLibController.Instance.InitializedMods
+			.Where(mod => mod.SettingsPackInternalAccess != null 
+				&& mod.SettingsPackInternalAccess.Handles.Any(h => !h.NeverVisible))
+			.Select(mod => {
+				var settingsPack = mod.SettingsPackInternalAccess;
+				var label = settingsPack.EntryName.NullOrEmpty()
 					? "HugsLib_setting_unnamed_mod".Translate().ToString()
-					: pack.EntryName;
-				return new SettingsProxyMod(label, pack);
+					: settingsPack.EntryName;
+
+				var contentPack = mod.ModContentPack ?? HugsLibController.OwnContentPack;
+				return new SettingsProxyMod(label, settingsPack, contentPack);
 			});
 		var combinedEntries = stockEntries
 			.Concat(hugsLibEntries)
 			.OrderBy(m => m.SettingsCategory());
 
-		cachedModsField.SetValue(dialog, combinedEntries);
+		cachedModsField.SetValue(dialog, combinedEntries.ToArray());
 		hasModSettingsField.SetValue(dialog, true);
 	}
 
@@ -57,7 +61,8 @@ internal class SettingsProxyMod : Mod {
 	public SettingsProxyMod(ModContentPack content) : base(content) {
 	}
 
-	public SettingsProxyMod(string entryLabel, ModSettingsPack settingsPack) : base(null) {
+	public SettingsProxyMod(
+		string entryLabel, ModSettingsPack settingsPack, ModContentPack contentPack) : base(contentPack) {
 		SettingsPack = settingsPack;
 		this.entryLabel = entryLabel;
 	}
