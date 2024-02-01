@@ -15,6 +15,7 @@
 	<description>HugsLib is a library that provides shared functionality to other mods.
 Version: 10.0.1
 	</description>
+	<modIconPath>HLModIcon</modIconPath>
 	<modDependencies>
 		<li>
 			<packageId>brrainz.harmony</packageId>
