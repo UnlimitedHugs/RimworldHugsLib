@@ -57,6 +57,7 @@ namespace HugsLib {
 		}
 
 		internal static ModContentPack OwnContentPack { get; private set; }
+		internal static ModSettingsPack OwnSettingsPack { get; private set; }
 
 		// most of the initialization happens during Verse.Mod instantiation. Pretty much no vanilla data is yet loaded at this point.
 		internal static void EarlyInitialize(ModContentPack contentPack) {
@@ -533,6 +534,7 @@ namespace HugsLib {
 		private void RegisterOwnSettings() {
 			try {
 				var pack = Settings.GetModSettings(ModIdentifier);
+				OwnSettingsPack = pack;
 				pack.EntryName = assemblyContentPacks[Assembly.GetCallingAssembly()]?.Name ?? "HugsLib";
 				UpdateFeatures.RegisterSettings(pack);
 				LogPublisher.RegisterSettings(pack);
