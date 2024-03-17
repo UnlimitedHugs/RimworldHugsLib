@@ -13,19 +13,26 @@ internal static class OptionsDialogExtensions {
 
 	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
 		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
-		var hugsLibEntries = HugsLibController.Instance.Settings.ModSettingsPacks
-			.Where(p => p.Handles.Any(h => !h.NeverVisible))
-			.Select(pack => {
-				var label = pack.EntryName.NullOrEmpty()
+		var hugsLibEntries = HugsLibController.Instance.InitializedMods
+			.Where(mod => mod.SettingsPackInternalAccess != null
+				&& mod.SettingsPackInternalAccess.Handles.Any(h => !h.NeverVisible))
+			.Select(mod => {
+				var settingsPack = mod.SettingsPackInternalAccess;
+				var label = settingsPack.EntryName.NullOrEmpty()
 					? "HugsLib_setting_unnamed_mod".Translate().ToString()
-					: pack.EntryName;
-				return new SettingsProxyMod(label, pack);
-			});
+					: settingsPack.EntryName;
+
+				var contentPack = mod.ModContentPack ?? HugsLibController.OwnContentPack;
+				return new SettingsProxyMod(label, settingsPack, contentPack);
+			})
+			.Append(new SettingsProxyMod("HugsLib", HugsLibController.OwnSettingsPack, 
+				HugsLibController.OwnContentPack));
+		
 		var combinedEntries = stockEntries
 			.Concat(hugsLibEntries)
 			.OrderBy(m => m.SettingsCategory());
 
-		cachedModsField.SetValue(dialog, combinedEntries);
+		cachedModsField.SetValue(dialog, combinedEntries.ToArray());
 		hasModSettingsField.SetValue(dialog, true);
 	}
 
@@ -42,7 +49,7 @@ internal static class OptionsDialogExtensions {
 		if (cachedModsField == null || cachedModsField.FieldType != typeof(IEnumerable<Mod>))
 			HugsLibController.Logger.Error($"Failed to reflect {nameof(Dialog_Options)}.{cachedModsFieldName}");
 		const string hasModSettingsFieldName = "hasModSettings";
-		hasModSettingsField = 
+		hasModSettingsField =
 			typeof(Dialog_Options).GetField(hasModSettingsFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
 		if (hasModSettingsField == null || hasModSettingsField.FieldType != typeof(bool))
 			HugsLibController.Logger.Error($"Failed to reflect {nameof(Dialog_Options)}.{hasModSettingsFieldName}");
@@ -57,7 +64,8 @@ internal class SettingsProxyMod : Mod {
 	public SettingsProxyMod(ModContentPack content) : base(content) {
 	}
 
-	public SettingsProxyMod(string entryLabel, ModSettingsPack settingsPack) : base(null) {
+	public SettingsProxyMod(
+		string entryLabel, ModSettingsPack settingsPack, ModContentPack contentPack) : base(contentPack) {
 		SettingsPack = settingsPack;
 		this.entryLabel = entryLabel;
 	}

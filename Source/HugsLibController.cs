@@ -56,8 +56,12 @@ namespace HugsLib {
 			get { return Instance.Settings; }
 		}
 
+		internal static ModContentPack OwnContentPack { get; private set; }
+		internal static ModSettingsPack OwnSettingsPack { get; private set; }
+
 		// most of the initialization happens during Verse.Mod instantiation. Pretty much no vanilla data is yet loaded at this point.
-		internal static void EarlyInitialize() {
+		internal static void EarlyInitialize(ModContentPack contentPack) {
+			OwnContentPack = contentPack;
 			try {
 				if (earlyInitializationCompleted) {
 					Logger.Warning("Attempted repeated early initialization of controller: " + Environment.StackTrace);
@@ -93,11 +97,9 @@ namespace HugsLib {
 
 		private static void ReadOwnVersion() {
 			var ownAssembly = typeof(HugsLibController).Assembly;
-			var ownContentPack = LoadedModManager.RunningMods
-				.FirstOrDefault(p => p.assemblies != null && p.assemblies.loadedAssemblies.Contains(ownAssembly));
-			if (ownContentPack != null) {
-				libraryVersionFile = VersionFile.TryParseVersionFile(ownContentPack);
-				libraryVersionInfo = AssemblyVersionInfo.ReadModAssembly(ownAssembly, ownContentPack);
+			if (OwnContentPack != null) {
+				libraryVersionFile = VersionFile.TryParseVersionFile(OwnContentPack);
+				libraryVersionInfo = AssemblyVersionInfo.ReadModAssembly(ownAssembly, OwnContentPack);
 			} else {
 				Logger.Error("Failed to identify own ModContentPack");
 			}
@@ -119,6 +121,9 @@ namespace HugsLib {
 		public ModSpottingManager ModSpotter { get; private set; }
 
 		internal Harmony HarmonyInst { get; private set; }
+		internal IEnumerable<ModBase> InitializedMods {
+			get { return initializedMods; }
+		}
 
 		private HugsLibController() {
 		}
@@ -529,6 +534,7 @@ namespace HugsLib {
 		private void RegisterOwnSettings() {
 			try {
 				var pack = Settings.GetModSettings(ModIdentifier);
+				OwnSettingsPack = pack;
 				pack.EntryName = assemblyContentPacks[Assembly.GetCallingAssembly()]?.Name ?? "HugsLib";
 				UpdateFeatures.RegisterSettings(pack);
 				LogPublisher.RegisterSettings(pack);

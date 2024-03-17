@@ -7,7 +7,7 @@ namespace HugsLib.Patches {
 	/// </summary>
 	[HarmonyPatch(typeof (Game))]
 	[HarmonyPatch("DeinitAndRemoveMap")]
-	[HarmonyPatch(new[] { typeof(Map) })]
+	[HarmonyPatch(new[] { typeof(Map), typeof(bool) })]
 	internal static class Game_DeinitAndRemoveMap_Patch {
 		[HarmonyPostfix]
 		private static void MapRemovalHook(Map map) {

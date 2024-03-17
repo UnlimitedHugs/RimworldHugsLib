@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using HugsLib.Settings;
 using HugsLib.Utils;
+using LudeonTK;
 using RimWorld;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -113,7 +114,7 @@ namespace HugsLib.Test {
 		public override void MapLoaded(Map map) {
 			Logger.Message("MapLoaded:" + map);
 			try {
-				map.mapDrawer.MapMeshDirty(new IntVec3(0, 0, 0), MapMeshFlag.Buildings);
+				map.mapDrawer.MapMeshDirty(new IntVec3(0, 0, 0), MapMeshFlagDefOf.Buildings);
 			} catch (Exception e) {
 				Logger.Error("MapLoaded fired before map mesh regeneration " + e);
 			}

@@ -7,7 +7,7 @@ namespace HugsLib.Core {
 	/// </summary>
 	public class HugsLibMod : Mod {
 		public HugsLibMod(ModContentPack content) : base(content) {
-			HugsLibController.EarlyInitialize();
+			HugsLibController.EarlyInitialize(content);
 		}
 	}
 }
