@@ -173,6 +173,7 @@ namespace HugsLib.Logs {
 		private void OnRequestError(string errorMessage) {
 			ErrorMessage = errorMessage;
 			FinalizeUpload(false);
+			HugsLibController.Logger.Error(errorMessage + "\n" + Environment.StackTrace);
 		}
 
 		private void OnUploadComplete(string response) {
