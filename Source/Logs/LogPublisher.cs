@@ -35,7 +35,7 @@ namespace HugsLib.Logs {
 			false;
 #endif
 		private readonly string GitHubAuthToken = "OptFd1QFKR5OJH0l9JzW8BIzFSLff006H7Hh_phg".Reverse().Join(""); // GitHub will revoke any tokens committed
-		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
+		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\\s?\"(https://gist\\.github\\.com/[^\"]+)\"");
 
 		public enum PublisherStatus {
 			Ready,
