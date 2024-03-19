@@ -9,6 +9,7 @@ using System.Threading;
 using HugsLib.Core;
 using HugsLib.Settings;
 using HugsLib.Utils;
+using RimWorld;
 using UnityEngine;
 using UnityEngine.Networking;
 using Verse;
@@ -27,8 +28,14 @@ namespace HugsLib.Logs {
 		private const string GistDescription = "Rimworld output log published using HugsLib";
 		private const int MaxLogLineCount = 10000;
 		private const float PublishRequestTimeout = 90f;
-		private readonly string GitHubAuthToken = "6b69be56e8d8eaf678377c992a3d0c9b6da917e0".Reverse().Join(""); // GitHub will revoke any tokens committed
-		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\"(https://gist\\.github\\.com/\\w+)\"");
+		private const bool DenyPublicUpload =
+#if NO_PUBLIC_LOGS
+			true;
+#else
+			false;
+#endif
+		private readonly string GitHubAuthToken = "OptFd1QFKR5OJH0l9JzW8BIzFSLff006H7Hh_phg".Reverse().Join(""); // GitHub will revoke any tokens committed
+		private readonly Regex UploadResponseUrlMatch = new Regex("\"html_url\":\\s?\"(https://gist\\.github\\.com/[^\"]+)\"");
 
 		public enum PublisherStatus {
 			Ready,
@@ -117,6 +124,11 @@ namespace HugsLib.Logs {
 					? publishOptions.AuthToken.Trim()
 					: GitHubAuthToken;
 				var publicVisibility = useCustomAuthToken ? "false" : "true";
+				if (DenyPublicUpload && authToken == GitHubAuthToken) {
+					Messages.Message("Publishing to the shared account is disabled is this version.",
+						MessageTypeDefOf.RejectInput, false);
+					throw new Exception("Publishing denied");
+				}
 				var payload = string.Format(GistPayloadJson, 
 					GistDescription, publicVisibility, OutputLogFilename, collatedData);
 				activeRequest = new UnityWebRequest(GistApiUrl, UnityWebRequest.kHttpVerbPOST);
@@ -161,6 +173,7 @@ namespace HugsLib.Logs {
 		private void OnRequestError(string errorMessage) {
 			ErrorMessage = errorMessage;
 			FinalizeUpload(false);
+			HugsLibController.Logger.Error(errorMessage + "\n" + Environment.StackTrace);
 		}
 
 		private void OnUploadComplete(string response) {
