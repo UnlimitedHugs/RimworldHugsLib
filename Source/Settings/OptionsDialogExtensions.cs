@@ -12,27 +12,37 @@ internal static class OptionsDialogExtensions {
 	private static FieldInfo hasModSettingsField;
 
 	public static void InjectHugsLibModEntries(Dialog_Options dialog) {
-		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
-		var hugsLibEntries = HugsLibController.Instance.InitializedMods
-			.Where(mod => mod.SettingsPackInternalAccess != null
-				&& mod.SettingsPackInternalAccess.Handles.Any(h => !h.NeverVisible))
+		var ownedByHugsLibMods = HugsLibController.Instance.InitializedMods
+			.Where(mod => mod.SettingsPackInternalAccess != null)
 			.Select(mod => {
 				var settingsPack = mod.SettingsPackInternalAccess;
-				var label = settingsPack.EntryName.NullOrEmpty()
-					? "HugsLib_setting_unnamed_mod".Translate().ToString()
-					: settingsPack.EntryName;
-
 				var contentPack = mod.ModContentPack ?? HugsLibController.OwnContentPack;
-				return new SettingsProxyMod(label, settingsPack, contentPack);
+				return (settingsPack, contentPack);
 			})
-			.Append(new SettingsProxyMod("HugsLib", HugsLibController.OwnSettingsPack, 
-				HugsLibController.OwnContentPack));
+			.Append((settingsPack: HugsLibController.OwnSettingsPack, contentPack: HugsLibController.OwnContentPack))
+			.ToArray();
 		
+		var ownedByUnknownMods = HugsLibController.SettingsManager.ModSettingsPacks
+			.Except(ownedByHugsLibMods.Select(packs => packs.settingsPack))
+			.Select(pack => (settingsPack: pack, contentPack: HugsLibController.OwnContentPack));
+		
+		var hugsLibEntries = ownedByHugsLibMods
+			.Concat(ownedByUnknownMods)
+			.Where(packs => packs.settingsPack.Handles.Any(h => !h.NeverVisible))
+			.Select(packs => {
+				var label = packs.settingsPack.EntryName.NullOrEmpty()
+					? "HugsLib_setting_unnamed_mod".Translate().ToString()
+					: packs.settingsPack.EntryName;
+				return new SettingsProxyMod(label, packs.settingsPack, packs.contentPack);
+			});
+
+		var stockEntries = (IEnumerable<Mod>)cachedModsField.GetValue(dialog);
 		var combinedEntries = stockEntries
 			.Concat(hugsLibEntries)
-			.OrderBy(m => m.SettingsCategory());
+			.OrderBy(m => m.SettingsCategory())
+			.ToArray();
 
-		cachedModsField.SetValue(dialog, combinedEntries.ToArray());
+		cachedModsField.SetValue(dialog, combinedEntries);
 		hasModSettingsField.SetValue(dialog, true);
 	}
 

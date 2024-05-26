@@ -188,6 +188,7 @@ namespace HugsLib.Test {
 			TestSettingsChangedCallback();
 			TestCustomTypeSetting();
 			TestGiveShortHash();
+			TestExternalSettingsPack();
 			//TestConditionalVisibilitySettings();	
 		}
 
@@ -203,7 +204,6 @@ namespace HugsLib.Test {
 				Logger.Message($"Given short hashes: {knownDef.shortHash}, {customDef.shortHash}");
 			}
 		}
-
 
 		private void TestConditionalVisibilitySettings() {
 			for (int i = 0; i < 50; i++) {
@@ -237,6 +237,11 @@ namespace HugsLib.Test {
 			custom.Value.Prop++;
 			custom.ForceSaveChanges();
 			Logger.Trace($"Custom setting values: Nums:{custom.Value.Nums.Join(",")} Prop:{custom.Value.Prop}");
+		}
+
+		private static void TestExternalSettingsPack() {
+			var pack = HugsLibController.SettingsManager.GetModSettings("externalTestMod", "External Test Mod");
+			pack.GetHandle<float>("FloatSetting", "Float setting", "description");
 		}
 
 		//<customType>aasd1w423</customType>
