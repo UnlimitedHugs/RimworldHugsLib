@@ -217,8 +217,6 @@ namespace HugsLib.Quickstart {
 			Find.GameInitData.ChooseRandomStartingTile();
 			Find.GameInitData.mapSize = Settings.MapSizeToGen;
 			Find.Scenario.PostIdeoChosen();
-			Find.GameInitData.PrepForMapGen();
-			Find.Scenario.PreMapGenerate();
 		}
 
 		private static Scenario TryGetScenarioByName(string name) {
