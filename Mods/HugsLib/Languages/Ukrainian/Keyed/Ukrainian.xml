@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+	<HugsLib_settings_btn>Налаштування Модифікації</HugsLib_settings_btn>
+	<HugsLib_settings_windowTitle>Налаштування Модифікації</HugsLib_settings_windowTitle>
+	<HugsLib_settings_resetValue>Відновити налаштування за замовчуванням</HugsLib_settings_resetValue>
+	<HugsLib_settings_resetAll>Скинути всі</HugsLib_settings_resetAll>
+	<HugsLib_settings_resetAll_prompt>Відновити всі налаштування модифікації до початкових значень?</HugsLib_settings_resetAll_prompt>
+	<HugsLib_settings_noSettings>Модифікації з можливістю налаштування не завантажені.</HugsLib_settings_noSettings>
+	<HugsLib_settings_resetMod>Скинути налаштування {0}</HugsLib_settings_resetMod>
+	<HugsLib_settings_resetMod_prompt>Відновити всі налаштування {0} до початкових значень?</HugsLib_settings_resetMod_prompt>
+	<HugsLib_settings_resetIncludeHidden>Показати приховані налаштування ({0})</HugsLib_settings_resetIncludeHidden>
+	<HugsLib_settings_hiddenSettingsHeader>Приховані налаштування модифікації:</HugsLib_settings_hiddenSettingsHeader>
+	<HugsLib_settings_resetSuccessMessage>Налаштування {0} було скинуто.</HugsLib_settings_resetSuccessMessage>
+
+	<HugsLib_setting_showNews_label>Показати оновлення модифікацій</HugsLib_setting_showNews_label>
+	<HugsLib_setting_showNews_desc>Дозволяє нещодавно встановленим модифікаціям висвітлювати свої нові можливості в окремому вікні під час запуску гри.</HugsLib_setting_showNews_desc>
+	<HugsLib_setting_allNews_label>Всі новини</HugsLib_setting_allNews_label>
+	<HugsLib_setting_allNews_desc>Показати всі новини, в тому числі ті, що вже були показані.</HugsLib_setting_allNews_desc>
+	<HugsLib_setting_allNews_button>Показати</HugsLib_setting_allNews_button>
+	<HugsLib_setting_allNews_fail>Жодна з активних модифікацій немає новин для висвітлення.</HugsLib_setting_allNews_fail>
+	<HugsLib_setting_unnamed_mod>(модифікація без назви)</HugsLib_setting_unnamed_mod>
+	<HugsLib_setting_show_settings>Показати налаштування</HugsLib_setting_show_settings>
+	<HugsLib_setting_mod_name_title>Налаштування {0}</HugsLib_setting_mod_name_title>
+	<HugsLib_setting_expand_mod>Відкрити</HugsLib_setting_expand_mod>
+	<HugsLib_setting_collapse_mod>Закрити</HugsLib_setting_collapse_mod>
+	<HugsLib_setting_quickstartSettings_label>Налаштування швидкого запуску</HugsLib_setting_quickstartSettings_label>
+	<HugsLib_setting_logPublisherSettings_label>Налаштування поширення журналу</HugsLib_setting_logPublisherSettings_label>
+	<HugsLib_setting_ignoredUpdateNews_label>Проігноровані постачальники оновлень модифікацій</HugsLib_setting_ignoredUpdateNews_label>
+		
+	<HugsLib_features_title>Оновлення модифікацій</HugsLib_features_title>
+	<HugsLib_features_description>Було встановлено наступні оновлення модифікацій, і ось нові функції та покращення, які прийшли з ними.\nВи можете вимкнути це діалогове вікно в Налаштування &gt; Налаштування Модифікації</HugsLib_features_description>
+	<HugsLib_features_update>{0} v{1}</HugsLib_features_update>
+	<HugsLib_features_link>Посилання</HugsLib_features_link>
+	<HugsLib_features_linkDesc>Відкриває браузер зі сторінкою де можна дізнатись більше про це оновлення.\nСайт: {0}</HugsLib_features_linkDesc>
+	<HugsLib_features_ignoreTooltip>Повідомляти про майбутні оновлення цього моду</HugsLib_features_ignoreTooltip>
+	<HugsLib_features_confirmIgnoreTitle>Підтвердити</HugsLib_features_confirmIgnoreTitle>
+	<HugsLib_features_confirmIgnore>Ігнорувати майбутні новини про оновлення {0}?\n\nЇх можна повторно увімкнути у Налаштування Модифікації &gt; Всі новини</HugsLib_features_confirmIgnore>
+	<HugsLib_features_filterBtn>Фільтрувати за модифікацією</HugsLib_features_filterBtn>
+	<HugsLib_features_filterStatus>Поточний фільтр: {0}</HugsLib_features_filterStatus>
+	<HugsLib_features_filterAllMods>Всі модифікації</HugsLib_features_filterAllMods>
+	<HugsLib_features_filterDropdownEntry>{0} ({1} новин{2})</HugsLib_features_filterDropdownEntry>
+	<HugsLib_features_filterIgnoredModSuffix>, ігнорується</HugsLib_features_filterIgnoredModSuffix>
+
+	<HugsLib_copiedToClipboard>Скопійовано до буфера обміну.</HugsLib_copiedToClipboard>
+	
+	<HugsLib_logs_copy>Копіювати</HugsLib_logs_copy>
+	<HugsLib_logs_shareBtn>Поділитися журналом</HugsLib_logs_shareBtn>
+	<HugsLib_logs_shareConfirmTitle>Підтвердити</HugsLib_logs_shareConfirmTitle>
+	<HugsLib_logs_shareConfirmMessage>Поділитись журналом гри?\n\nЦе призведе до розміщення вашого журналу гри на загальнодоступному сервері та дасть вам посилання, яким ви зможете поділитися з іншими. Це стане у пригоді, якщо вам потрібна допомога у виправленні проблеми або ви хочете повідомити про проблему автору модифікації.\n\nОсобиста інформація не буде передана.</HugsLib_logs_shareConfirmMessage>
+	<HugsLib_logs_publisherTitle>Поширення журналу</HugsLib_logs_publisherTitle>
+	<HugsLib_logs_uploading>Вивантаження{0}</HugsLib_logs_uploading>
+	<HugsLib_logs_shortening>Отримання посилання{0}</HugsLib_logs_shortening>
+	<HugsLib_logs_uploaded>Вивантаження завершено!</HugsLib_logs_uploaded>
+	<HugsLib_logs_uploadError>Помилка вивантаження: {0}</HugsLib_logs_uploadError>
+	<HugsLib_logs_abortBtn>Скасувати</HugsLib_logs_abortBtn>
+	<HugsLib_logs_retryBtn>Повторити</HugsLib_logs_retryBtn>
+	<HugsLib_logs_browseBtn>Відкрити в браузері</HugsLib_logs_browseBtn>
+	<HugsLib_logs_useRecommendedSettings>Рекомендовані налаштування</HugsLib_logs_useRecommendedSettings>
+	<HugsLib_logs_shortUrls>Використовувати вкорочувач URL</HugsLib_logs_shortUrls>
+	<HugsLib_logs_shortUrls_tip>Створює коротше посилання при завантаженні. Не рекомендується використовувати в Steam - короткі посилання автоматично видаляються.</HugsLib_logs_shortUrls_tip>
+	<HugsLib_logs_platformInfo>Інформація про платформу</HugsLib_logs_platformInfo>
+	<HugsLib_logs_platformInfo_tip>Додає до журналу інформацію про ваш процесор, пам'ять та відеокарту.</HugsLib_logs_platformInfo_tip>
+	<HugsLib_logs_unlimitedLogSize>Необмежений розмір журналу</HugsLib_logs_unlimitedLogSize>
+	<HugsLib_logs_unlimitedLogSize_tip>Якщо вимкнено, розмір журналу обмежено до 10000 рядків, щоб запобігти виникненню проблем.</HugsLib_logs_unlimitedLogSize_tip>
+	<HugsLib_logs_github_token>Токен доступу GitHub</HugsLib_logs_github_token>
+	<HugsLib_logs_github_token_tip>Публікує журнали до вашого облікового запису GitHub, коли встановлений. Щоб отримати токен, перейдіть у GitHub > Settings > Developer Settings > Personal access tokens. Залиште порожнім, щоб опублікувати до публічного облікового запису HugsLib.\n\nЖурнали, опубліковані у вашому обліковому записі, можуть бути переглянуті іншими лише за посиланням.</HugsLib_logs_github_token_tip>
+	<HugsLib_logs_toClipboardBtn>Скопіювати журнал</HugsLib_logs_toClipboardBtn>
+	<HugsLib_logs_uploadBtn>Завантажити</HugsLib_logs_uploadBtn>
+	
+	<HugsLib_logs_filesBtn>Файли</HugsLib_logs_filesBtn>
+	<HugsLib_logs_openLogFile>Відкрити файл журналу</HugsLib_logs_openLogFile>
+	<HugsLib_logs_openSaveDir>Відкрити теку збережень</HugsLib_logs_openSaveDir>
+	<HugsLib_logs_openModsDir>Відкрити теку модифікацій</HugsLib_logs_openModsDir>
+
+	<HugsLib_restart_language_text>Мова гри змінилася. Гра перезавантажиться автоматично.</HugsLib_restart_language_text>
+	
+	<HugsLib_loadOrderWarning_title>Неправильний порядок модифікацій</HugsLib_loadOrderWarning_title>
+	<HugsLib_loadOrderWarning_text>Щоб уникнути проблем, &lt;b&gt;модифікацію HugsLib&lt;/b&gt; завжди слід завантажувати після &lt;b&gt;Core&lt;/b&gt;.\nПеревірте порядок модифікацій у меню Модифікації та перезапустіть гру.</HugsLib_loadOrderWarning_text>
+		
+	<HugsLib_updateRequired_title>Необхідно оновити бібліотеку</HugsLib_updateRequired_title>
+	<HugsLib_updateRequired_text>&lt;b&gt;{0}&lt;/b&gt; для належної роботи потребує версії &lt;b&gt;{1}&lt;/b&gt; &lt;b&gt;бібліотеки HugsLib&lt;/b&gt;.\n\nБажаєте оновити її зараз?</HugsLib_updateRequired_text>
+	<HugsLib_updateRequired_updateBtn>Оновити зараз</HugsLib_updateRequired_updateBtn>
+	
+	<test_enumSetting_DefaultValue>Значення за Замовчуванням</test_enumSetting_DefaultValue>
+	<test_enumSetting_ValueOne>Значення Один</test_enumSetting_ValueOne>
+	<test_enumSetting_ValueTwo>Значення Два</test_enumSetting_ValueTwo>
+	
+</LanguageData>
