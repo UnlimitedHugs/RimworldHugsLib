@@ -13,7 +13,7 @@
 	<packageId>UnlimitedHugs.HugsLib</packageId>
 	<url>https://ludeon.com/forums/index.php?topic=28066.0</url>
 	<description>HugsLib is a library that provides shared functionality to other mods.
-Version: 11.0.4
+Version: 11.0.5
 	</description>
 	<modIconPath IgnoreIfNoMatchingField="True">HLModIcon</modIconPath>
 	<modDependencies>
