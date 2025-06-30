@@ -213,7 +213,7 @@ namespace HugsLib.Quickstart {
 			Find.Scenario.PreConfigure();
 			Current.Game.storyteller = new Storyteller(StorytellerDefOf.Cassandra, DifficultyDefOf.Rough);
 			Current.Game.World = WorldGenerator.GenerateWorld(0.05f, GenText.RandomSeedString(),
-				OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal);
+				OverallRainfall.Normal, OverallTemperature.Normal, OverallPopulation.Normal, LandmarkDensity.Normal);
 			Find.GameInitData.ChooseRandomStartingTile();
 			Find.GameInitData.mapSize = Settings.MapSizeToGen;
 			Find.Scenario.PostIdeoChosen();
