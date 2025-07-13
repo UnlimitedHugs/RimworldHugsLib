@@ -12,7 +12,7 @@ namespace HugsLib.Core {
 			def = new ThingDef{ tickerType = TickerType.Normal, isSaveable = false };
 		}
 
-		public override void Tick() {
+		protected override void Tick() {
 			if (CreatedByController) HugsLibController.Instance.OnTick();
 		}
 	}

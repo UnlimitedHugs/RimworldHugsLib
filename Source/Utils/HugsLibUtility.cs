@@ -279,7 +279,7 @@ namespace HugsLib.Utils {
 							}
 							throw new Exception("timed out");
 						}
-						if (request.isNetworkError || request.isHttpError) {
+						if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError) {
 							throw new Exception(request.error);
 						}
 						var status = (HttpStatusCode)request.responseCode;
